@@ -22,7 +22,7 @@ export function useLogin() {
         department: user.department,
       };
 
-      const isFirstLogin = !!(response.data as Record<string, unknown>).isFirstLogin;
+      const isFirstLogin = !!(user as Record<string, unknown>).forcePasswordChange;
 
       setAuth(accessToken, refreshToken, authUser, isFirstLogin);
 

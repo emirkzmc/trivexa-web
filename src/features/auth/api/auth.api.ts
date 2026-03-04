@@ -17,6 +17,7 @@ export interface LoginResponseData {
         lastName: string;
         role: string;
         department: string;
+        forcePasswordChange: boolean;
     };
 }
 
@@ -74,6 +75,6 @@ export async function changePassword(payload: ChangePasswordPayload): Promise<vo
 }
 
 export async function getMe(): Promise<MeResponse> {
-    const { data } = await api.get<MeResponse>('/auth/me');
+    const { data } = await api.get<MeResponse>('/users/me');
     return data;
 }

@@ -10,7 +10,7 @@ import { resolveErrorMessage } from '../../../shared/constants/errorMessages';
 const portalApi = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL
         ? `${import.meta.env.VITE_API_BASE_URL}/portal`
-        : 'http://localhost:3500/api/portal',
+        : '/api/portal',
     timeout: 15_000,
 });
 

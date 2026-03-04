@@ -36,7 +36,7 @@ export interface ClientCreatePayload {
     phone?: string;
 }
 
-export interface ClientUpdatePayload extends Partial<ClientCreatePayload> { }
+export type ClientUpdatePayload = Partial<ClientCreatePayload>;
 
 // ─── API Functions ───────────────────────────────────────────────────────────
 
@@ -61,7 +61,7 @@ export async function updateClient(
     id: string,
     payload: ClientUpdatePayload,
 ): Promise<ClientItem> {
-    const { data } = await api.patch<{ data: ClientItem }>(
+    const { data } = await api.put<{ data: ClientItem }>(
         `/clients/${id}`,
         payload,
     );

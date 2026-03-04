@@ -36,26 +36,26 @@ export interface StartTimerPayload {
 
 export async function startTimer(payload: StartTimerPayload): Promise<TimerEntry> {
     const { data } = await api.post<{ data: TimerEntry }>(
-        '/time-tracker/start',
+        '/time-entries/start',
         payload,
     );
     return data.data;
 }
 
-export async function stopTimer(id: string): Promise<TimerEntry> {
-    const { data } = await api.post<{ data: TimerEntry }>(
-        `/time-tracker/stop/${id}`,
+export async function stopTimer(): Promise<TimerEntry> {
+    const { data } = await api.patch<{ data: TimerEntry }>(
+        `/time-entries/stop`,
     );
     return data.data;
 }
 
 export async function cancelTimer(id: string): Promise<void> {
-    await api.post(`/time-tracker/cancel/${id}`);
+    await api.delete(`/time-entries/${id}`);
 }
 
 export async function getActiveTimer(): Promise<TimerEntry | null> {
     const { data } = await api.get<{ data: TimerEntry | null }>(
-        '/time-tracker/active',
+        '/time-entries/active',
     );
     return data.data;
 }
@@ -64,7 +64,7 @@ export async function getTimerHistory(
     params: TimerHistoryParams,
 ): Promise<PaginatedTimerResponse> {
     const { data } = await api.get<PaginatedTimerResponse>(
-        '/time-tracker',
+        '/time-entries',
         { params },
     );
     return data;

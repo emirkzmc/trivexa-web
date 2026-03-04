@@ -25,11 +25,11 @@ export function useActiveTimer() {
 
     useEffect(() => {
         if (!isActive || !startedAt) {
-            setElapsed(0);
+            setTimeout(() => setElapsed(0), 0);
             return;
         }
 
-        setElapsed(calcElapsed());
+        setTimeout(() => setElapsed(calcElapsed()), 0);
 
         const interval = setInterval(() => {
             setElapsed(calcElapsed());

@@ -40,7 +40,7 @@ export interface PersonnelCreatePayload {
     salary?: number;
 }
 
-export interface PersonnelUpdatePayload extends Partial<PersonnelCreatePayload> { }
+export type PersonnelUpdatePayload = Partial<PersonnelCreatePayload>;
 
 // ─── API Functions ───────────────────────────────────────────────────────────
 
@@ -48,21 +48,21 @@ export async function getPersonnel(
     params: PersonnelListParams,
 ): Promise<PaginatedResponse<PersonnelItem>> {
     const { data } = await api.get<PaginatedResponse<PersonnelItem>>(
-        '/personnel',
+        '/users',
         { params },
     );
     return data;
 }
 
 export async function getPersonnelById(id: string): Promise<PersonnelItem> {
-    const { data } = await api.get<{ data: PersonnelItem }>(`/personnel/${id}`);
+    const { data } = await api.get<{ data: PersonnelItem }>(`/users/${id}`);
     return data.data;
 }
 
 export async function createPersonnel(
     payload: PersonnelCreatePayload,
 ): Promise<PersonnelItem> {
-    const { data } = await api.post<{ data: PersonnelItem }>('/personnel', payload);
+    const { data } = await api.post<{ data: PersonnelItem }>('/users', payload);
     return data.data;
 }
 
@@ -70,21 +70,21 @@ export async function updatePersonnel(
     id: string,
     payload: PersonnelUpdatePayload,
 ): Promise<PersonnelItem> {
-    const { data } = await api.patch<{ data: PersonnelItem }>(
-        `/personnel/${id}`,
+    const { data } = await api.put<{ data: PersonnelItem }>(
+        `/users/${id}`,
         payload,
     );
     return data.data;
 }
 
 export async function deletePersonnel(id: string): Promise<void> {
-    await api.delete(`/personnel/${id}`);
+    await api.patch(`/users/${id}/deactivate`);
 }
 
 export async function exportPersonnel(
     params: PersonnelListParams,
 ): Promise<Blob> {
-    const { data } = await api.get('/personnel/export', {
+    const { data } = await api.get('/users/export', {
         params,
         responseType: 'blob',
     });

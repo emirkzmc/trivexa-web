@@ -52,7 +52,7 @@ export function AppLayout() {
 
     const headerUser = {
         name: user.displayName ?? '',
-        initials: (user.displayName ?? '?').charAt(0).toUpperCase(),
+        initials: (user.displayName ?? '?').charAt(0).toUpperCase(),    
         role: user.role ?? '',
     };
 

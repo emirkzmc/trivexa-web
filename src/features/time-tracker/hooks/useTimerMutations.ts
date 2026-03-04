@@ -39,7 +39,7 @@ export function useStopTimer() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (id: string) => stopTimer(id),
+        mutationFn: () => stopTimer(),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['active-timer'] });
             queryClient.invalidateQueries({ queryKey: ['timer-history'] });
