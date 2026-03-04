@@ -1,9 +1,10 @@
-import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import { login } from '../api/auth.api';
-import type { LoginCredentials, LoginResponse } from '../api/auth.api';
+import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { login } from "../api/auth.api";
+import type { LoginCredentials, LoginResponse } from "../api/auth.api";
 import { useAuthStore } from '../store/authStore';
+import { ROLE_DASHBOARD_MAP } from '../../../shared/constants/roleDashboardMap';
 
 export function useLogin() {
   const navigate = useNavigate();
@@ -22,19 +23,21 @@ export function useLogin() {
         department: user.department,
       };
 
-      const isFirstLogin = !!(user as Record<string, unknown>).forcePasswordChange;
+      const isFirstLogin = !!(user as Record<string, unknown>)
+        .forcePasswordChange;
 
       setAuth(accessToken, refreshToken, authUser, isFirstLogin);
 
       if (isFirstLogin) {
-        navigate('/app/first-login', { replace: true });
+        navigate("/app/first-login", { replace: true });
         return;
       }
 
-      navigate('/app/dashboard', { replace: true });
+      const targetRoute = ROLE_DASHBOARD_MAP[user.role] || "/app/dashboard";
+      navigate(targetRoute, { replace: true });
     },
     onError: () => {
-      toast.error('E-posta veya şifre hatalı', { duration: 3_000 });
+      toast.error("E-posta veya şifre hatalı", { duration: 3_000 });
     },
   });
 }

@@ -12,4 +12,5 @@ export const ROLE_DASHBOARD_MAP: Record<string, string> = {
     [ROLES.ACCOUNT_MANAGER]: '/app/dashboard',
     [ROLES.HR]: '/app/dashboard',
     [ROLES.CLIENT]: '/portal/dashboard',
+    ADMIN: '/app/dashboard',
 };
