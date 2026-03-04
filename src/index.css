@@ -1,0 +1,44 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+@theme {
+  --color-trivexa-white: #ffffff;
+  --color-trivexa-black: #000000;
+
+  --color-trivexa-gray-100: #e0ebf2;
+  --color-trivexa-gray-150: #d9d9d9;
+  --color-trivexa-gray-200: #d1d1d1;
+  --color-trivexa-gray-300: #cddce5;
+  --color-trivexa-gray-400: #929292;
+  --color-trivexa-gray-500: #8d8d8d;
+  --color-trivexa-gray-600: #787665;
+  --color-trivexa-gray-700: #404040;
+  --color-trivexa-gray-800: #2f3a3e;
+
+  --color-trivexa-blue-100: #e0ebf2;
+  --color-trivexa-blue-200: #cddce5;
+  --color-trivexa-blue-300: #7d96a4;
+  --color-trivexa-blue-400: #56717d;
+  --color-trivexa-blue-500: #36545f;
+
+  --color-trivexa-green-400: #7a968b;
+
+  --color-trivexa-sand-400: #a09176;
+  --color-trivexa-brown-400: #7f7362;
+
+  --color-trivexa-red-400: #bc3737;
+
+  /* Layout */
+  --color-panel-bg: #F9FAFB;
+  --color-sidebar-bg: #F3F4F6;
+  --color-border: #E5E7EB;
+  --color-text-primary: #111827;
+  --color-text-muted: #6B7280;
+}
+
+
+html,
+body {
+  font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+}

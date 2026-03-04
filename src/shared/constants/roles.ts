@@ -1,0 +1,15 @@
+export const ROLES = {
+    CEO: 'CEO',
+    MANAGER: 'MANAGER',
+    ACCOUNTING: 'ACCOUNTING',
+    DEVELOPER: 'DEVELOPER',
+    SOCIAL_MEDIA: 'SOCIAL_MEDIA',
+    CREATIVE: 'CREATIVE',
+    MARKETING: 'MARKETING',
+    PRODUCTION: 'PRODUCTION',
+    ACCOUNT_MANAGER: 'ACCOUNT_MANAGER',
+    HR: 'HR',
+    CLIENT: 'CLIENT',
+} as const;
+
+export type Role = (typeof ROLES)[keyof typeof ROLES];

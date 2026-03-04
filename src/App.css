@@ -1,0 +1,18 @@
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+/* Login arka planı: bg.png ile aynı etkiyi veren radial gradient */
+.auth-layout {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, #f8f8f8 0%, #dedede 40%, #b3b3b3 70%, #808080 100%);
+}
