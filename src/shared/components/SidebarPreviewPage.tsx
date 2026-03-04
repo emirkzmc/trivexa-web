@@ -8,29 +8,29 @@
  */
 
 import { type ChangeEvent } from 'react';
-import { type UserRole, useAuthStore } from '../../features/auth/store/authStore';
+import { useAuthStore } from '../../features/auth/store/authStore';
 import { Sidebar } from './Sidebar';
 
-type AuthUser = { role: UserRole; displayName: string };
-type AuthState = {
-    user: AuthUser | null;
-    setAuth: (args: { token: string; user: AuthUser }) => void;
-};
-
-const ALL_ROLES: UserRole[] = [
+const ALL_ROLES: string[] = [
     'CEO', 'MANAGER', 'ACCOUNTANT', 'ACCOUNT_MANAGER',
     'DEVELOPER', 'SOCIAL_MEDIA', 'CREATIVE', 'MARKETING',
     'PRODUCTION', 'HR', 'CLIENT',
 ];
 
 export function SidebarPreviewPage() {
-    const user = useAuthStore((state: AuthState) => state.user);
-    const setAuth = useAuthStore((state: AuthState) => state.setAuth);
+    const user = useAuthStore((state) => state.user);
+    const setAuth = useAuthStore((state) => state.setAuth);
 
     const currentRole = user?.role ?? '';
 
     function handleRoleChange(e: ChangeEvent<HTMLSelectElement>) {
-        setAuth({ token: 'preview-token', user: { role: e.target.value as UserRole, displayName: 'Preview User' } });
+        setAuth('preview-token', 'preview-refresh', {
+            id: 'preview-id',
+            name: 'Preview User',
+            email: 'preview@example.com',
+            role: e.target.value,
+            department: 'Preview Department'
+        });
     }
 
     return (
