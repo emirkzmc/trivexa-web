@@ -18,15 +18,15 @@ export function usePersonnel() {
     const filters: PersonnelListParams = {
         page: Number(searchParams.get('page')) || 1,
         limit: Number(searchParams.get('limit')) || DEFAULT_LIMIT,
-        dept: searchParams.get('dept') || undefined,
+        department: searchParams.get('department') || undefined,
         role: searchParams.get('role') || undefined,
-        status: searchParams.get('status') || undefined,
+        isActive: searchParams.get('isActive') || undefined,
         search: searchParams.get('search') || undefined,
     };
 
     // MANAGER sadece kendi departmanını görebilir
     if (user?.role === 'MANAGER') {
-        filters.dept = user.department;
+        filters.department = user.department;
     }
 
     const query = useQuery({

@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoginForm } from './features/auth/components/LoginForm';
 import { FirstLoginPage } from './features/auth/components/FirstLoginPage';
 import { AppLayout } from './shared/components/AppLayout';
+import { PersonnelPage } from './features/personnel/components/PersonnelPage';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
       {/* Panel — AppLayout ile sarmalanmış tüm /app/* sayfaları */}
       <Route path="/app" element={<AppLayout />}>
         <Route path="dashboard" element={<div>Dashboard Paneli</div>} />
+        <Route path="personel" element={<PersonnelPage />} />
         <Route path="*" element={<div>Yapım Aşamasında</div>} />
       </Route>
 

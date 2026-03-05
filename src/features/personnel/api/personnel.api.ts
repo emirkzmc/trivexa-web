@@ -7,9 +7,11 @@ export interface PersonnelItem {
     firstName: string;
     lastName: string;
     email: string;
+    phone?: string;
     role: string;
     department: string;
     status: string;
+    isActive: boolean;
     salary?: number;
     createdAt: string;
     updatedAt: string;
@@ -18,26 +20,29 @@ export interface PersonnelItem {
 export interface PersonnelListParams {
     page?: number;
     limit?: number;
-    dept?: string;
+    department?: string;
     role?: string;
-    status?: string;
+    isActive?: string;
     search?: string;
 }
 
 export interface PaginatedResponse<T> {
     data: T[];
-    total: number;
-    page: number;
-    limit: number;
+    meta: {
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }
 }
 
 export interface PersonnelCreatePayload {
     firstName: string;
     lastName: string;
     email: string;
+    password: string;
     role: string;
-    department: string;
-    salary?: number;
+    department?: string;
 }
 
 export type PersonnelUpdatePayload = Partial<PersonnelCreatePayload>;
@@ -47,11 +52,11 @@ export type PersonnelUpdatePayload = Partial<PersonnelCreatePayload>;
 export async function getPersonnel(
     params: PersonnelListParams,
 ): Promise<PaginatedResponse<PersonnelItem>> {
-    const { data } = await api.get<PaginatedResponse<PersonnelItem>>(
+    const { data } = await api.get<{ data: PaginatedResponse<PersonnelItem> }>(
         '/users',
         { params },
     );
-    return data;
+    return data.data;
 }
 
 export async function getPersonnelById(id: string): Promise<PersonnelItem> {

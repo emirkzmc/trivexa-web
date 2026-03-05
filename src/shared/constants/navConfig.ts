@@ -49,6 +49,7 @@ export interface RoleNavConfig {
 // ─── TEMALAR ────────────────────────────────────────────────────────────────
 
 const THEMES: Record<string, SidebarTheme> = {
+    ADMIN: { bg: '#F3F4F6', accent: '#DC2626', text: '#111827', muted: '#6B7280', border: '#E5E7EB' },
     CEO: { bg: '#F3F4F6', accent: '#0D9488', text: '#111827', muted: '#6B7280', border: '#E5E7EB' },
     MANAGER: { bg: '#F3F4F6', accent: '#2563EB', text: '#111827', muted: '#6B7280', border: '#E5E7EB' },
     ACCOUNTING: { bg: '#F3F4F6', accent: '#059669', text: '#111827', muted: '#6B7280', border: '#E5E7EB' },
@@ -60,6 +61,56 @@ const THEMES: Record<string, SidebarTheme> = {
     PRODUCTION: { bg: '#F3F4F6', accent: '#65A30D', text: '#111827', muted: '#6B7280', border: '#E5E7EB' },
     HR: { bg: '#F3F4F6', accent: '#9333EA', text: '#111827', muted: '#6B7280', border: '#E5E7EB' },
     CLIENT: { bg: '#F3F4F6', accent: '#111827', text: '#111827', muted: '#6B7280', border: '#E5E7EB' },
+};
+
+// ─── ADMIN ────────────────────────────────────────────────────────────────────
+
+const ADMIN_NAV: RoleNavConfig = {
+    theme: THEMES.ADMIN,
+    groups: [
+        {
+            group: 'GENEL',
+            items: [
+                { label: 'Dashboard', path: '/app/dashboard', icon: 'LayoutDashboard' },
+                { label: 'Bildirimler', path: '/app/notifications', icon: 'Bell', badge: 'unread' },
+            ],
+        },
+        {
+            group: 'YÖNETİM',
+            items: [
+                { label: 'Personel Yönetimi', path: '/app/personel', icon: 'Users' },
+                { label: 'Müşteri Yönetimi', path: '/app/musteriler', icon: 'Building2' },
+                { label: 'Projeler', path: '/app/projeler', icon: 'FolderKanban' },
+                { label: 'Görev Yönetimi', path: '/app/gorevler', icon: 'CheckSquare' },
+                { label: 'Departmanlar', path: '/app/departmanlar', icon: 'Network' },
+            ],
+        },
+        {
+            group: 'FİNANS',
+            items: [
+                { label: 'Finansal Raporlar', path: '/app/finans', icon: 'BarChart3' },
+                { label: 'Fatura Yönetimi', path: '/app/faturalar', icon: 'Receipt' },
+                { label: 'Sözleşmeler', path: '/app/sozlesmeler', icon: 'FileText' },
+            ],
+        },
+        {
+            group: 'ARAÇLAR',
+            items: [
+                { label: 'Time Tracker', path: '/app/time-tracker', icon: 'Timer' },
+                { label: 'Dosya Yönetimi', path: '/app/dosyalar', icon: 'FolderOpen' },
+                { label: 'Görüşmeler', path: '/app/gorusmeler', icon: 'MessageSquare' },
+                { label: 'Destek Talepleri', path: '/app/talepler', icon: 'Inbox' },
+            ],
+        },
+        {
+            group: 'SİSTEM',
+            items: [
+                { label: 'Roller & İzinler', path: '/app/roller', icon: 'ShieldCheck' },
+                { label: 'Audit Log', path: '/app/audit-log', icon: 'ShieldCheck' },
+                { label: 'Ayarlar', path: '/app/ayarlar', icon: 'Settings' },
+            ],
+        },
+    ],
 };
 
 // ─── CEO ─────────────────────────────────────────────────────────────────────
@@ -399,6 +450,7 @@ const CLIENT_NAV: RoleNavConfig = {
 // ─── ANA CONFIG ──────────────────────────────────────────────────────────────
 
 export const NAV_CONFIG: Record<string, RoleNavConfig> = {
+    [ROLES.ADMIN]: ADMIN_NAV,
     [ROLES.CEO]: CEO_NAV,
     [ROLES.MANAGER]: MANAGER_NAV,
     [ROLES.ACCOUNTING]: ACCOUNTING_NAV,
