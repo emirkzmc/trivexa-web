@@ -5,14 +5,15 @@ import api from '../../../shared/lib/axios';
 export interface ProjectItem {
     id: string;
     name: string;
-    description: string;
-    clientId: string;
+    description: string | null;
+    clientId: string | null;
     status: string;
-    startDate: string;
-    endDate: string;
+    startDate: string | null;
+    endDate?: string | null;
+    deadline?: string | null;
     budget?: number;
-    createdAt: string;
-    updatedAt: string;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface ProjectListParams {
@@ -29,6 +30,18 @@ export interface PaginatedProjectResponse {
     page: number;
     limit: number;
 }
+
+type ProjectsPayload = {
+    data?: ProjectItem[];
+    total?: number;
+    page?: number;
+    limit?: number;
+    meta?: {
+        total?: number;
+        page?: number;
+        limit?: number;
+    };
+};
 
 export interface ProjectCreatePayload {
     name: string;
@@ -53,8 +66,43 @@ export interface ProjectMember {
 export async function getProjects(
     params?: ProjectListParams,
 ): Promise<PaginatedProjectResponse> {
-    const { data } = await api.get<PaginatedProjectResponse>('/projects', { params });
-    return data;
+    const { data } = await api.get<{ data?: ProjectsPayload } | ProjectsPayload>('/projects', { params });
+
+    const topLevelData = ('data' in data) ? data.data : undefined;
+    const payload = (
+        typeof topLevelData === 'object' &&
+        topLevelData !== null &&
+        !Array.isArray(topLevelData)
+    )
+        ? topLevelData
+        : data;
+
+    const rows = Array.isArray(payload.data) ? payload.data : [];
+    const meta = (
+        typeof payload.meta === 'object' &&
+        payload.meta !== null
+    )
+        ? payload.meta
+        : {};
+
+    return {
+        data: rows,
+        total: typeof payload.total === 'number'
+            ? payload.total
+            : typeof meta.total === 'number'
+                ? meta.total
+                : rows.length,
+        page: typeof payload.page === 'number'
+            ? payload.page
+            : typeof meta.page === 'number'
+                ? meta.page
+                : params?.page ?? 1,
+        limit: typeof payload.limit === 'number'
+            ? payload.limit
+            : typeof meta.limit === 'number'
+                ? meta.limit
+                : params?.limit ?? 10,
+    };
 }
 
 export async function getProjectById(id: string): Promise<ProjectItem> {

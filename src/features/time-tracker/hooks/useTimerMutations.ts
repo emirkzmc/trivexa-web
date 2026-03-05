@@ -1,40 +1,43 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { startTimer, stopTimer, cancelTimer } from '../api/timeTracker.api';
-import type { StartTimerPayload } from '../api/timeTracker.api';
+import { cancelTimer, startTimer, stopTimer } from '../api/timeTracker.api';
+import type { StartTimerPayload, TimerEntry } from '../api/timeTracker.api';
 
-/**
- * Timer başlatma mutation'ı.
- * Başlamadan önce aktif timer kontrolü query cache'den yapılır.
- */
+function isActiveTimer(value: unknown): value is TimerEntry {
+    return (
+        typeof value === 'object' &&
+        value !== null &&
+        'status' in value &&
+        (value as { status?: unknown }).status === 'ACTIVE'
+    );
+}
+
 export function useStartTimer() {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: async (payload: StartTimerPayload) => {
-            // Aktif timer var mı kontrol et
             const cached = queryClient.getQueryData(['active-timer']);
-            if (cached) {
-                throw new Error('Zaten aktif bir timer çalışıyor');
+            if (isActiveTimer(cached)) {
+                throw new Error('Zaten aktif bir timer calisiyor');
             }
             return startTimer(payload);
         },
-        onSuccess: () => {
+        onSuccess: (timer) => {
+            queryClient.setQueryData(['active-timer'], timer);
             queryClient.invalidateQueries({ queryKey: ['active-timer'] });
-            toast.success('Timer başlatıldı', { duration: 3_000 });
+            queryClient.invalidateQueries({ queryKey: ['timer-history'] });
+            toast.success('Timer baslatildi', { duration: 3000 });
         },
-        onError: (error) => {
-            toast.error(
-                error.message || 'Timer başlatılırken bir hata oluştu',
-                { duration: 3_000 },
-            );
+        onError: (error: unknown) => {
+            const message = error instanceof Error
+                ? error.message
+                : 'Timer baslatilirken bir hata olustu';
+            toast.error(message, { duration: 3000 });
         },
     });
 }
 
-/**
- * Timer durdurma mutation'ı.
- */
 export function useStopTimer() {
     const queryClient = useQueryClient();
 
@@ -43,18 +46,14 @@ export function useStopTimer() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['active-timer'] });
             queryClient.invalidateQueries({ queryKey: ['timer-history'] });
-            toast.success('Timer durduruldu', { duration: 3_000 });
+            toast.success('Timer durduruldu', { duration: 3000 });
         },
         onError: () => {
-            toast.error('Timer durdurulurken bir hata oluştu', { duration: 3_000 });
+            toast.error('Timer durdurulurken bir hata olustu', { duration: 3000 });
         },
     });
 }
 
-/**
- * Timer iptal etme mutation'ı.
- * Audit log backend tarafından kaydedilir.
- */
 export function useCancelTimer() {
     const queryClient = useQueryClient();
 
@@ -63,10 +62,10 @@ export function useCancelTimer() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['active-timer'] });
             queryClient.invalidateQueries({ queryKey: ['timer-history'] });
-            toast.success('Kayıt iptal edildi', { duration: 3_000 });
+            toast.success('Kayit iptal edildi', { duration: 3000 });
         },
         onError: () => {
-            toast.error('İptal sırasında bir hata oluştu', { duration: 3_000 });
+            toast.error('Iptal sirasinda bir hata olustu', { duration: 3000 });
         },
     });
 }

@@ -1,7 +1,5 @@
 import api from '../../../shared/lib/axios';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 export interface TimerEntry {
     id: string;
     projectId: string;
@@ -18,7 +16,6 @@ export interface TimerHistoryParams {
     page?: number;
     limit?: number;
     projectId?: string;
-    status?: string;
 }
 
 export interface PaginatedTimerResponse {
@@ -31,24 +28,80 @@ export interface PaginatedTimerResponse {
 export interface StartTimerPayload {
     projectId: string;
     taskId?: string;
-    description: string;
+    description?: string;
 }
 
-// ─── API Functions ───────────────────────────────────────────────────────────
+type MaybeWrapped<T> = { data?: T } | T;
+
+type BackendTimeEntry = Partial<{
+    id: string;
+    projectId: string;
+    taskId: string | null;
+    description: string | null;
+    startedAt: string;
+    stoppedAt: string | null;
+    duration: number | null;
+    status: TimerEntry['status'];
+    createdAt: string;
+    startTime: string;
+    endTime: string | null;
+    durationMinutes: number | null;
+}>;
+
+function unwrapData<T>(payload: MaybeWrapped<T>): T {
+    if (typeof payload === 'object' && payload !== null && 'data' in payload && payload.data !== undefined) {
+        return payload.data as T;
+    }
+    return payload as T;
+}
+
+function normalizeTimerEntry(entry: BackendTimeEntry | null | undefined): TimerEntry | null {
+    if (!entry || !entry.id) return null;
+
+    const startedAt = entry.startedAt ?? entry.startTime ?? entry.createdAt;
+    if (!startedAt) return null;
+
+    const stoppedAt = entry.stoppedAt ?? entry.endTime ?? undefined;
+    const durationFromMinutes = typeof entry.durationMinutes === 'number'
+        ? entry.durationMinutes * 60
+        : undefined;
+    const duration = typeof entry.duration === 'number'
+        ? entry.duration
+        : durationFromMinutes;
+    const status = entry.status ?? (stoppedAt ? 'STOPPED' : 'ACTIVE');
+
+    return {
+        id: entry.id,
+        projectId: entry.projectId ?? '',
+        taskId: entry.taskId ?? undefined,
+        description: entry.description ?? '',
+        startedAt,
+        stoppedAt,
+        duration,
+        status,
+        createdAt: entry.createdAt ?? startedAt,
+    };
+}
 
 export async function startTimer(payload: StartTimerPayload): Promise<TimerEntry> {
-    const { data } = await api.post<{ data: TimerEntry }>(
+    const { data } = await api.post<MaybeWrapped<BackendTimeEntry>>(
         '/time-entries/start',
         payload,
     );
-    return data.data;
+
+    const normalized = normalizeTimerEntry(unwrapData(data));
+    if (!normalized) throw new Error('Timer response could not be parsed');
+    return normalized;
 }
 
 export async function stopTimer(): Promise<TimerEntry> {
-    const { data } = await api.patch<{ data: TimerEntry }>(
-        `/time-entries/stop`,
+    const { data } = await api.patch<MaybeWrapped<BackendTimeEntry>>(
+        '/time-entries/stop',
     );
-    return data.data;
+
+    const normalized = normalizeTimerEntry(unwrapData(data));
+    if (!normalized) throw new Error('Timer response could not be parsed');
+    return normalized;
 }
 
 export async function cancelTimer(id: string): Promise<void> {
@@ -56,24 +109,33 @@ export async function cancelTimer(id: string): Promise<void> {
 }
 
 export async function getActiveTimer(): Promise<TimerEntry | null> {
-    const { data } = await api.get<{ data: TimerEntry | null }>(
+    const { data } = await api.get<MaybeWrapped<BackendTimeEntry | null>>(
         '/time-entries/active',
     );
-    return data.data;
+    return normalizeTimerEntry(unwrapData(data));
 }
 
 export async function getTimerHistory(
     params: TimerHistoryParams,
 ): Promise<PaginatedTimerResponse> {
-    const { data } = await api.get<{ data?: Partial<PaginatedTimerResponse> } | Partial<PaginatedTimerResponse>>(
+    const { data } = await api.get<
+        MaybeWrapped<{
+            data?: BackendTimeEntry[];
+            total?: number;
+            page?: number;
+            limit?: number;
+        }>
+    >(
         '/time-entries',
         { params },
     );
 
-    const payload = ('data' in data && typeof data.data === 'object' && data.data !== null)
-        ? data.data
-        : data;
-    const rows = Array.isArray(payload.data) ? payload.data : [];
+    const payload = unwrapData(data);
+    const rows = Array.isArray(payload.data)
+        ? payload.data
+            .map((row) => normalizeTimerEntry(row))
+            .filter((row): row is TimerEntry => !!row)
+        : [];
 
     return {
         data: rows,
