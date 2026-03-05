@@ -1,4 +1,5 @@
-import { Edit2, UserX } from 'lucide-react';
+import { Edit2, UserX, ArrowUp, ArrowDown } from 'lucide-react';
+import { useState } from 'react';
 import { StatusBadge } from '../../../shared/components/StatusBadge';
 import { ROLE_LABELS } from '../../../shared/constants/roleLabels';
 import { DEPARTMENT_LABELS } from '../../../shared/constants/departments';
@@ -13,11 +14,49 @@ interface PersonnelTableProps {
     onDeactivate: (item: PersonnelItem) => void;
 }
 
-const COLUMNS = ['Ad Soyad', 'E-posta', 'Rol', 'Departman', 'Durum', 'İşlemler'];
+// Removed unused COLUMNS variable
+
+function SortIcon({ field, currentSortField, currentSortDirection }: { field: keyof PersonnelItem, currentSortField: keyof PersonnelItem, currentSortDirection: 'asc' | 'desc' }) {
+    if (currentSortField !== field) return <ArrowUp size={12} className="text-gray-300 opacity-0 group-hover:opacity-50" />;
+    return currentSortDirection === 'asc' ? <ArrowUp size={12} className="text-red-500" /> : <ArrowDown size={12} className="text-red-500" />;
+}
 
 export function PersonnelTable({
     data, isLoading, isError, hasFilters, onEdit, onDeactivate,
 }: PersonnelTableProps) {
+    const [sortField, setSortField] = useState<keyof PersonnelItem>('firstName');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+    const handleSort = (field: keyof PersonnelItem) => {
+        if (sortField === field) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortDirection('asc');
+        }
+    };
+
+    // Client-side sorting for the current page
+    const sortedData = [...data].sort((a, b) => {
+        let aVal: unknown = a[sortField];
+        let bVal: unknown = b[sortField];
+
+        if (sortField === 'role') {
+            aVal = ROLE_LABELS[a.role as keyof typeof ROLE_LABELS] || a.role;
+            bVal = ROLE_LABELS[b.role as keyof typeof ROLE_LABELS] || b.role;
+        } else if (sortField === 'department') {
+            aVal = DEPARTMENT_LABELS[a.department as keyof typeof DEPARTMENT_LABELS] || a.department;
+            bVal = DEPARTMENT_LABELS[b.department as keyof typeof DEPARTMENT_LABELS] || b.department;
+        }
+
+        aVal = String(aVal || '').toLowerCase();
+        bVal = String(bVal || '').toLowerCase();
+
+        if ((aVal as string) < (bVal as string)) return sortDirection === 'asc' ? -1 : 1;
+        if ((aVal as string) > (bVal as string)) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+    });
+
     return (
         <div style={{
             backgroundColor: '#fff', borderRadius: 10, border: '1px solid #E5E7EB',
@@ -26,15 +65,44 @@ export function PersonnelTable({
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
                     <tr style={{ backgroundColor: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
-                        {COLUMNS.map((h) => (
-                            <th key={h} style={{
-                                textAlign: 'left', padding: '12px 16px',
-                                fontWeight: 600, color: '#6B7280', fontSize: 12,
-                                letterSpacing: '0.05em', textTransform: 'uppercase',
-                            }}>
-                                {h}
-                            </th>
-                        ))}
+                        <th 
+                            onClick={() => handleSort('firstName')}
+                            className="group transition hover:bg-gray-100"
+                            style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600, color: '#6B7280', fontSize: 12, letterSpacing: '0.05em', textTransform: 'uppercase', cursor: 'pointer' }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>Ad Soyad <SortIcon field="firstName" currentSortField={sortField} currentSortDirection={sortDirection} /></div>
+                        </th>
+                        <th 
+                            onClick={() => handleSort('email')}
+                            className="group transition hover:bg-gray-100"
+                            style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600, color: '#6B7280', fontSize: 12, letterSpacing: '0.05em', textTransform: 'uppercase', cursor: 'pointer' }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>E-posta <SortIcon field="email" currentSortField={sortField} currentSortDirection={sortDirection} /></div>
+                        </th>
+                        <th 
+                            onClick={() => handleSort('role')}
+                            className="group transition hover:bg-gray-100"
+                            style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600, color: '#6B7280', fontSize: 12, letterSpacing: '0.05em', textTransform: 'uppercase', cursor: 'pointer' }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>Rol <SortIcon field="role" currentSortField={sortField} currentSortDirection={sortDirection} /></div>
+                        </th>
+                        <th 
+                            onClick={() => handleSort('department')}
+                            className="group transition hover:bg-gray-100"
+                            style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600, color: '#6B7280', fontSize: 12, letterSpacing: '0.05em', textTransform: 'uppercase', cursor: 'pointer' }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>Departman <SortIcon field="department" currentSortField={sortField} currentSortDirection={sortDirection} /></div>
+                        </th>
+                        <th 
+                            onClick={() => handleSort('isActive')}
+                            className="group transition hover:bg-gray-100"
+                            style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600, color: '#6B7280', fontSize: 12, letterSpacing: '0.05em', textTransform: 'uppercase', cursor: 'pointer' }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>Durum <SortIcon field="isActive" currentSortField={sortField} currentSortDirection={sortDirection} /></div>
+                        </th>
+                        <th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600, color: '#6B7280', fontSize: 12, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                            İşlemler
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -54,7 +122,7 @@ export function PersonnelTable({
                         </tr>
                     )}
 
-                    {!isLoading && !isError && data.length === 0 && (
+                    {!isLoading && !isError && sortedData.length === 0 && (
                         <tr>
                             <td colSpan={6} style={{ textAlign: 'center', padding: 40, color: '#9CA3AF' }}>
                                 {hasFilters
@@ -64,7 +132,7 @@ export function PersonnelTable({
                         </tr>
                     )}
 
-                    {data.map((p) => (
+                    {sortedData.map((p) => (
                         <PersonnelRow
                             key={p.id}
                             item={p}

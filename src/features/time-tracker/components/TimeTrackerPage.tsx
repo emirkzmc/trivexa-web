@@ -16,6 +16,7 @@ import {PageHeader} from '../../../shared/components/PageHeader';
 import {Pagination} from '../../../shared/components/Pagination';
 import {formatDate} from '../../../shared/utils/formatDate';
 import {formatDuration} from '../../../shared/utils/formatDuration';
+import {useAuthStore} from '../../auth/store/authStore';
 import {getProjects} from '../../projects/api/projects.api';
 import {getProjectTasks} from '../../tasks/api/tasks.api';
 import {getTimerHistory, type StartTimerPayload, type TimerEntry} from '../api/timeTracker.api';
@@ -57,6 +58,9 @@ export function TimeTrackerPage() {
     const [limit, setLimit] = useState(10);
     const [sortField, setSortField] = useState<keyof TimerEntry | 'projectName'>('updatedAt');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+    const userRole = useAuthStore((state) => state.user?.role);
+    const hasFullProjectAccess = userRole === 'ADMIN' || userRole === 'MANAGER' || userRole === 'CEO';
+    const myProjectsOnly = !hasFullProjectAccess;
 
     const activeTimerQuery = useActiveTimer();
     const startMutation = useStartTimer();
@@ -73,8 +77,8 @@ export function TimeTrackerPage() {
     });
 
     const projectQuery = useQuery({
-        queryKey: ['projects', 'timer-select', 'my-projects'],
-        queryFn: () => getProjects({page: 1, limit: 100, myProjectsOnly: true}),
+        queryKey: ['projects', 'timer-select', userRole, myProjectsOnly],
+        queryFn: () => getProjects({page: 1, limit: 100, myProjectsOnly}),
     });
 
     const taskQuery = useQuery({

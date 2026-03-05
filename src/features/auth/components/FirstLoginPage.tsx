@@ -59,9 +59,8 @@ export function FirstLoginPage() {
 
   const onSubmit: SubmitHandler<FirstLoginFormValues> = (values) => {
     mutate({
-      currentPassword: values.currentPassword,
+      oldPassword: values.currentPassword,
       newPassword: values.newPassword,
-      confirmPassword: values.confirmPassword,
     });
   };
 

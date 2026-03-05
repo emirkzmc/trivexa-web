@@ -10,6 +10,7 @@ export interface TimerEntry {
     duration?: number;
     status: 'ACTIVE' | 'STOPPED' | 'CANCELLED';
     createdAt: string;
+    updatedAt: string;
 }
 
 export interface TimerHistoryParams {
@@ -43,6 +44,7 @@ type BackendTimeEntry = Partial<{
     duration: number | null;
     status: TimerEntry['status'];
     createdAt: string;
+    updatedAt: string;
     startTime: string;
     endTime: string | null;
     durationMinutes: number | null;
@@ -62,12 +64,15 @@ function normalizeTimerEntry(entry: BackendTimeEntry | null | undefined): TimerE
     if (!startedAt) return null;
 
     const stoppedAt = entry.stoppedAt ?? entry.endTime ?? undefined;
-    const durationFromMinutes = typeof entry.durationMinutes === 'number'
-        ? entry.durationMinutes * 60
-        : undefined;
-    const duration = typeof entry.duration === 'number'
-        ? entry.duration
-        : durationFromMinutes;
+    
+    let duration = typeof entry.duration === 'number' 
+        ? entry.duration 
+        : (typeof entry.durationMinutes === 'number' ? entry.durationMinutes * 60 : undefined);
+
+    if (startedAt && stoppedAt) {
+        duration = Math.floor((new Date(stoppedAt).getTime() - new Date(startedAt).getTime()) / 1000);
+    }
+
     const status = entry.status ?? (stoppedAt ? 'STOPPED' : 'ACTIVE');
 
     return {
@@ -80,6 +85,7 @@ function normalizeTimerEntry(entry: BackendTimeEntry | null | undefined): TimerE
         duration,
         status,
         createdAt: entry.createdAt ?? startedAt,
+        updatedAt: entry.updatedAt ?? entry.createdAt ?? startedAt,
     };
 }
 
