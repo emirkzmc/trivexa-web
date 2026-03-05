@@ -9,6 +9,8 @@ import {
     Square,
     Timer,
     XCircle,
+    ArrowUp,
+    ArrowDown,
 } from 'lucide-react';
 import {PageHeader} from '../../../shared/components/PageHeader';
 import {Pagination} from '../../../shared/components/Pagination';
@@ -43,11 +45,18 @@ function getStatusChipClass(status: TimerEntry['status']): string {
     return 'bg-gray-100 text-gray-600';
 }
 
+function SortIcon({ field, currentSortField, currentSortDirection }: { field: keyof TimerEntry | 'projectName', currentSortField: keyof TimerEntry | 'projectName', currentSortDirection: 'asc' | 'desc' }) {
+    if (currentSortField !== field) return <ArrowUp size={12} className="text-gray-300 opacity-0 group-hover:opacity-50" />;
+    return currentSortDirection === 'asc' ? <ArrowUp size={12} className="text-red-500" /> : <ArrowDown size={12} className="text-red-500" />;
+}
+
 export function TimeTrackerPage() {
     const [formData, setFormData] = useState<StartTimerPayload>({projectId: '', taskId: '', description: ''});
     const [statusFilter, setStatusFilter] = useState<string>('');
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
+    const [sortField, setSortField] = useState<keyof TimerEntry | 'projectName'>('updatedAt');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
     const activeTimerQuery = useActiveTimer();
     const startMutation = useStartTimer();
@@ -64,8 +73,8 @@ export function TimeTrackerPage() {
     });
 
     const projectQuery = useQuery({
-        queryKey: ['projects', 'timer-select'],
-        queryFn: () => getProjects({page: 1, limit: 100}),
+        queryKey: ['projects', 'timer-select', 'my-projects'],
+        queryFn: () => getProjects({page: 1, limit: 100, myProjectsOnly: true}),
     });
 
     const taskQuery = useQuery({
@@ -89,20 +98,54 @@ export function TimeTrackerPage() {
         [projects],
     );
 
+    const filteredAndSortedHistoryRows = useMemo(() => {
+        const sorted = [...filteredHistoryRows].sort((a, b) => {
+            let aVal: unknown = a[sortField as keyof TimerEntry];
+            let bVal: unknown = b[sortField as keyof TimerEntry];
+
+            if (sortField === 'projectName') {
+                aVal = projectNameMap.get(a.projectId) ?? a.projectId;
+                bVal = projectNameMap.get(b.projectId) ?? b.projectId;
+            } else if (sortField === 'startedAt' || sortField === 'stoppedAt' || sortField === 'updatedAt') {
+                aVal = aVal ? new Date(aVal as string).getTime() : 0;
+                bVal = bVal ? new Date(bVal as string).getTime() : 0;
+            }
+
+            if (typeof aVal === 'string' && typeof bVal === 'string') {
+                aVal = aVal.toLowerCase();
+                bVal = bVal.toLowerCase();
+            }
+
+            if ((aVal as string | number) < (bVal as string | number)) return sortDirection === 'asc' ? -1 : 1;
+            if ((aVal as string | number) > (bVal as string | number)) return sortDirection === 'asc' ? 1 : -1;
+            return 0;
+        });
+        return sorted;
+    }, [filteredHistoryRows, sortField, sortDirection, projectNameMap]);
+
     const activeTimer = activeTimerQuery.timer;
     const activeProjectName = activeTimer?.projectId
         ? (projectNameMap.get(activeTimer.projectId) ?? activeTimer.projectId)
         : 'Proje secilmedi';
 
     const trackedSecondsInList = useMemo(
-        () => filteredHistoryRows.reduce((sum, row) => sum + (row.duration ?? 0), 0),
-        [filteredHistoryRows],
+        () => filteredAndSortedHistoryRows.reduce((sum, row) => sum + (row.duration ?? 0), 0),
+        [filteredAndSortedHistoryRows],
     );
 
     const completedCountInList = useMemo(
-        () => filteredHistoryRows.filter((row) => row.status === 'STOPPED').length,
-        [filteredHistoryRows],
+        () => filteredAndSortedHistoryRows.filter((row) => row.status === 'STOPPED').length,
+        [filteredAndSortedHistoryRows],
     );
+
+    const handleSort = (field: keyof TimerEntry | 'projectName') => {
+        if (sortField === field) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortDirection('asc');
+        }
+    };
 
     function handleStartSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -350,12 +393,42 @@ export function TimeTrackerPage() {
                     <table className="w-full border-collapse text-[13px]">
                         <thead>
                         <tr>
-                            <th className="border-b border-gray-200 bg-gray-50 px-3 py-[11px] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Proje</th>
-                            <th className="border-b border-gray-200 bg-gray-50 px-3 py-[11px] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Aciklama</th>
-                            <th className="border-b border-gray-200 bg-gray-50 px-3 py-[11px] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Baslangic</th>
-                            <th className="border-b border-gray-200 bg-gray-50 px-3 py-[11px] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Bitis</th>
-                            <th className="border-b border-gray-200 bg-gray-50 px-3 py-[11px] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Sure</th>
-                            <th className="border-b border-gray-200 bg-gray-50 px-3 py-[11px] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Durum</th>
+                            <th 
+                                onClick={() => handleSort('projectName')}
+                                className="border-b border-gray-200 bg-gray-50 px-3 py-[11px] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500 cursor-pointer group hover:bg-gray-100 transition"
+                            >
+                                <div className="flex items-center gap-1">Proje <SortIcon field="projectName" currentSortField={sortField} currentSortDirection={sortDirection} /></div>
+                            </th>
+                            <th 
+                                onClick={() => handleSort('description')}
+                                className="border-b border-gray-200 bg-gray-50 px-3 py-[11px] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500 cursor-pointer group hover:bg-gray-100 transition"
+                            >
+                                <div className="flex items-center gap-1">Aciklama <SortIcon field="description" currentSortField={sortField} currentSortDirection={sortDirection} /></div>
+                            </th>
+                            <th 
+                                onClick={() => handleSort('startedAt')}
+                                className="border-b border-gray-200 bg-gray-50 px-3 py-[11px] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500 cursor-pointer group hover:bg-gray-100 transition"
+                            >
+                                <div className="flex items-center gap-1">Baslangic <SortIcon field="startedAt" currentSortField={sortField} currentSortDirection={sortDirection} /></div>
+                            </th>
+                            <th 
+                                onClick={() => handleSort('stoppedAt')}
+                                className="border-b border-gray-200 bg-gray-50 px-3 py-[11px] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500 cursor-pointer group hover:bg-gray-100 transition"
+                            >
+                                <div className="flex items-center gap-1">Bitis <SortIcon field="stoppedAt" currentSortField={sortField} currentSortDirection={sortDirection} /></div>
+                            </th>
+                            <th 
+                                onClick={() => handleSort('duration')}
+                                className="border-b border-gray-200 bg-gray-50 px-3 py-[11px] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500 cursor-pointer group hover:bg-gray-100 transition"
+                            >
+                                <div className="flex items-center gap-1">Sure <SortIcon field="duration" currentSortField={sortField} currentSortDirection={sortDirection} /></div>
+                            </th>
+                            <th 
+                                onClick={() => handleSort('status')}
+                                className="border-b border-gray-200 bg-gray-50 px-3 py-[11px] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500 cursor-pointer group hover:bg-gray-100 transition"
+                            >
+                                <div className="flex items-center gap-1">Durum <SortIcon field="status" currentSortField={sortField} currentSortDirection={sortDirection} /></div>
+                            </th>
                         </tr>
                         </thead>
                         <tbody>
@@ -375,7 +448,7 @@ export function TimeTrackerPage() {
                             </tr>
                         )}
 
-                        {!historyQuery.isLoading && !historyQuery.isError && filteredHistoryRows.length === 0 && (
+                        {!historyQuery.isLoading && !historyQuery.isError && filteredAndSortedHistoryRows.length === 0 && (
                             <tr>
                                 <td colSpan={6} className="px-3 py-[26px] text-center text-gray-400">
                                     Filtreye uygun kayit bulunamadi.
@@ -383,7 +456,7 @@ export function TimeTrackerPage() {
                             </tr>
                         )}
 
-                        {filteredHistoryRows.map((row) => (
+                        {filteredAndSortedHistoryRows.map((row) => (
                             <tr key={row.id}>
                                 <td className="border-b border-gray-100 px-3 py-[11px] align-top text-gray-800">
                                     {projectNameMap.get(row.projectId) ?? row.projectId}

@@ -22,6 +22,7 @@ export interface ProjectListParams {
     status?: string;
     clientId?: string;
     search?: string;
+    myProjectsOnly?: boolean | string;
 }
 
 export interface PaginatedProjectResponse {
