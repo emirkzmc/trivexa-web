@@ -50,7 +50,7 @@ export async function stopTimer(): Promise<TimerEntry> {
 }
 
 export async function cancelTimer(id: string): Promise<void> {
-    await api.delete(`/time-entries/${id}`);
+    await api.patch(`/time-entries/${id}/cancel`);
 }
 
 export async function getActiveTimer(): Promise<TimerEntry | null> {

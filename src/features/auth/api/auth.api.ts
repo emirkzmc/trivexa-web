@@ -35,9 +35,8 @@ export interface RefreshResponse {
 }
 
 export interface ChangePasswordPayload {
-    currentPassword: string;
+    oldPassword: string;
     newPassword: string;
-    confirmPassword: string;
 }
 
 export interface MeResponse {

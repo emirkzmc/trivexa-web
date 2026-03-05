@@ -48,7 +48,7 @@ export async function getProjectTasks(
     params?: TaskListParams,
 ): Promise<PaginatedTaskResponse> {
     const { data } = await api.get<PaginatedTaskResponse>(
-        `/projects/${projectId}/tasks`,
+        `/tasks/projects/${projectId}/tasks`,
         { params },
     );
     return data;
@@ -59,7 +59,7 @@ export async function createTask(
     payload: TaskCreatePayload,
 ): Promise<TaskItem> {
     const { data } = await api.post<{ data: TaskItem }>(
-        `/projects/${projectId}/tasks`,
+        `/tasks/projects/${projectId}/tasks`,
         payload,
     );
     return data.data;

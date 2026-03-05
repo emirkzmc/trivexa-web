@@ -84,7 +84,7 @@ export async function deletePersonnel(id: string): Promise<void> {
 export async function exportPersonnel(
     params: PersonnelListParams,
 ): Promise<Blob> {
-    const { data } = await api.get('/users/export', {
+    const { data } = await api.get('/users/export/csv', {
         params,
         responseType: 'blob',
     });

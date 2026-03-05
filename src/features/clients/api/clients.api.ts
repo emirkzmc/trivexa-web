@@ -68,13 +68,11 @@ export async function updateClient(
     return data.data;
 }
 
-export async function deleteClient(id: string): Promise<void> {
-    await api.delete(`/clients/${id}`);
-}
 
-export async function generatePortalAccess(clientId: string): Promise<{ portalUrl: string }> {
+export async function generatePortalAccess(email: string): Promise<{ portalUrl: string }> {
     const { data } = await api.post<{ data: { portalUrl: string } }>(
-        `/clients/${clientId}/portal-access`,
+        `/clients/users/access-link`,
+        { email },
     );
     return data.data;
 }

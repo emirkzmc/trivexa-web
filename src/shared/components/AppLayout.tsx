@@ -42,7 +42,7 @@ function resolvePageName(pathname: string): string {
 
 export function AppLayout() {
     const user = useAuthStore((s) => s.user);
-    const clearAuth = useAuthStore((s) => s.clearAuth);
+    const logout = useAuthStore((s) => s.logout);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -51,13 +51,13 @@ export function AppLayout() {
     const pageName = resolvePageName(location.pathname);
 
     const headerUser = {
-        name: user.displayName ?? '',
-        initials: (user.displayName ?? '?').charAt(0).toUpperCase(),    
+        name: user.name ?? '',
+        initials: (user.name ?? '?').charAt(0).toUpperCase(),
         role: user.role ?? '',
     };
 
     function handleLogout() {
-        clearAuth();
+        logout();
         navigate('/login', { replace: true });
     }
 

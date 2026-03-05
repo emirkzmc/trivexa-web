@@ -79,6 +79,13 @@ export async function updateProjectStatus(id: string, status: string): Promise<v
     await api.patch(`/projects/${id}/status`, { status });
 }
 
+export async function assignClientToProject(
+    projectId: string,
+    clientId: string,
+): Promise<void> {
+    await api.patch(`/projects/${projectId}/client`, { clientId });
+}
+
 export async function getProjectMembers(projectId: string): Promise<ProjectMember[]> {
     const { data } = await api.get<{ data: ProjectMember[] }>(`/projects/${projectId}/members`);
     return data.data;
