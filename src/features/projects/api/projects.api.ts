@@ -43,6 +43,19 @@ type ProjectsPayload = {
     };
 };
 
+function toProjectsPayload(value: unknown): ProjectsPayload {
+    if (typeof value !== 'object' || value === null) return {};
+
+    const raw = value as Record<string, unknown>;
+    const nested = raw.data;
+
+    if (typeof nested === 'object' && nested !== null && !Array.isArray(nested)) {
+        return nested as ProjectsPayload;
+    }
+
+    return value as ProjectsPayload;
+}
+
 export interface ProjectCreatePayload {
     name: string;
     description: string;
@@ -67,15 +80,7 @@ export async function getProjects(
     params?: ProjectListParams,
 ): Promise<PaginatedProjectResponse> {
     const { data } = await api.get<{ data?: ProjectsPayload } | ProjectsPayload>('/projects', { params });
-
-    const topLevelData = ('data' in data) ? data.data : undefined;
-    const payload = (
-        typeof topLevelData === 'object' &&
-        topLevelData !== null &&
-        !Array.isArray(topLevelData)
-    )
-        ? topLevelData
-        : data;
+    const payload = toProjectsPayload(data);
 
     const rows = Array.isArray(payload.data) ? payload.data : [];
     const meta = (

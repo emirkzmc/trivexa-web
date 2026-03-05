@@ -5,7 +5,7 @@ import {
     Timer, BarChart3, FileText, FolderOpen, ShieldCheck, Settings,
     Receipt, Code2, CalendarDays, Megaphone, Palette, Film, Network,
     CalendarCheck, Clock, TrendingUp, Inbox, ClipboardList, MessageSquare,
-    MessageSquarePlus, StickyNote, LogOut, ChevronRight,
+    MessageSquarePlus, StickyNote, LogOut, ChevronRight, X,
 } from 'lucide-react';
 import { useAuthStore } from '../../features/auth/store/authStore';
 import { NAV_CONFIG, type RoleNavConfig } from '../../shared/constants/navConfig';
@@ -18,12 +18,21 @@ const ICON_MAP: Record<string, React.ElementType> = {
     MessageSquarePlus, StickyNote,
 };
 
-
-
 const SIDEBAR_EXPANDED_WIDTH = 240;
 const SIDEBAR_COLLAPSED_WIDTH = 100;
+const MOBILE_SIDEBAR_WIDTH = 280;
 
-export function Sidebar() {
+interface SidebarProps {
+    isMobile?: boolean;
+    mobileOpen?: boolean;
+    onMobileClose?: () => void;
+}
+
+export function Sidebar({
+    isMobile = false,
+    mobileOpen = false,
+    onMobileClose,
+}: SidebarProps) {
     const user = useAuthStore((s) => s.user);
     const logoutStore = useAuthStore((s) => s.logout);
     const navigate = useNavigate();
@@ -35,12 +44,29 @@ export function Sidebar() {
     if (!config) return null;
 
     const { theme, groups } = config;
-
     const unreadCount = 0;
+    const collapsedState = isMobile ? false : collapsed;
+    const sidebarWidth = isMobile
+        ? MOBILE_SIDEBAR_WIDTH
+        : (collapsedState ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH);
 
     function handleLogout() {
         logoutStore();
         navigate('/login');
+    }
+
+    function handleTopButtonClick() {
+        if (isMobile) {
+            onMobileClose?.();
+            return;
+        }
+        setCollapsed((prev) => !prev);
+    }
+
+    function handleItemClick() {
+        if (isMobile) {
+            onMobileClose?.();
+        }
     }
 
     return (
@@ -50,45 +76,54 @@ export function Sidebar() {
                 display: 'flex',
                 flexDirection: 'column',
                 height: '100%',
-                width: collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH,
-                minWidth: collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH,
+                width: sidebarWidth,
+                minWidth: sidebarWidth,
                 backgroundColor: theme.bg,
                 color: theme.text,
                 fontFamily: "'Poppins', system-ui, sans-serif",
                 overflowY: 'auto',
                 overflowX: 'hidden',
                 borderRight: `1px solid ${theme.border}`,
-                transition: 'width 0.28s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.28s cubic-bezier(0.4, 0, 0.2, 1)',
+                transition: isMobile
+                    ? 'transform 0.28s cubic-bezier(0.4, 0, 0.2, 1)'
+                    : 'width 0.28s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.28s cubic-bezier(0.4, 0, 0.2, 1)',
+                position: isMobile ? 'fixed' : 'relative',
+                left: 0,
+                top: 0,
+                bottom: 0,
+                zIndex: isMobile ? 60 : 'auto',
+                transform: isMobile ? (mobileOpen ? 'translateX(0)' : 'translateX(-100%)') : 'none',
+                boxShadow: isMobile ? '0 10px 30px rgba(0,0,0,0.2)' : 'none',
             }}
         >
             <div
                 style={{
-                    padding: collapsed ? '20px 10px' : '24px 20px 20px',
+                    padding: collapsedState ? '20px 10px' : '24px 20px 20px',
                     borderBottom: `1px solid ${theme.border}`,
                     flexShrink: 0,
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: collapsed ? 'space-between' : 'space-between',
-                    gap: collapsed ? 8 : 0,
+                    justifyContent: 'space-between',
+                    gap: collapsedState ? 8 : 0,
                     transition: 'padding 0.28s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
             >
                 <span
                     style={{
-                        fontSize: collapsed ? 18 : 18,
+                        fontSize: 18,
                         fontWeight: 800,
                         letterSpacing: '-0.5px',
                         color: theme.accent,
                         whiteSpace: 'nowrap',
                     }}
                 >
-                    {collapsed ? 'TVX' : 'TRIVEXA'}
+                    {collapsedState ? 'TVX' : 'TRIVEXA'}
                 </span>
 
                 <button
-                    onClick={() => setCollapsed((prev) => !prev)}
-                    title={collapsed ? 'Menüyü aç' : 'Menüyü kapat'}
-                    aria-label={collapsed ? 'Menüyü aç' : 'Menüyü kapat'}
+                    onClick={handleTopButtonClick}
+                    title={isMobile ? 'Menüyü kapat' : (collapsedState ? 'Menüyü aç' : 'Menüyü kapat')}
+                    aria-label={isMobile ? 'Menüyü kapat' : (collapsedState ? 'Menüyü aç' : 'Menüyü kapat')}
                     style={{
                         background: 'none',
                         border: 'none',
@@ -108,30 +143,34 @@ export function Sidebar() {
                         (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
                     }}
                 >
-                    <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 25 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        style={{
-                            transform: collapsed ? 'rotate(45deg)' : 'rotate(0deg)',
-                            transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                            flexShrink: 0,
-                        }}
-                    >
-                        <path d="M0 0H10.5769V10.1538H0V0Z" fill={theme.accent} />
-                        <path d="M0 13.8462H10.5769V24H0V13.8462Z" fill={theme.accent} />
-                        <path d="M14.4231 0H25V10.1538H14.4231V0Z" fill={theme.accent} />
-                        <path d="M14.4231 13.8462H25V24H14.4231V13.8462Z" fill={theme.accent} />
-                    </svg>
+                    {isMobile ? (
+                        <X size={18} color={theme.accent} />
+                    ) : (
+                        <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 25 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            style={{
+                                transform: collapsedState ? 'rotate(45deg)' : 'rotate(0deg)',
+                                transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                flexShrink: 0,
+                            }}
+                        >
+                            <path d="M0 0H10.5769V10.1538H0V0Z" fill={theme.accent} />
+                            <path d="M0 13.8462H10.5769V24H0V13.8462Z" fill={theme.accent} />
+                            <path d="M14.4231 0H25V10.1538H14.4231V0Z" fill={theme.accent} />
+                            <path d="M14.4231 13.8462H25V24H14.4231V13.8462Z" fill={theme.accent} />
+                        </svg>
+                    )}
                 </button>
             </div>
 
             <nav style={{ flex: 1, padding: '12px 0' }}>
                 {groups.map((grp, gi) => (
                     <div key={gi} style={{ marginBottom: 8 }}>
-                        {grp.group && !collapsed && (
+                        {grp.group && !collapsedState && (
                             <p
                                 style={{
                                     fontSize: 10,
@@ -149,7 +188,7 @@ export function Sidebar() {
                             </p>
                         )}
 
-                        {grp.group && collapsed && gi > 0 && (
+                        {grp.group && collapsedState && gi > 0 && (
                             <div
                                 style={{
                                     margin: '8px auto',
@@ -169,14 +208,15 @@ export function Sidebar() {
                                     <li key={item.path}>
                                         <NavLink
                                             to={item.path}
-                                            title={collapsed ? item.label : undefined}
+                                            onClick={handleItemClick}
+                                            title={collapsedState ? item.label : undefined}
                                             style={({ isActive }) => ({
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                justifyContent: collapsed ? 'center' : 'flex-start',
-                                                gap: collapsed ? 0 : 10,
-                                                padding: collapsed ? '9px 0' : '9px 20px',
-                                                margin: collapsed ? '1px 6px' : '1px 8px',
+                                                justifyContent: collapsedState ? 'center' : 'flex-start',
+                                                gap: collapsedState ? 0 : 10,
+                                                padding: collapsedState ? '9px 0' : '9px 20px',
+                                                margin: collapsedState ? '1px 6px' : '1px 8px',
                                                 borderRadius: 8,
                                                 textDecoration: 'none',
                                                 fontSize: 13.5,
@@ -185,40 +225,35 @@ export function Sidebar() {
                                                 backgroundColor: isActive
                                                     ? `${theme.accent}18`
                                                     : 'transparent',
-                                                borderLeft: isActive && !collapsed
+                                                borderLeft: isActive && !collapsedState
                                                     ? `3px solid ${theme.accent}`
                                                     : '3px solid transparent',
                                                 transition: 'background-color 0.15s, color 0.15s',
                                                 overflow: 'hidden',
                                             })}
                                             onMouseEnter={(e) => {
+                                                if (isMobile) return;
                                                 const el = e.currentTarget as HTMLAnchorElement;
-                                                if (!el.dataset.active) {
-                                                    el.style.backgroundColor = `${theme.accent}10`;
-                                                    el.style.color = theme.text;
-                                                }
+                                                el.style.backgroundColor = `${theme.accent}10`;
+                                                el.style.color = theme.text;
                                             }}
                                             onMouseLeave={(e) => {
+                                                if (isMobile) return;
                                                 const el = e.currentTarget as HTMLAnchorElement;
-                                                if (!el.dataset.active) {
-                                                    el.style.backgroundColor = 'transparent';
-                                                }
+                                                el.style.backgroundColor = 'transparent';
                                             }}
                                         >
-                                            {/* İkon */}
                                             {IconComponent && (
                                                 <IconComponent size={16} strokeWidth={1.75} style={{ flexShrink: 0 }} />
                                             )}
 
-                                            {/* Label — dar modda gizle */}
-                                            {!collapsed && (
+                                            {!collapsedState && (
                                                 <span style={{ flex: 1, lineHeight: 1.3, whiteSpace: 'nowrap' }}>
                                                     {item.label}
                                                 </span>
                                             )}
 
-                                            {/* Badge — dar modda gizle */}
-                                            {!collapsed && item.badge === 'unread' && badgeNum > 0 && (
+                                            {!collapsedState && item.badge === 'unread' && badgeNum > 0 && (
                                                 <span
                                                     style={{
                                                         display: 'inline-flex',
@@ -238,8 +273,7 @@ export function Sidebar() {
                                                 </span>
                                             )}
 
-                                            {/* Ok işareti — geniş modda, badge olmayan item'larda */}
-                                            {!collapsed && item.badge !== 'unread' && (
+                                            {!collapsedState && item.badge !== 'unread' && (
                                                 <ChevronRight
                                                     size={13}
                                                     style={{ color: theme.muted, flexShrink: 0 }}
@@ -254,20 +288,18 @@ export function Sidebar() {
                 ))}
             </nav>
 
-            {/* ── Kullanıcı Footer ─────────────────────────────────── */}
             <div
                 style={{
                     borderTop: `1px solid ${theme.border}`,
-                    padding: collapsed ? '12px 0' : '12px 16px',
+                    padding: collapsedState ? '12px 0' : '12px 16px',
                     flexShrink: 0,
                     display: 'flex',
                     flexDirection: 'column',
-                    alignItems: collapsed ? 'center' : 'flex-start',
+                    alignItems: collapsedState ? 'center' : 'flex-start',
                     transition: 'padding 0.28s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
             >
-                {/* Rol badge — geniş modda */}
-                {!collapsed && (
+                {!collapsedState && (
                     <span
                         style={{
                             display: 'inline-block',
@@ -287,10 +319,9 @@ export function Sidebar() {
                     </span>
                 )}
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: collapsed ? 0 : 10, width: '100%', justifyContent: collapsed ? 'center' : 'flex-start' }}>
-                    {/* Avatar — her zaman görünür */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: collapsedState ? 0 : 10, width: '100%', justifyContent: collapsedState ? 'center' : 'flex-start' }}>
                     <div
-                        title={collapsed ? user.name : undefined}
+                        title={collapsedState ? user.name : undefined}
                         style={{
                             width: 34,
                             height: 34,
@@ -303,14 +334,13 @@ export function Sidebar() {
                             fontSize: 13,
                             fontWeight: 700,
                             color: theme.accent,
-                            cursor: collapsed ? 'default' : 'auto',
+                            cursor: collapsedState ? 'default' : 'auto',
                         }}
                     >
                         {user.initials ?? '?'}
                     </div>
 
-                    {/* İsim — dar modda gizle */}
-                    {!collapsed && (
+                    {!collapsedState && (
                         <span
                             style={{
                                 flex: 1,
@@ -326,8 +356,7 @@ export function Sidebar() {
                         </span>
                     )}
 
-                    {/* Çıkış — dar modda gizle */}
-                    {!collapsed && (
+                    {!collapsedState && (
                         <button
                             onClick={handleLogout}
                             title="Çıkış Yap"

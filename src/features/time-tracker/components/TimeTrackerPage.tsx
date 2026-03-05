@@ -112,7 +112,7 @@ export function TimeTrackerPage() {
             {
                 projectId: formData.projectId,
                 taskId: formData.taskId?.trim() ? formData.taskId : undefined,
-                description: formData.description.trim() || undefined,
+                description: (formData.description ?? '').trim() || undefined,
             },
             {
                 onSuccess: () => {
@@ -187,10 +187,10 @@ export function TimeTrackerPage() {
                         {activeTimer?.description || 'Timer baslatmak icin sagdaki formu doldurun.'}
                     </p>
 
-                    <div className="mt-4 flex gap-2.5">
+                    <div className="mt-4 flex flex-col gap-2.5 sm:flex-row">
                         <button
                             type="button"
-                            className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-white px-3 py-2 text-[13px] font-semibold text-gray-900 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-white px-3 py-2 text-[13px] font-semibold text-gray-900 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                             onClick={handleStopTimer}
                             disabled={!activeTimerQuery.isActive || stopMutation.isPending}
                         >
@@ -199,7 +199,7 @@ export function TimeTrackerPage() {
                         </button>
                         <button
                             type="button"
-                            className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-white/25 bg-white/15 px-3 py-2 text-[13px] font-semibold text-orange-50 transition hover:bg-white/25 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-white/25 bg-white/15 px-3 py-2 text-[13px] font-semibold text-orange-50 transition hover:bg-white/25 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                             onClick={handleCancelActiveTimer}
                             disabled={!activeTimerQuery.isActive || cancelMutation.isPending}
                         >
@@ -335,7 +335,7 @@ export function TimeTrackerPage() {
                     </div>
 
                     <select
-                        className="rounded-lg border border-gray-300 bg-white px-2.5 py-[7px] text-[13px]"
+                        className="w-full rounded-lg border border-gray-300 bg-white px-2.5 py-[7px] text-[13px] min-[900px]:w-auto"
                         value={statusFilter}
                         onChange={(event) => handleStatusFilterChange(event.target.value)}
                     >
@@ -346,7 +346,7 @@ export function TimeTrackerPage() {
                     </select>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="hidden overflow-x-auto md:block">
                     <table className="w-full border-collapse text-[13px]">
                         <thead>
                         <tr>
@@ -404,6 +404,56 @@ export function TimeTrackerPage() {
                         ))}
                         </tbody>
                     </table>
+                </div>
+
+                {historyQuery.isLoading && (
+                    <p className="px-3 py-[26px] text-center text-sm text-gray-400 md:hidden">
+                        Kayitlar yukleniyor...
+                    </p>
+                )}
+
+                {historyQuery.isError && (
+                    <p className="px-3 py-[26px] text-center text-sm text-red-600 md:hidden">
+                        Kayitlar alinirken bir hata olustu.
+                    </p>
+                )}
+
+                {!historyQuery.isLoading && !historyQuery.isError && filteredHistoryRows.length === 0 && (
+                    <p className="px-3 py-[26px] text-center text-sm text-gray-400 md:hidden">
+                        Filtreye uygun kayit bulunamadi.
+                    </p>
+                )}
+
+                <div className="space-y-3 md:hidden">
+                    {!historyQuery.isLoading && !historyQuery.isError && filteredHistoryRows.map((row) => (
+                        <article key={row.id} className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                            <div className="mb-2 flex items-start justify-between gap-2">
+                                <p className="m-0 text-sm font-semibold text-gray-900">
+                                    {projectNameMap.get(row.projectId) ?? row.projectId}
+                                </p>
+                                <span className={`inline-flex items-center rounded-full px-[9px] py-1 text-[11px] font-bold ${getStatusChipClass(row.status)}`}>
+                                    {getStatusLabel(row.status)}
+                                </span>
+                            </div>
+                            <p className="m-0 mb-2 text-xs text-gray-600">
+                                {row.description || '-'}
+                            </p>
+                            <div className="grid grid-cols-2 gap-2 text-xs text-gray-700">
+                                <div>
+                                    <p className="m-0 text-[11px] text-gray-500">Baslangic</p>
+                                    <p className="m-0">{formatDate(row.startedAt)}</p>
+                                </div>
+                                <div>
+                                    <p className="m-0 text-[11px] text-gray-500">Bitis</p>
+                                    <p className="m-0">{row.stoppedAt ? formatDate(row.stoppedAt) : '-'}</p>
+                                </div>
+                                <div className="col-span-2">
+                                    <p className="m-0 text-[11px] text-gray-500">Sure</p>
+                                    <p className="m-0 font-medium text-gray-900">{formatDuration(row.duration ?? 0)}</p>
+                                </div>
+                            </div>
+                        </article>
+                    ))}
                 </div>
 
                 <Pagination

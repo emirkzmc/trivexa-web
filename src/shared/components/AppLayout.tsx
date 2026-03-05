@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { AppHeader } from './AppHeader';
@@ -40,11 +41,27 @@ function resolvePageName(pathname: string): string {
     return PAGE_NAMES[pathname] ?? 'Dashboard';
 }
 
+const MOBILE_BREAKPOINT = 768;
+
 export function AppLayout() {
     const user = useAuthStore((s) => s.user);
     const logout = useAuthStore((s) => s.logout);
     const navigate = useNavigate();
     const location = useLocation();
+    const [isMobile, setIsMobile] = useState(() => window.innerWidth < MOBILE_BREAKPOINT);
+    const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+    useEffect(() => {
+        const onResize = () => {
+            const nextIsMobile = window.innerWidth < MOBILE_BREAKPOINT;
+            setIsMobile(nextIsMobile);
+            if (!nextIsMobile) {
+                setMobileSidebarOpen(false);
+            }
+        };
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
 
     if (!user) return null;
 
@@ -63,12 +80,38 @@ export function AppLayout() {
 
     return (
         <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-            <Sidebar />
+            {isMobile && mobileSidebarOpen && (
+                <div
+                    role="button"
+                    aria-label="Menüyü kapat"
+                    onClick={() => setMobileSidebarOpen(false)}
+                    onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            setMobileSidebarOpen(false);
+                        }
+                    }}
+                    tabIndex={0}
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        backgroundColor: 'rgba(0, 0, 0, 0.35)',
+                        zIndex: 50,
+                    }}
+                />
+            )}
+
+            <Sidebar
+                isMobile={isMobile}
+                mobileOpen={mobileSidebarOpen}
+                onMobileClose={() => setMobileSidebarOpen(false)}
+            />
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 <AppHeader
                     pageName={pageName}
                     user={headerUser}
                     onLogout={handleLogout}
+                    showMenuButton={isMobile}
+                    onMenuToggle={() => setMobileSidebarOpen((prev) => !prev)}
                 />
                 <main style={{ flex: 1, overflow: 'auto', backgroundColor: '#F9FAFB' }}>
                     <Outlet />
