@@ -5,6 +5,7 @@ import api from '../../../shared/lib/axios';
 export interface TimerEntry {
     id: string;
     projectId: string;
+    taskId?: string;
     description: string;
     startedAt: string;
     stoppedAt?: string;
@@ -29,6 +30,7 @@ export interface PaginatedTimerResponse {
 
 export interface StartTimerPayload {
     projectId: string;
+    taskId?: string;
     description: string;
 }
 
@@ -63,9 +65,20 @@ export async function getActiveTimer(): Promise<TimerEntry | null> {
 export async function getTimerHistory(
     params: TimerHistoryParams,
 ): Promise<PaginatedTimerResponse> {
-    const { data } = await api.get<PaginatedTimerResponse>(
+    const { data } = await api.get<{ data?: Partial<PaginatedTimerResponse> } | Partial<PaginatedTimerResponse>>(
         '/time-entries',
         { params },
     );
-    return data;
+
+    const payload = ('data' in data && typeof data.data === 'object' && data.data !== null)
+        ? data.data
+        : data;
+    const rows = Array.isArray(payload.data) ? payload.data : [];
+
+    return {
+        data: rows,
+        total: typeof payload.total === 'number' ? payload.total : rows.length,
+        page: typeof payload.page === 'number' ? payload.page : params.page ?? 1,
+        limit: typeof payload.limit === 'number' ? payload.limit : params.limit ?? 10,
+    };
 }

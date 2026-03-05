@@ -47,11 +47,23 @@ export async function getProjectTasks(
     projectId: string,
     params?: TaskListParams,
 ): Promise<PaginatedTaskResponse> {
-    const { data } = await api.get<PaginatedTaskResponse>(
+    const { data } = await api.get<{ data?: { data?: TaskItem[]; meta?: { total?: number; page?: number; limit?: number } } } | { data?: TaskItem[]; meta?: { total?: number; page?: number; limit?: number } }>(
         `/tasks/projects/${projectId}/tasks`,
         { params },
     );
-    return data;
+
+    const payload = ('data' in data && typeof data.data === 'object' && data.data !== null)
+        ? data.data
+        : data;
+    const rows = Array.isArray(payload.data) ? payload.data : [];
+    const meta = payload.meta ?? {};
+
+    return {
+        data: rows,
+        total: typeof meta.total === 'number' ? meta.total : rows.length,
+        page: typeof meta.page === 'number' ? meta.page : params?.page ?? 1,
+        limit: typeof meta.limit === 'number' ? meta.limit : params?.limit ?? 50,
+    };
 }
 
 export async function createTask(
