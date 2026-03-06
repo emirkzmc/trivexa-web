@@ -63,6 +63,7 @@ export interface ProjectCreatePayload {
     clientId: string;
     startDate?: string;
     endDate?: string;
+    deadline?: string;
     budget?: number;
 }
 

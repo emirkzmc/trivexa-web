@@ -12,110 +12,17 @@ import {
     Search,
     Wallet,
 } from 'lucide-react';
-import { toast } from 'sonner';
 import { PageHeader } from '../../../shared/components/PageHeader';
 import { Pagination } from '../../../shared/components/Pagination';
 import { formatDate } from '../../../shared/utils/formatDate';
-import { getProjects, type ProjectItem } from '../api/projects.api';
-
-type ViewMode = 'grid' | 'list';
-
-const STATUS_META: Record<string, { label: string; badgeClass: string; progress: number }> = {
-    DRAFT: { label: 'Taslak', badgeClass: 'bg-slate-100 text-slate-700', progress: 8 },
-    PLANNING: { label: 'Planlama', badgeClass: 'bg-sky-100 text-sky-700', progress: 20 },
-    IN_PROGRESS: { label: 'Devam Ediyor', badgeClass: 'bg-amber-100 text-amber-700', progress: 58 },
-    ON_HOLD: { label: 'Beklemede', badgeClass: 'bg-orange-100 text-orange-700', progress: 42 },
-    COMPLETED: { label: 'Tamamlandi', badgeClass: 'bg-emerald-100 text-emerald-700', progress: 100 },
-    CANCELLED: { label: 'Iptal', badgeClass: 'bg-rose-100 text-rose-700', progress: 0 },
-    ARCHIVED: { label: 'Arsiv', badgeClass: 'bg-zinc-200 text-zinc-700', progress: 100 },
-};
-
-const STATUS_OPTIONS = [
-    { value: '', label: 'Tum Durumlar' },
-    { value: 'DRAFT', label: STATUS_META.DRAFT.label },
-    { value: 'PLANNING', label: STATUS_META.PLANNING.label },
-    { value: 'IN_PROGRESS', label: STATUS_META.IN_PROGRESS.label },
-    { value: 'ON_HOLD', label: STATUS_META.ON_HOLD.label },
-    { value: 'COMPLETED', label: STATUS_META.COMPLETED.label },
-    { value: 'CANCELLED', label: STATUS_META.CANCELLED.label },
-    { value: 'ARCHIVED', label: STATUS_META.ARCHIVED.label },
-];
-
-function toMeta(status: string) {
-    return STATUS_META[status?.toUpperCase()] ?? {
-        label: status || 'Bilinmiyor',
-        badgeClass: 'bg-gray-100 text-gray-700',
-        progress: 12,
-    };
-}
-
-function formatMoney(value?: number) {
-    if (typeof value !== 'number' || Number.isNaN(value)) {
-        return '-';
-    }
-
-    return new Intl.NumberFormat('tr-TR', {
-        style: 'currency',
-        currency: 'TRY',
-        maximumFractionDigits: 0,
-    }).format(value);
-}
-
-function StatsCard({ title, value, subtitle }: { title: string; value: string; subtitle: string }) {
-    return (
-        <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">{title}</p>
-            <p className="mt-1 text-2xl font-bold text-gray-900">{value}</p>
-            <p className="mt-0.5 text-xs text-gray-500">{subtitle}</p>
-        </article>
-    );
-}
-
-function ProjectCard({ project, onOpen }: { project: ProjectItem; onOpen: () => void }) {
-    const meta = toMeta(project.status);
-
-    return (
-        <button
-            type="button"
-            onClick={onOpen}
-            className="w-full rounded-xl border border-gray-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-        >
-            <div className="mb-3 flex items-start justify-between gap-3">
-                <div>
-                    <h3 className="text-sm font-semibold text-gray-900">{project.name}</h3>
-                    <p className="mt-1 line-clamp-2 text-xs text-gray-500">
-                        {project.description?.trim() || 'Aciklama eklenmedi.'}
-                    </p>
-                </div>
-                <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${meta.badgeClass}`}>
-                    {meta.label}
-                </span>
-            </div>
-
-            <div className="mb-3 h-2 rounded-full bg-gray-100">
-                <div
-                    className="h-2 rounded-full bg-red-500"
-                    style={{ width: `${Math.max(0, Math.min(100, meta.progress))}%` }}
-                />
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                <div className="rounded-lg bg-gray-50 px-2.5 py-2">
-                    <p className="mb-0.5 text-[10px] uppercase tracking-wide text-gray-400">Baslangic</p>
-                    <p className="font-medium text-gray-700">{project.startDate ? formatDate(project.startDate) : '-'}</p>
-                </div>
-                <div className="rounded-lg bg-gray-50 px-2.5 py-2">
-                    <p className="mb-0.5 text-[10px] uppercase tracking-wide text-gray-400">Teslim</p>
-                    <p className="font-medium text-gray-700">{project.deadline ? formatDate(project.deadline) : '-'}</p>
-                </div>
-                <div className="col-span-2 rounded-lg bg-gray-50 px-2.5 py-2">
-                    <p className="mb-0.5 text-[10px] uppercase tracking-wide text-gray-400">Butce</p>
-                    <p className="font-medium text-gray-700">{formatMoney(project.budget)}</p>
-                </div>
-            </div>
-        </button>
-    );
-}
+import { getProjects } from '../api/projects.api';
+import { ProjectCard } from './ProjectCard';
+import { StatsCard } from './StatsCard';
+import { STATUS_OPTIONS } from './projectsPage.constants';
+import { formatMoney, toMeta } from './projectsPage.utils';
+import type { ViewMode } from './projectsPage.types';
+import { useProjectCreate } from '../hooks/useProjectCreate';
+import { ProjectCreateModal } from './create/ProjectCreateModal';
 
 export function ProjectsPage() {
     const navigate = useNavigate();
@@ -124,6 +31,8 @@ export function ProjectsPage() {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [view, setView] = useState<ViewMode>('grid');
+
+    const projectCreate = useProjectCreate();
 
     const projectsQuery = useQuery({
         queryKey: ['projects', { page, limit, status, search }],
@@ -175,7 +84,7 @@ export function ProjectsPage() {
 
             <button
                 type="button"
-                onClick={() => toast.info('Yeni proje formu bir sonraki adimda eklenecek.')}
+                onClick={projectCreate.openCreatePanel}
                 className="inline-flex h-9 items-center gap-2 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700"
             >
                 <Plus size={14} />
@@ -322,7 +231,8 @@ export function ProjectsPage() {
                     Proje karti veya satirina tiklayarak detay ekranini acabilirsiniz.
                 </p>
             </section>
+
+            <ProjectCreateModal controller={projectCreate} />
         </div>
     );
 }
-

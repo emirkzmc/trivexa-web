@@ -27,6 +27,7 @@ function App() {
         <Route path="dashboard" element={<div>Dashboard Paneli</div>} />
         <Route path="personel" element={<PersonnelPage />} />
         <Route path="projeler" element={<ProjectsPage />} />
+        <Route path="projeler/yeni" element={<Navigate to="/app/projeler" replace />} />
         <Route path="projeler/:projectId" element={<ProjectDetailPage />} />
         <Route path="departmanlar" element={<DepartmentsPage />} />
         <Route path="time-tracker" element={<TimeTrackerPage />} />

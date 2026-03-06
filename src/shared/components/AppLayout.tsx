@@ -45,6 +45,9 @@ const PAGE_NAMES: Record<string, string> = {
 };
 
 function resolvePageName(pathname: string): string {
+    if (pathname === '/app/projeler/yeni') {
+        return 'Yeni Proje';
+    }
     if (pathname.startsWith('/app/projeler/')) {
         return 'Proje Detayi';
     }

@@ -38,13 +38,55 @@ export interface ClientCreatePayload {
 
 export type ClientUpdatePayload = Partial<ClientCreatePayload>;
 
+type ClientsPayload = {
+    data?: unknown;
+    total?: unknown;
+    page?: unknown;
+    limit?: unknown;
+    meta?: {
+        total?: unknown;
+        page?: unknown;
+        limit?: unknown;
+    };
+};
+
+type MaybeWrapped<T> = { data?: T } | T;
+
+function unwrapData<T>(payload: MaybeWrapped<T>): T {
+    if (typeof payload === 'object' && payload !== null && 'data' in payload && payload.data !== undefined) {
+        return payload.data as T;
+    }
+    return payload as T;
+}
+
 // ─── API Functions ───────────────────────────────────────────────────────────
 
 export async function getClients(
     params: ClientListParams,
 ): Promise<PaginatedClientResponse> {
-    const { data } = await api.get<PaginatedClientResponse>('/clients', { params });
-    return data;
+    const { data } = await api.get<MaybeWrapped<ClientsPayload>>('/clients', { params });
+    const payload = unwrapData(data);
+    const rows = Array.isArray(payload?.data) ? (payload.data as ClientItem[]) : [];
+    const meta = (typeof payload?.meta === 'object' && payload.meta !== null) ? payload.meta : {};
+
+    return {
+        data: rows,
+        total: typeof payload?.total === 'number'
+            ? payload.total
+            : typeof meta.total === 'number'
+                ? meta.total
+                : rows.length,
+        page: typeof payload?.page === 'number'
+            ? payload.page
+            : typeof meta.page === 'number'
+                ? meta.page
+                : params.page ?? 1,
+        limit: typeof payload?.limit === 'number'
+            ? payload.limit
+            : typeof meta.limit === 'number'
+                ? meta.limit
+                : params.limit ?? 20,
+    };
 }
 
 export async function getClientById(id: string): Promise<ClientItem> {
