@@ -46,9 +46,24 @@ export function usePersonnel() {
         setSearchParams(next, { replace: true });
     }
 
+    function setFilters(values: Record<string, string | undefined>) {
+        const next = new URLSearchParams(searchParams);
+
+        Object.entries(values).forEach(([key, value]) => {
+            if (value) {
+                next.set(key, value);
+            } else {
+                next.delete(key);
+            }
+        });
+
+        next.set('page', '1');
+        setSearchParams(next, { replace: true });
+    }
+
     function setPage(page: number) {
         setFilter('page', String(page));
     }
 
-    return { ...query, filters, setFilter, setPage };
+    return { ...query, filters, setFilter, setFilters, setPage };
 }

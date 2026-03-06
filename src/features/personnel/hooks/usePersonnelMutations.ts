@@ -3,17 +3,14 @@ import { toast } from 'sonner';
 import {
     createPersonnel,
     updatePersonnel,
-    deletePersonnel,
+    deactivatePersonnel,
+    activatePersonnel,
 } from '../api/personnel.api';
 import type {
     PersonnelCreatePayload,
     PersonnelUpdatePayload,
 } from '../api/personnel.api';
 
-/**
- * Personel oluşturma mutation'ı.
- * Başarıda personnel listesini invalidate eder.
- */
 export function useCreatePersonnel() {
     const queryClient = useQueryClient();
 
@@ -21,17 +18,14 @@ export function useCreatePersonnel() {
         mutationFn: (payload: PersonnelCreatePayload) => createPersonnel(payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['personnel'] });
-            toast.success('Personel başarıyla oluşturuldu', { duration: 3_000 });
+            toast.success('Personel basariyla olusturuldu', { duration: 3_000 });
         },
         onError: () => {
-            toast.error('Personel oluşturulurken bir hata oluştu', { duration: 3_000 });
+            toast.error('Personel olusturulurken bir hata olustu', { duration: 3_000 });
         },
     });
 }
 
-/**
- * Personel güncelleme mutation'ı.
- */
 export function useUpdatePersonnel() {
     const queryClient = useQueryClient();
 
@@ -40,28 +34,40 @@ export function useUpdatePersonnel() {
             updatePersonnel(id, payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['personnel'] });
-            toast.success('Personel bilgileri güncellendi', { duration: 3_000 });
+            toast.success('Personel bilgileri guncellendi', { duration: 3_000 });
         },
         onError: () => {
-            toast.error('Güncelleme sırasında bir hata oluştu', { duration: 3_000 });
+            toast.error('Guncelleme sirasinda bir hata olustu', { duration: 3_000 });
         },
     });
 }
 
-/**
- * Personel silme mutation'ı.
- */
-export function useDeletePersonnel() {
+export function useDeactivatePersonnel() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (id: string) => deletePersonnel(id),
+        mutationFn: (id: string) => deactivatePersonnel(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['personnel'] });
-            toast.success('Personel kaydı silindi', { duration: 3_000 });
+            toast.success('Personel deaktif edildi', { duration: 3_000 });
         },
         onError: () => {
-            toast.error('Silme sırasında bir hata oluştu', { duration: 3_000 });
+            toast.error('Deaktif etme sirasinda bir hata olustu', { duration: 3_000 });
+        },
+    });
+}
+
+export function useActivatePersonnel() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id: string) => activatePersonnel(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['personnel'] });
+            toast.success('Personel aktif edildi', { duration: 3_000 });
+        },
+        onError: () => {
+            toast.error('Aktif etme sirasinda bir hata olustu', { duration: 3_000 });
         },
     });
 }

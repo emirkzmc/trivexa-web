@@ -1,24 +1,35 @@
 import { useState } from 'react';
+import { Download, Plus, Users } from 'lucide-react';
 import { usePersonnel } from '../hooks/usePersonnel';
-import { useCreatePersonnel, useUpdatePersonnel, useDeletePersonnel } from '../hooks/usePersonnelMutations';
-import { useExportPersonnel } from '../hooks/useExportPersonnel';
+import {
+    useActivatePersonnel,
+    useCreatePersonnel,
+    useDeactivatePersonnel,
+    useUpdatePersonnel,
+} from '../hooks/usePersonnelMutations';
+import { useExportPersonnel, type PersonnelExportFormat } from '../hooks/useExportPersonnel';
 import { PersonnelFormModal } from './PersonnelFormModal';
 import { PersonnelFilters } from './PersonnelFilters';
 import { PersonnelTable } from './PersonnelTable';
 import { PageHeader } from '../../../shared/components/PageHeader';
 import { Pagination } from '../../../shared/components/Pagination';
-import type { PersonnelItem, PersonnelCreatePayload, PersonnelUpdatePayload } from '../api/personnel.api';
-import { Users, Plus, Download } from 'lucide-react';
+import type {
+    PersonnelCreatePayload,
+    PersonnelItem,
+    PersonnelUpdatePayload,
+} from '../api/personnel.api';
 
 export function PersonnelPage() {
-    const { data, isLoading, isError, filters, setFilter, setPage } = usePersonnel();
+    const { data, isLoading, isError, filters, setFilter, setFilters, setPage } = usePersonnel();
     const createMutation = useCreatePersonnel();
     const updateMutation = useUpdatePersonnel();
-    const deleteMutation = useDeletePersonnel();
+    const deactivateMutation = useDeactivatePersonnel();
+    const activateMutation = useActivatePersonnel();
     const exportMutation = useExportPersonnel();
 
     const [modalOpen, setModalOpen] = useState(false);
     const [editItem, setEditItem] = useState<PersonnelItem | null>(null);
+    const [exportFormat, setExportFormat] = useState<PersonnelExportFormat>('pdf');
 
     const personnel = Array.isArray(data?.data) ? data.data : [];
     const total = data?.meta?.total ?? 0;
@@ -37,52 +48,100 @@ export function PersonnelPage() {
 
     function handleSubmit(payload: PersonnelCreatePayload | PersonnelUpdatePayload) {
         if (editItem) {
-            updateMutation.mutate({ id: editItem.id, payload: payload as PersonnelUpdatePayload }, {
-                onSuccess: () => setModalOpen(false),
-            });
-        } else {
-            createMutation.mutate(payload as PersonnelCreatePayload, {
-                onSuccess: () => setModalOpen(false),
-            });
+            updateMutation.mutate(
+                { id: editItem.id, payload: payload as PersonnelUpdatePayload },
+                { onSuccess: () => setModalOpen(false) },
+            );
+            return;
         }
+
+        createMutation.mutate(payload as PersonnelCreatePayload, {
+            onSuccess: () => setModalOpen(false),
+        });
     }
 
-    function handleDeactivate(item: PersonnelItem) {
-        if (confirm(`${item.firstName} ${item.lastName} deaktif edilecek. Emin misiniz?`)) {
-            deleteMutation.mutate(item.id);
+    function handleToggleActive(item: PersonnelItem) {
+        const fullName = `${item.firstName} ${item.lastName}`;
+
+        if (item.isActive) {
+            if (confirm(`${fullName} deaktif edilecek. Emin misiniz?`)) {
+                deactivateMutation.mutate(item.id);
+            }
+            return;
+        }
+
+        if (confirm(`${fullName} aktif edilecek. Emin misiniz?`)) {
+            activateMutation.mutate(item.id);
         }
     }
 
     function clearFilters() {
-        setFilter('department', undefined);
-        setFilter('role', undefined);
-        setFilter('isActive', undefined);
-        setFilter('search', undefined);
+        setFilters({
+            department: undefined,
+            role: undefined,
+            isActive: undefined,
+            search: undefined,
+        });
     }
 
     const hasFilters = !!(filters.department || filters.role || filters.isActive || filters.search);
 
     const headerActions = (
         <>
-            <button
-                onClick={() => exportMutation.mutate(filters)}
-                disabled={exportMutation.isPending}
+            <select
+                value={exportFormat}
+                onChange={(event) => setExportFormat(event.target.value as PersonnelExportFormat)}
                 style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    padding: '8px 16px', borderRadius: 8, border: '1px solid #E5E7EB',
-                    backgroundColor: '#fff', color: '#374151', fontSize: 13,
-                    fontWeight: 500, cursor: 'pointer',
+                    padding: '8px 10px',
+                    borderRadius: 8,
+                    border: '1px solid #E5E7EB',
+                    backgroundColor: '#fff',
+                    color: '#374151',
+                    fontSize: 13,
+                    fontWeight: 500,
+                    cursor: 'pointer',
                 }}
             >
-                <Download size={15} /> Dışa Aktar
+                <option value="pdf">PDF</option>
+                <option value="docx">DOCX</option>
+                <option value="xlsx">EXCEL (XLSX)</option>
+                <option value="csv">CSV</option>
+            </select>
+
+            <button
+                onClick={() => exportMutation.mutate({ filters, format: exportFormat })}
+                disabled={exportMutation.isPending}
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '8px 16px',
+                    borderRadius: 8,
+                    border: '1px solid #E5E7EB',
+                    backgroundColor: '#fff',
+                    color: '#374151',
+                    fontSize: 13,
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                }}
+            >
+                <Download size={15} /> Disa Aktar
             </button>
+
             <button
                 onClick={handleCreate}
                 style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    padding: '8px 16px', borderRadius: 8, border: 'none',
-                    backgroundColor: '#DC2626', color: '#fff', fontSize: 13,
-                    fontWeight: 600, cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '8px 16px',
+                    borderRadius: 8,
+                    border: 'none',
+                    backgroundColor: '#DC2626',
+                    color: '#fff',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: 'pointer',
                 }}
             >
                 <Plus size={15} /> Personel Ekle
@@ -94,7 +153,7 @@ export function PersonnelPage() {
         <div style={{ padding: '24px 32px', fontFamily: "'Poppins', system-ui, sans-serif" }}>
             <PageHeader
                 icon={<Users size={20} color="#DC2626" />}
-                title="Personel Yönetimi"
+                title="Personel Yonetimi"
                 subtitle={`Toplam ${total} personel`}
                 actions={headerActions}
             />
@@ -111,7 +170,7 @@ export function PersonnelPage() {
                 isError={isError}
                 hasFilters={hasFilters}
                 onEdit={handleEdit}
-                onDeactivate={handleDeactivate}
+                onToggleActive={handleToggleActive}
             />
 
             <Pagination

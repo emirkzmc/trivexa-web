@@ -82,8 +82,12 @@ export async function updatePersonnel(
     return data.data;
 }
 
-export async function deletePersonnel(id: string): Promise<void> {
+export async function deactivatePersonnel(id: string): Promise<void> {
     await api.patch(`/users/${id}/deactivate`);
+}
+
+export async function activatePersonnel(id: string): Promise<void> {
+    await api.patch(`/users/${id}/activate`);
 }
 
 export async function exportPersonnel(

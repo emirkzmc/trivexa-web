@@ -1,4 +1,4 @@
-import { Edit2, UserX, ArrowUp, ArrowDown } from 'lucide-react';
+import { Edit2, UserCheck, UserX, ArrowUp, ArrowDown } from 'lucide-react';
 import { useState } from 'react';
 import { StatusBadge } from '../../../shared/components/StatusBadge';
 import { ROLE_LABELS } from '../../../shared/constants/roleLabels';
@@ -11,7 +11,7 @@ interface PersonnelTableProps {
     isError: boolean;
     hasFilters: boolean;
     onEdit: (item: PersonnelItem) => void;
-    onDeactivate: (item: PersonnelItem) => void;
+    onToggleActive: (item: PersonnelItem) => void;
 }
 
 // Removed unused COLUMNS variable
@@ -22,7 +22,7 @@ function SortIcon({ field, currentSortField, currentSortDirection }: { field: ke
 }
 
 export function PersonnelTable({
-    data, isLoading, isError, hasFilters, onEdit, onDeactivate,
+    data, isLoading, isError, hasFilters, onEdit, onToggleActive,
 }: PersonnelTableProps) {
     const [sortField, setSortField] = useState<keyof PersonnelItem>('firstName');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -137,7 +137,7 @@ export function PersonnelTable({
                             key={p.id}
                             item={p}
                             onEdit={onEdit}
-                            onDeactivate={onDeactivate}
+                            onToggleActive={onToggleActive}
                         />
                     ))}
                 </tbody>
@@ -151,10 +151,10 @@ export function PersonnelTable({
 interface PersonnelRowProps {
     item: PersonnelItem;
     onEdit: (item: PersonnelItem) => void;
-    onDeactivate: (item: PersonnelItem) => void;
+    onToggleActive: (item: PersonnelItem) => void;
 }
 
-function PersonnelRow({ item, onEdit, onDeactivate }: PersonnelRowProps) {
+function PersonnelRow({ item, onEdit, onToggleActive }: PersonnelRowProps) {
     return (
         <tr
             style={{ borderBottom: '1px solid #F3F4F6', transition: 'background-color 0.1s' }}
@@ -186,15 +186,32 @@ function PersonnelRow({ item, onEdit, onDeactivate }: PersonnelRowProps) {
                         <Edit2 size={14} color="#6B7280" />
                     </button>
                     <button
-                        onClick={() => onDeactivate(item)}
-                        title="Deaktif Et"
+                        onClick={() => onToggleActive(item)}
+                        title={item.isActive ? 'Deaktif Et' : 'Aktif Et'}
                         style={{
                             ...actionBtnStyle,
-                            borderColor: '#FCA5A5',
-                            backgroundColor: '#FEF2F2',
+                            borderColor: item.isActive ? '#FCA5A5' : '#86EFAC',
+                            backgroundColor: item.isActive ? '#FEF2F2' : '#ECFDF5',
+                            color: item.isActive ? '#DC2626' : '#166534',
+                            gap: 4,
+                            alignItems: 'center',
                         }}
                     >
-                        <UserX size={14} color="#DC2626" />
+                        {item.isActive ? (
+                            <>
+                                <UserX size={14} color="#DC2626" />
+                                <span style={{ fontSize: 12, fontWeight: 600, color: '#DC2626' }}>
+                                    Deaktif Et
+                                </span>
+                            </>
+                        ) : (
+                            <>
+                                <UserCheck size={14} color="#166534" />
+                                <span style={{ fontSize: 12, fontWeight: 600, color: '#166534' }}>
+                                    Aktif Et
+                                </span>
+                            </>
+                        )}
                     </button>
                 </div>
             </td>
