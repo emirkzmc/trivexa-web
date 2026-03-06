@@ -9,6 +9,8 @@ import { TimeTrackerPage } from './features/time-tracker/components/TimeTrackerP
 import { AuditLogPage } from './features/audit/components/AuditLogPage';
 import { RolesPermissionsPage } from './features/roles/components/RolesPermissionsPage';
 import { DepartmentsPage } from './features/departments/components/DepartmentsPage';
+import { ProjectsPage } from './features/projects/components/ProjectsPage';
+import { ProjectDetailPage } from './features/projects/components/ProjectDetailPage';
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
       <Route path="/app" element={<AppLayout />}>
         <Route path="dashboard" element={<div>Dashboard Paneli</div>} />
         <Route path="personel" element={<PersonnelPage />} />
+        <Route path="projeler" element={<ProjectsPage />} />
+        <Route path="projeler/:projectId" element={<ProjectDetailPage />} />
         <Route path="departmanlar" element={<DepartmentsPage />} />
         <Route path="time-tracker" element={<TimeTrackerPage />} />
         <Route path="roller" element={<RolesPermissionsPage />} />

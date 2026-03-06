@@ -61,18 +61,7 @@ export function DepartmentsPage() {
 
     const teamLeadersQuery = useQuery({
         queryKey: ['personnel', 'team-leaders'],
-        queryFn: () => getPersonnel({ page: 1, limit: 200, isActive: 'true' }),
-    });
-    const departmentTeamLeadersQuery = useQuery({
-        queryKey: ['personnel', 'team-leaders', moduleDepartment?.name],
-        queryFn: () =>
-            getPersonnel({
-                page: 1,
-                limit: 200,
-                isActive: 'true',
-                department: moduleDepartment?.name,
-            }),
-        enabled: !!moduleDepartment?.name,
+        queryFn: () => getPersonnel({ page: 1, limit: 100, isActive: 'true' }),
     });
 
     const createMutation = useMutation({
@@ -143,21 +132,29 @@ export function DepartmentsPage() {
     );
 
     const teamLeaders = teamLeadersQuery.data?.data ?? [];
-    const departmentTeamLeaders = departmentTeamLeadersQuery.data?.data ?? [];
     const teamLeaderLabelById = useMemo(
         () => Object.fromEntries(teamLeaders.map((person) => [person.id, `${person.firstName} ${person.lastName}`])),
         [teamLeaders],
     );
     const selectableTeamLeaders = useMemo(() => {
-        if (!editingModule?.teamLeadId) {
-            return departmentTeamLeaders;
+        if (!moduleDepartment?.name) {
+            return [];
         }
 
-        const hasSelected = departmentTeamLeaders.some(
+        const normalize = (value?: string | null) => (value ?? '').trim().toUpperCase();
+        const filtered = teamLeaders.filter(
+            (person) => normalize(person.department) === normalize(moduleDepartment.name),
+        );
+
+        if (!editingModule?.teamLeadId) {
+            return filtered;
+        }
+
+        const hasSelected = filtered.some(
             (person) => person.id === editingModule.teamLeadId,
         );
         if (hasSelected) {
-            return departmentTeamLeaders;
+            return filtered;
         }
 
         const selected = teamLeaders.find(
@@ -165,12 +162,14 @@ export function DepartmentsPage() {
         );
 
         return selected
-            ? [...departmentTeamLeaders, selected]
-            : departmentTeamLeaders;
-    }, [departmentTeamLeaders, editingModule?.teamLeadId, teamLeaders]);
+            ? [...filtered, selected]
+            : filtered;
+    }, [moduleDepartment?.name, editingModule?.teamLeadId, teamLeaders]);
 
     const isSubmitting = createMutation.isPending || updateMutation.isPending;
     const isModuleSubmitting = createModuleMutation.isPending || updateModuleMutation.isPending;
+    const isModuleNameError = moduleFormError === 'Alt modul adi zorunludur.';
+    const isTeamLeaderError = moduleFormError === 'Team leader secilmelidir.';
 
     function handleOpenCreateModal() {
         setEditingDepartment(null);
@@ -532,12 +531,14 @@ export function DepartmentsPage() {
                                 value={moduleForm.name}
                                 onChange={(event) => {
                                     setModuleForm((prev) => ({ ...prev, name: event.target.value }));
-                                    if (moduleFormError) setModuleFormError('');
+                                    if (isModuleNameError) setModuleFormError('');
                                 }}
                                 placeholder="Ornek: FRONTEND_DEVELOPER"
-                                className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                className={`h-10 w-full rounded-lg px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 ${
+                                    isModuleNameError ? 'border border-red-500' : 'border border-gray-300'
+                                }`}
                             />
-                            {moduleFormError && <p className="mt-1 text-xs font-medium text-red-600">{moduleFormError}</p>}
+                            {isModuleNameError && <p className="mt-1 text-xs font-medium text-red-600">{moduleFormError}</p>}
                         </div>
 
                         <div>
@@ -555,8 +556,13 @@ export function DepartmentsPage() {
                             <label className="mb-1 block text-xs font-semibold text-gray-700">Team Leader</label>
                             <select
                                 value={moduleForm.teamLeadId}
-                                onChange={(event) => setModuleForm((prev) => ({ ...prev, teamLeadId: event.target.value }))}
-                                className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                onChange={(event) => {
+                                    setModuleForm((prev) => ({ ...prev, teamLeadId: event.target.value }));
+                                    if (isTeamLeaderError) setModuleFormError('');
+                                }}
+                                className={`h-10 w-full rounded-lg px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 ${
+                                    isTeamLeaderError ? 'border border-red-500' : 'border border-gray-300'
+                                }`}
                             >
                                 <option value="">Secin...</option>
                                 {selectableTeamLeaders.map((person) => (
@@ -565,6 +571,9 @@ export function DepartmentsPage() {
                                     </option>
                                 ))}
                             </select>
+                            {isTeamLeaderError && (
+                                <p className="mt-1 text-xs font-medium text-red-600">{moduleFormError}</p>
+                            )}
                             <p className="mt-1 flex items-center gap-1 text-[11px] text-gray-500">
                                 <Users size={11} />
                                 Alt modul icin sorumlu ekip lideri atanir.

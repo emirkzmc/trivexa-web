@@ -109,9 +109,6 @@ export function PersonnelFormModal({
         }
 
         if (!role) errs.role = 'Rol secilmelidir';
-        if (department && resolvedSubDepartmentOptions.length > 0 && !subDepartmentId) {
-            errs.subDepartmentId = 'Alt departman secilmelidir';
-        }
 
         setErrors(errs);
         return Object.keys(errs).length === 0;

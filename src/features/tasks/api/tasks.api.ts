@@ -10,6 +10,9 @@ export interface TaskItem {
     priority: string;
     status: string;
     assigneeId?: string;
+    assigneeEmail?: string;
+    assigneeFirstName?: string;
+    assigneeLastName?: string;
     dueDate?: string;
     createdAt: string;
     updatedAt: string;
@@ -40,6 +43,58 @@ export interface TaskCreatePayload {
 }
 
 export type TaskUpdatePayload = Partial<TaskCreatePayload>;
+
+type BackendTask = Partial<{
+    id: string;
+    projectId: string;
+    project_id: string;
+    title: string;
+    description: string | null;
+    priority: string;
+    status: string;
+    assigneeId: string | null;
+    assignee_id: string | null;
+    assigneeEmail: string | null;
+    assignee_email: string | null;
+    assigneeFirstName: string | null;
+    assignee_first_name: string | null;
+    assigneeLastName: string | null;
+    assignee_last_name: string | null;
+    dueDate: string | null;
+    due_date: string | null;
+    createdAt: string;
+    created_at: string;
+    updatedAt: string;
+    updated_at: string;
+}>;
+
+function normalizeTask(task: BackendTask | null | undefined): TaskItem | null {
+    if (!task?.id || !task.title) {
+        return null;
+    }
+
+    const createdAt = task.createdAt ?? task.created_at;
+    const updatedAt = task.updatedAt ?? task.updated_at;
+    if (!createdAt || !updatedAt) {
+        return null;
+    }
+
+    return {
+        id: task.id,
+        projectId: task.projectId ?? task.project_id ?? '',
+        title: task.title,
+        description: task.description ?? '',
+        priority: task.priority ?? 'MEDIUM',
+        status: task.status ?? 'TODO',
+        assigneeId: task.assigneeId ?? task.assignee_id ?? undefined,
+        assigneeEmail: task.assigneeEmail ?? task.assignee_email ?? undefined,
+        assigneeFirstName: task.assigneeFirstName ?? task.assignee_first_name ?? undefined,
+        assigneeLastName: task.assigneeLastName ?? task.assignee_last_name ?? undefined,
+        dueDate: task.dueDate ?? task.due_date ?? undefined,
+        createdAt,
+        updatedAt,
+    };
+}
 
 // ─── API Functions ───────────────────────────────────────────────────────────
 
@@ -75,7 +130,9 @@ export async function getProjectTasks(
         : {};
 
     return {
-        data: rows,
+        data: rows
+            .map((row) => normalizeTask(row as BackendTask))
+            .filter((row): row is TaskItem => !!row),
         total: typeof meta.total === 'number' ? meta.total : rows.length,
         page: typeof meta.page === 'number' ? meta.page : params?.page ?? 1,
         limit: typeof meta.limit === 'number' ? meta.limit : params?.limit ?? 50,

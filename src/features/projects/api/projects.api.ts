@@ -69,10 +69,164 @@ export interface ProjectCreatePayload {
 export type ProjectUpdatePayload = Partial<ProjectCreatePayload>;
 
 export interface ProjectMember {
+    id?: string;
     userId: string;
     projectId: string;
     role: string;
     joinedAt: string;
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+}
+
+type MaybeWrapped<T> = { data?: T } | T;
+
+export interface ProjectGithubRepository {
+    fullName: string;
+    htmlUrl: string;
+    description: string | null;
+    defaultBranch: string;
+    isPrivate: boolean;
+    stars: number;
+    forks: number;
+    openIssues: number;
+    pushedAt: string | null;
+    language: string | null;
+    ownerLogin?: string;
+    ownerAvatarUrl?: string;
+    ownerHtmlUrl?: string;
+}
+
+export interface ProjectGithubBranch {
+    name: string;
+    latestCommitSha: string | null;
+    isProtected: boolean;
+}
+
+export interface ProjectGithubOverview {
+    connected: boolean;
+    linkedRepositoryUrl?: string;
+    linkedRepositoryFullName?: string;
+    repository: ProjectGithubRepository | null;
+    branches: ProjectGithubBranch[];
+}
+
+export interface ProjectGithubCommit {
+    sha: string;
+    shortSha: string | null;
+    htmlUrl: string | null;
+    message: string;
+    authorName: string;
+    authorEmail: string | null;
+    authorAvatarUrl: string | null;
+    committedAt: string | null;
+}
+
+export interface ProjectGithubCommitsResponse {
+    connected: boolean;
+    linkedRepositoryUrl?: string;
+    linkedRepositoryFullName?: string;
+    branch: string | null;
+    page: number;
+    perPage: number;
+    commits: ProjectGithubCommit[];
+}
+
+export interface ProjectGithubCommitsParams {
+    branch?: string;
+    page?: number;
+    perPage?: number;
+}
+
+type BackendProject = Partial<{
+    id: string;
+    name: string;
+    description: string | null;
+    clientId: string | null;
+    client_id: string | null;
+    status: string;
+    startDate: string | null;
+    start_date: string | null;
+    endDate: string | null;
+    end_date: string | null;
+    deadline: string | null;
+    budget: number | string | null;
+    createdAt: string;
+    created_at: string;
+    updatedAt: string;
+    updated_at: string;
+}>;
+
+type BackendProjectMember = Partial<{
+    id: string;
+    userId: string;
+    user_id: string;
+    projectId: string;
+    project_id: string;
+    role: string;
+    joinedAt: string;
+    joined_at: string;
+    email: string | null;
+    firstName: string | null;
+    first_name: string | null;
+    lastName: string | null;
+    last_name: string | null;
+}>;
+
+function unwrapData<T>(payload: MaybeWrapped<T>): T {
+    if (typeof payload === 'object' && payload !== null && 'data' in payload && payload.data !== undefined) {
+        return payload.data as T;
+    }
+    return payload as T;
+}
+
+function normalizeProject(project: BackendProject | null | undefined): ProjectItem | null {
+    if (!project?.id || !project.name) {
+        return null;
+    }
+
+    const budget = typeof project.budget === 'string'
+        ? Number(project.budget)
+        : project.budget;
+
+    return {
+        id: project.id,
+        name: project.name,
+        description: project.description ?? null,
+        clientId: project.clientId ?? project.client_id ?? null,
+        status: project.status ?? 'DRAFT',
+        startDate: project.startDate ?? project.start_date ?? null,
+        endDate: project.endDate ?? project.end_date ?? null,
+        deadline: project.deadline ?? null,
+        budget: typeof budget === 'number' && Number.isFinite(budget) ? budget : undefined,
+        createdAt: project.createdAt ?? project.created_at,
+        updatedAt: project.updatedAt ?? project.updated_at,
+    };
+}
+
+function normalizeProjectMember(member: BackendProjectMember | null | undefined): ProjectMember | null {
+    if (!member) {
+        return null;
+    }
+
+    const userId = member.userId ?? member.user_id;
+    const projectId = member.projectId ?? member.project_id;
+    const joinedAt = member.joinedAt ?? member.joined_at;
+
+    if (!userId || !projectId || !joinedAt) {
+        return null;
+    }
+
+    return {
+        id: member.id,
+        userId,
+        projectId,
+        role: member.role ?? 'MEMBER',
+        joinedAt,
+        email: member.email ?? undefined,
+        firstName: member.firstName ?? member.first_name ?? undefined,
+        lastName: member.lastName ?? member.last_name ?? undefined,
+    };
 }
 
 // ─── API Functions ───────────────────────────────────────────────────────────
@@ -83,7 +237,11 @@ export async function getProjects(
     const { data } = await api.get<{ data?: ProjectsPayload } | ProjectsPayload>('/projects', { params });
     const payload = toProjectsPayload(data);
 
-    const rows = Array.isArray(payload.data) ? payload.data : [];
+    const rows = Array.isArray(payload.data)
+        ? payload.data
+            .map((item) => normalizeProject(item as BackendProject))
+            .filter((item): item is ProjectItem => !!item)
+        : [];
     const meta = (
         typeof payload.meta === 'object' &&
         payload.meta !== null
@@ -112,8 +270,12 @@ export async function getProjects(
 }
 
 export async function getProjectById(id: string): Promise<ProjectItem> {
-    const { data } = await api.get<{ data: ProjectItem }>(`/projects/${id}`);
-    return data.data;
+    const { data } = await api.get<MaybeWrapped<BackendProject>>(`/projects/${id}`);
+    const normalized = normalizeProject(unwrapData(data));
+    if (!normalized) {
+        throw new Error('Project response could not be parsed');
+    }
+    return normalized;
 }
 
 export async function createProject(payload: ProjectCreatePayload): Promise<ProjectItem> {
@@ -141,8 +303,23 @@ export async function assignClientToProject(
 }
 
 export async function getProjectMembers(projectId: string): Promise<ProjectMember[]> {
-    const { data } = await api.get<{ data: ProjectMember[] }>(`/projects/${projectId}/members`);
-    return data.data;
+    const { data } = await api.get<MaybeWrapped<unknown>>(`/projects/${projectId}/members`);
+    const payload = unwrapData(data);
+
+    const rows = Array.isArray(payload)
+        ? payload
+        : (
+            typeof payload === 'object' &&
+            payload !== null &&
+            'data' in payload &&
+            Array.isArray((payload as Record<string, unknown>).data)
+        )
+            ? (payload as { data: unknown[] }).data
+            : [];
+
+    return rows
+        .map((row) => normalizeProjectMember(row as BackendProjectMember))
+        .filter((row): row is ProjectMember => !!row);
 }
 
 export async function addProjectMember(
@@ -150,13 +327,48 @@ export async function addProjectMember(
     userId: string,
     role?: string,
 ): Promise<ProjectMember> {
-    const { data } = await api.post<{ data: ProjectMember }>(`/projects/${projectId}/members`, {
+    const { data } = await api.post<MaybeWrapped<BackendProjectMember>>(`/projects/${projectId}/members`, {
         userId,
         role,
     });
-    return data.data;
+    const normalized = normalizeProjectMember(unwrapData(data));
+    if (!normalized) {
+        throw new Error('Project member response could not be parsed');
+    }
+    return normalized;
 }
 
 export async function removeProjectMember(projectId: string, userId: string): Promise<void> {
     await api.delete(`/projects/${projectId}/members/${userId}`);
+}
+
+export async function updateProjectGithubRepository(
+    projectId: string,
+    githubUrl: string,
+): Promise<{ repositoryUrl: string; repositoryFullName: string }> {
+    const { data } = await api.patch<MaybeWrapped<{ repositoryUrl: string; repositoryFullName: string }>>(
+        `/projects/${projectId}/github`,
+        { githubUrl },
+    );
+    return unwrapData(data);
+}
+
+export async function getProjectGithubOverview(
+    projectId: string,
+): Promise<ProjectGithubOverview> {
+    const { data } = await api.get<MaybeWrapped<ProjectGithubOverview>>(
+        `/projects/${projectId}/github`,
+    );
+    return unwrapData(data);
+}
+
+export async function getProjectGithubCommits(
+    projectId: string,
+    params?: ProjectGithubCommitsParams,
+): Promise<ProjectGithubCommitsResponse> {
+    const { data } = await api.get<MaybeWrapped<ProjectGithubCommitsResponse>>(
+        `/projects/${projectId}/github/commits`,
+        { params },
+    );
+    return unwrapData(data);
 }
