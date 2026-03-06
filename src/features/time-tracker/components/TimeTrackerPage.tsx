@@ -15,12 +15,14 @@ import {TimeTrackerTabs} from './sections/TimeTrackerTabs';
 import type {TeamSortField, TrackerTab} from './timeTracker.types';
 import {getDisplayUserName, getEntryDurationSeconds} from '../utils/timeTracker.utils';
 import {showConfirmDialog} from '../../../shared/lib/sweetAlert';
+import {NAV_CONFIG} from '../../../shared/constants/navConfig';
 
 const HISTORY_LIMIT_OPTIONS = [10, 20, 50];
 
 export function TimeTrackerPage() {
     const currentUser = useAuthStore((state) => state.user);
     const userRole = currentUser?.role;
+    const activeTimerAccent = userRole ? (NAV_CONFIG[userRole]?.theme.accent ?? '#DC2626') : '#DC2626';
     const hasTeamAccess = userRole === 'ADMIN' || userRole === 'MANAGER' || userRole === 'CEO';
     const myProjectsOnly = !hasTeamAccess;
 
@@ -358,6 +360,7 @@ export function TimeTrackerPage() {
             {activeTab === 'timer' && (
                 <TimerTab
                     activeTimerQuery={{isActive: activeTimerQuery.isActive, elapsed: activeTimerQuery.elapsed}}
+                    activeTimerAccent={activeTimerAccent}
                     activeTimer={activeTimer}
                     activeProjectName={activeProjectName}
                     stopPending={stopMutation.isPending}

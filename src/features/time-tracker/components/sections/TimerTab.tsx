@@ -9,11 +9,45 @@ import type { StartTimerPayload, TimerEntry } from '../../api/timeTracker.api';
 import { SortIcon } from '../SortIcon';
 import { formatClock, getEntryDurationSeconds, getStatusChipClass, getStatusLabel } from '../../utils/timeTracker.utils';
 
+function normalizeHexColor(color: string): string {
+    const trimmed = color.trim();
+    const match = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(trimmed);
+    if (!match) return '#DC2626';
+
+    const value = match[1];
+    if (value.length === 3) {
+        return `#${value.split('').map((char) => `${char}${char}`).join('')}`.toUpperCase();
+    }
+    return `#${value}`.toUpperCase();
+}
+
+function shiftHexColor(color: string, amount: number): string {
+    const hex = normalizeHexColor(color).slice(1);
+    const [r, g, b] = [0, 2, 4].map((index) => parseInt(hex.slice(index, index + 2), 16));
+    const clamp = (value: number) => Math.max(0, Math.min(255, value));
+
+    const nextR = clamp(r + amount);
+    const nextG = clamp(g + amount);
+    const nextB = clamp(b + amount);
+
+    return `#${[nextR, nextG, nextB]
+        .map((channel) => channel.toString(16).padStart(2, '0'))
+        .join('')}`.toUpperCase();
+}
+
+function hexToRgba(color: string, alpha: number): string {
+    const hex = normalizeHexColor(color).slice(1);
+    const [r, g, b] = [0, 2, 4].map((index) => parseInt(hex.slice(index, index + 2), 16));
+    const safeAlpha = Math.max(0, Math.min(1, alpha));
+    return `rgba(${r}, ${g}, ${b}, ${safeAlpha})`;
+}
+
 interface TimerTabProps {
     activeTimerQuery: {
         isActive: boolean;
         elapsed: number;
     };
+    activeTimerAccent: string;
     activeTimer: TimerEntry | null | undefined;
     activeProjectName: string;
     stopPending: boolean;
@@ -52,6 +86,7 @@ interface TimerTabProps {
 
 export function TimerTab({
     activeTimerQuery,
+    activeTimerAccent,
     activeTimer,
     activeProjectName,
     stopPending,
@@ -87,17 +122,29 @@ export function TimerTab({
     onLimitChange,
     limitOptions,
 }: TimerTabProps) {
+    const activeTimerLight = shiftHexColor(activeTimerAccent, 56);
+    const activeTimerMid = shiftHexColor(activeTimerAccent, 10);
+    const activeTimerDark = shiftHexColor(activeTimerAccent, -68);
+    const activeTimerCardStyle = {
+        backgroundImage: `linear-gradient(135deg, ${activeTimerLight} 0%, ${activeTimerMid} 44%, ${activeTimerDark} 100%)`,
+        boxShadow: `0 16px 34px ${hexToRgba(activeTimerAccent, 0.42)}`,
+        borderColor: hexToRgba(activeTimerDark, 0.5),
+    };
+
     return (
         <>
             <section className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
-                <article className="box-border rounded-xl border border-gray-200 bg-gradient-to-br from-red-500 to-orange-500 p-[22px] text-white shadow-[0_10px_24px_rgba(220,38,38,0.2)]">
+                <article
+                    className="box-border rounded-xl border border-gray-200 p-[22px] text-white"
+                    style={activeTimerCardStyle}
+                >
                     <div className="mb-[10px] flex items-center justify-between">
                         <span className="text-xs font-semibold uppercase tracking-[0.08em] opacity-90">Aktif sayac</span>
                         <span
                             className={`inline-flex items-center justify-center rounded-full px-[10px] py-1 text-[11px] font-bold ${
                                 activeTimerQuery.isActive
                                     ? 'bg-white/25 text-white'
-                                    : 'bg-white/15 text-red-50'
+                                    : 'bg-white/15 text-white/90'
                             }`}
                         >
                             {activeTimerQuery.isActive ? 'Calisiyor' : 'Hazir'}
