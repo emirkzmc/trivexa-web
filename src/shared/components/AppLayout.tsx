@@ -3,6 +3,9 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { AppHeader } from './AppHeader';
 import { useAuthStore } from '../../features/auth/store/authStore';
+import { useActiveTimer } from '../../features/time-tracker/hooks/useActiveTimer';
+import { useStopTimer } from '../../features/time-tracker/hooks/useTimerMutations';
+import { DraggableActiveTimer } from '../../features/time-tracker/components/DraggableActiveTimer';
 
 const PAGE_NAMES: Record<string, string> = {
     '/app/dashboard': 'Dashboard',
@@ -48,6 +51,8 @@ export function AppLayout() {
     const logout = useAuthStore((s) => s.logout);
     const navigate = useNavigate();
     const location = useLocation();
+    const activeTimerQuery = useActiveTimer();
+    const stopMutation = useStopTimer();
     const [isMobile, setIsMobile] = useState(() => window.innerWidth < MOBILE_BREAKPOINT);
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -77,6 +82,16 @@ export function AppLayout() {
         logout();
         navigate('/login', { replace: true });
     }
+
+    function handleGlobalStopTimer() {
+        if (activeTimerQuery.isActive) {
+            stopMutation.mutate();
+        }
+    }
+
+    const activeProjectName = activeTimerQuery.timer?.projectName
+        ?? activeTimerQuery.timer?.projectId
+        ?? 'Proje secilmedi';
 
     return (
         <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
@@ -117,6 +132,13 @@ export function AppLayout() {
                     <Outlet />
                 </main>
             </div>
+            <DraggableActiveTimer
+                visible={activeTimerQuery.isActive}
+                elapsedSeconds={activeTimerQuery.elapsed}
+                projectName={activeProjectName}
+                onStop={handleGlobalStopTimer}
+                isStopping={stopMutation.isPending}
+            />
         </div>
     );
 }

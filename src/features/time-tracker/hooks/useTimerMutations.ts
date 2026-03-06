@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { cancelTimer, startTimer, stopTimer } from '../api/timeTracker.api';
+import { deleteTimerEntry, startTimer, stopTimer } from '../api/timeTracker.api';
 import type { StartTimerPayload, TimerEntry } from '../api/timeTracker.api';
 
 function isActiveTimer(value: unknown): value is TimerEntry {
@@ -54,18 +54,18 @@ export function useStopTimer() {
     });
 }
 
-export function useCancelTimer() {
+export function useDeleteTimerEntry() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (id: string) => cancelTimer(id),
+        mutationFn: (id: string) => deleteTimerEntry(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['active-timer'] });
             queryClient.invalidateQueries({ queryKey: ['timer-history'] });
-            toast.success('Kayit iptal edildi', { duration: 3000 });
+            toast.success('Kayit silindi', { duration: 3000 });
         },
         onError: () => {
-            toast.error('Iptal sirasinda bir hata olustu', { duration: 3000 });
+            toast.error('Silme sirasinda bir hata olustu', { duration: 3000 });
         },
     });
 }
