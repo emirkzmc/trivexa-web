@@ -16,7 +16,7 @@ export function TimeTrackerTabs({activeTab, hasTeamAccess, onTabChange}: TimeTra
                 onClick={() => onTabChange('timer')}
                 className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition ${
                     activeTab === 'timer'
-                        ? 'bg-red-600 text-white'
+                        ? 'role-accent-btn'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
             >
@@ -30,7 +30,7 @@ export function TimeTrackerTabs({activeTab, hasTeamAccess, onTabChange}: TimeTra
                 onClick={() => onTabChange('dashboard')}
                 className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition ${
                     activeTab === 'dashboard'
-                        ? 'bg-red-600 text-white'
+                        ? 'role-accent-btn'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
             >
@@ -45,7 +45,7 @@ export function TimeTrackerTabs({activeTab, hasTeamAccess, onTabChange}: TimeTra
                     onClick={() => onTabChange('team')}
                     className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition ${
                         activeTab === 'team'
-                            ? 'bg-red-600 text-white'
+                            ? 'role-accent-btn'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                 >

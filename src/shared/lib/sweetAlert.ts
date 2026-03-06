@@ -16,7 +16,7 @@ export async function showConfirmDialog(options: ConfirmDialogOptions): Promise<
         showCancelButton: true,
         confirmButtonText: options.confirmText ?? 'Evet',
         cancelButtonText: options.cancelText ?? 'Vazgec',
-        confirmButtonColor: '#DC2626',
+        confirmButtonColor: 'var(--role-accent-600)',
         cancelButtonColor: '#6B7280',
         reverseButtons: true,
         focusCancel: true,

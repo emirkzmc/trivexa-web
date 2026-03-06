@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { deleteTimerEntry, startTimer, stopTimer } from '../api/timeTracker.api';
-import type { StartTimerPayload, TimerEntry } from '../api/timeTracker.api';
+import { createManualEntry, deleteTimerEntry, startTimer, stopTimer } from '../api/timeTracker.api';
+import type { CreateManualEntryPayload, StartTimerPayload, TimerEntry } from '../api/timeTracker.api';
 
 function isActiveTimer(value: unknown): value is TimerEntry {
     return (
@@ -66,6 +66,22 @@ export function useDeleteTimerEntry() {
         },
         onError: () => {
             toast.error('Silme sirasinda bir hata olustu', { duration: 3000 });
+        },
+    });
+}
+
+export function useCreateManualEntry() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (payload: CreateManualEntryPayload) => createManualEntry(payload),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['active-timer'] });
+            queryClient.invalidateQueries({ queryKey: ['timer-history'] });
+            toast.success('Manuel kayit olusturuldu', { duration: 3000 });
+        },
+        onError: () => {
+            toast.error('Manuel kayit olusturulurken bir hata olustu', { duration: 3000 });
         },
     });
 }

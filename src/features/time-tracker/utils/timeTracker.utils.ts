@@ -16,8 +16,8 @@ export function getStatusLabel(status: TimerEntry['status']): string {
 }
 
 export function getStatusChipClass(status: TimerEntry['status']): string {
-    if (status === 'ACTIVE') return 'bg-red-100 text-red-700';
-    if (status === 'STOPPED') return 'bg-green-100 text-green-700';
+    if (status === 'ACTIVE') return 'sem-danger-chip';
+    if (status === 'STOPPED') return 'sem-success-chip';
     return 'bg-gray-100 text-gray-600';
 }
 

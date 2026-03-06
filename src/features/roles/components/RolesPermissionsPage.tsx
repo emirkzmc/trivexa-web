@@ -216,7 +216,7 @@ export function RolesPermissionsPage() {
     return (
         <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
             <PageHeader
-                icon={<ShieldCheck size={20} color="#DC2626" />}
+                icon={<ShieldCheck size={20} color="var(--role-accent-600)" />}
                 title="Roller ve Izinler"
                 subtitle="Rolleri secip izinleri backend uzerinden yonetin."
                 actions={(
@@ -303,7 +303,7 @@ export function RolesPermissionsPage() {
                                         onClick={() => setSelectedRoleId(role.id)}
                                         className={`w-full rounded-lg border px-3 py-3 text-left transition ${
                                             isSelected
-                                                ? 'border-red-400 bg-red-50'
+                                                ? 'sem-role-selected'
                                             : 'border-gray-200 bg-white hover:border-gray-300'
                                         }`}
                                     >
@@ -324,7 +324,7 @@ export function RolesPermissionsPage() {
                                                             handleDeleteRole(role.id, role.name);
                                                         }
                                                     }}
-                                                    className="inline-flex h-6 w-6 items-center justify-center rounded text-gray-400 transition hover:bg-red-50 hover:text-red-600"
+                                                    className="sem-role-delete-hover inline-flex h-6 w-6 items-center justify-center rounded text-gray-400 transition"
                                                     aria-label={`${role.name} rolunu sil`}
                                                 >
                                                     <Trash2 size={14} />
@@ -380,7 +380,7 @@ export function RolesPermissionsPage() {
                                 onChange={(event) => setSearch(event.target.value)}
                                 type="text"
                                 placeholder="Izin ara (ad, aciklama veya ID)"
-                                className="h-9 w-full rounded-lg border border-gray-300 pl-8 pr-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                className="h-9 w-full rounded-lg border border-gray-300 pl-8 pr-3 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                         </label>
                     </div>
@@ -432,7 +432,7 @@ export function RolesPermissionsPage() {
                                                             type="checkbox"
                                                             checked={checked}
                                                             onChange={() => handleTogglePermission(permission.id)}
-                                                            className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                                         />
                                                         {checked ? 'Izinli' : 'Kapali'}
                                                     </label>
@@ -468,7 +468,7 @@ export function RolesPermissionsPage() {
                                     if (createRoleError) setCreateRoleError('');
                                 }}
                                 placeholder="Ornek: SALES_MANAGER"
-                                className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                            className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                             {createRoleError && (
                                 <p className="mt-1 text-xs font-medium text-red-600">{createRoleError}</p>
@@ -482,7 +482,7 @@ export function RolesPermissionsPage() {
                                 onChange={(event) => setNewRoleDescription(event.target.value)}
                                 placeholder="Rolun sorumluluklarini kisaca aciklayin"
                                 rows={3}
-                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                         </div>
 

@@ -41,6 +41,14 @@ export interface StartTimerPayload {
     description?: string;
 }
 
+export interface CreateManualEntryPayload {
+    projectId?: string;
+    taskId?: string;
+    startTime: string;
+    endTime: string;
+    description?: string;
+}
+
 type MaybeWrapped<T> = { data?: T } | T;
 
 type BackendTimeEntry = Partial<{
@@ -141,6 +149,17 @@ export async function stopTimer(): Promise<TimerEntry> {
 
 export async function deleteTimerEntry(id: string): Promise<void> {
     await api.delete(`/time-entries/${id}`);
+}
+
+export async function createManualEntry(payload: CreateManualEntryPayload): Promise<TimerEntry> {
+    const { data } = await api.post<MaybeWrapped<BackendTimeEntry>>(
+        '/time-entries',
+        payload,
+    );
+
+    const normalized = normalizeTimerEntry(unwrapData(data));
+    if (!normalized) throw new Error('Manual entry response could not be parsed');
+    return normalized;
 }
 
 export async function getActiveTimer(): Promise<TimerEntry | null> {

@@ -157,7 +157,7 @@ export function AuditLogPage() {
     return (
         <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-[18px]">
             <PageHeader
-                icon={<ShieldCheck size={20} color="#DC2626" />}
+                icon={<ShieldCheck size={20} color="var(--role-accent-600)" />}
                 title="Sistem İzleme (Audit Log)"
                 subtitle="Sistemde gerçekleşen tüm işlem hareketlerinin izleme kayıtları."
             />

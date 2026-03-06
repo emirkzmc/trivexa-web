@@ -78,8 +78,8 @@ export function PersonnelFilters({ filters, onFilterChange, onClear }: Personnel
             {hasFilters && (
                 <button onClick={onClear} style={{
                     display: 'flex', alignItems: 'center', gap: 4,
-                    padding: '7px 12px', borderRadius: 6, border: '1px solid #FCA5A5',
-                    backgroundColor: '#FEF2F2', color: '#DC2626', fontSize: 12,
+                    padding: '7px 12px', borderRadius: 6, border: '1px solid var(--role-accent-300)',
+                    backgroundColor: 'var(--role-accent-50)', color: 'var(--role-accent-600)', fontSize: 12,
                     fontWeight: 500, cursor: 'pointer',
                 }}>
                     <X size={13} /> Temizle

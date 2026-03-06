@@ -160,23 +160,23 @@ export function PersonnelFormModal({
                     <div>
                         <label style={labelStyle}>Ad *</label>
                         <input
-                            style={{ ...inputStyle, borderColor: errors.firstName ? '#DC2626' : '#D1D5DB' }}
+                            style={{ ...inputStyle, borderColor: errors.firstName ? 'var(--role-accent-600)' : '#D1D5DB' }}
                             value={firstName}
                             onChange={(e) => setFirstName(e.target.value)}
                             placeholder="Ad"
                         />
-                        {errors.firstName && <p style={{ color: '#DC2626', fontSize: 11, margin: '4px 0 0' }}>{errors.firstName}</p>}
+                        {errors.firstName && <p style={{ color: 'var(--role-accent-600)', fontSize: 11, margin: '4px 0 0' }}>{errors.firstName}</p>}
                     </div>
 
                     <div>
                         <label style={labelStyle}>Soyad *</label>
                         <input
-                            style={{ ...inputStyle, borderColor: errors.lastName ? '#DC2626' : '#D1D5DB' }}
+                            style={{ ...inputStyle, borderColor: errors.lastName ? 'var(--role-accent-600)' : '#D1D5DB' }}
                             value={lastName}
                             onChange={(e) => setLastName(e.target.value)}
                             placeholder="Soyad"
                         />
-                        {errors.lastName && <p style={{ color: '#DC2626', fontSize: 11, margin: '4px 0 0' }}>{errors.lastName}</p>}
+                        {errors.lastName && <p style={{ color: 'var(--role-accent-600)', fontSize: 11, margin: '4px 0 0' }}>{errors.lastName}</p>}
                     </div>
                 </div>
 
@@ -184,12 +184,12 @@ export function PersonnelFormModal({
                     <label style={labelStyle}>E-posta *</label>
                     <input
                         type="email"
-                        style={{ ...inputStyle, borderColor: errors.email ? '#DC2626' : '#D1D5DB' }}
+                        style={{ ...inputStyle, borderColor: errors.email ? 'var(--role-accent-600)' : '#D1D5DB' }}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="ornek@trivexa.com"
                     />
-                    {errors.email && <p style={{ color: '#DC2626', fontSize: 11, margin: '4px 0 0' }}>{errors.email}</p>}
+                    {errors.email && <p style={{ color: 'var(--role-accent-600)', fontSize: 11, margin: '4px 0 0' }}>{errors.email}</p>}
                 </div>
 
                 <div style={{ marginBottom: 14 }}>
@@ -198,19 +198,19 @@ export function PersonnelFormModal({
                     </label>
                     <input
                         type="password"
-                        style={{ ...inputStyle, borderColor: errors.password ? '#DC2626' : '#D1D5DB' }}
+                        style={{ ...inputStyle, borderColor: errors.password ? 'var(--role-accent-600)' : '#D1D5DB' }}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Min 8 karakter, 1 buyuk harf, 1 rakam"
                     />
-                    {errors.password && <p style={{ color: '#DC2626', fontSize: 11, margin: '4px 0 0' }}>{errors.password}</p>}
+                    {errors.password && <p style={{ color: 'var(--role-accent-600)', fontSize: 11, margin: '4px 0 0' }}>{errors.password}</p>}
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 20 }}>
                     <div>
                         <label style={labelStyle}>Rol *</label>
                         <select
-                            style={{ ...inputStyle, borderColor: errors.role ? '#DC2626' : '#D1D5DB', cursor: 'pointer' }}
+                            style={{ ...inputStyle, borderColor: errors.role ? 'var(--role-accent-600)' : '#D1D5DB', cursor: 'pointer' }}
                             value={role}
                             onChange={(e) => setRole(e.target.value)}
                             disabled={rolesLoading}
@@ -222,7 +222,7 @@ export function PersonnelFormModal({
                                 </option>
                             ))}
                         </select>
-                        {errors.role && <p style={{ color: '#DC2626', fontSize: 11, margin: '4px 0 0' }}>{errors.role}</p>}
+                        {errors.role && <p style={{ color: 'var(--role-accent-600)', fontSize: 11, margin: '4px 0 0' }}>{errors.role}</p>}
                     </div>
 
                     <div>
@@ -295,7 +295,7 @@ export function PersonnelFormModal({
                         disabled={isPending}
                         style={{
                             padding: '9px 20px', borderRadius: 8, border: 'none',
-                            backgroundColor: '#DC2626', color: '#fff', fontSize: 13,
+                            backgroundColor: 'var(--role-accent-600)', color: '#fff', fontSize: 13,
                             fontWeight: 600, cursor: isPending ? 'default' : 'pointer',
                             opacity: isPending ? 0.6 : 1,
                         }}

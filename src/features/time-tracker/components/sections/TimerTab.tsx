@@ -1,46 +1,14 @@
-import { Clock3, FolderOpen, History, ListFilter, Play, Square, Trash2 } from 'lucide-react';
-import type { FormEvent } from 'react';
+import { Clock3, FolderOpen, History, ListFilter, PencilLine, Play, Square, Trash2 } from 'lucide-react';
+import { useMemo, type FormEvent } from 'react';
 import { Pagination } from '../../../../shared/components/Pagination';
 import { formatDate } from '../../../../shared/utils/formatDate';
 import { formatDuration } from '../../../../shared/utils/formatDuration';
+import { buildRoleAccentPalette } from '../../../../shared/utils/colorTheme';
 import type { ProjectItem } from '../../../projects/api/projects.api';
 import type { TaskItem } from '../../../tasks/api/tasks.api';
 import type { StartTimerPayload, TimerEntry } from '../../api/timeTracker.api';
 import { SortIcon } from '../SortIcon';
 import { formatClock, getEntryDurationSeconds, getStatusChipClass, getStatusLabel } from '../../utils/timeTracker.utils';
-
-function normalizeHexColor(color: string): string {
-    const trimmed = color.trim();
-    const match = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(trimmed);
-    if (!match) return '#DC2626';
-
-    const value = match[1];
-    if (value.length === 3) {
-        return `#${value.split('').map((char) => `${char}${char}`).join('')}`.toUpperCase();
-    }
-    return `#${value}`.toUpperCase();
-}
-
-function shiftHexColor(color: string, amount: number): string {
-    const hex = normalizeHexColor(color).slice(1);
-    const [r, g, b] = [0, 2, 4].map((index) => parseInt(hex.slice(index, index + 2), 16));
-    const clamp = (value: number) => Math.max(0, Math.min(255, value));
-
-    const nextR = clamp(r + amount);
-    const nextG = clamp(g + amount);
-    const nextB = clamp(b + amount);
-
-    return `#${[nextR, nextG, nextB]
-        .map((channel) => channel.toString(16).padStart(2, '0'))
-        .join('')}`.toUpperCase();
-}
-
-function hexToRgba(color: string, alpha: number): string {
-    const hex = normalizeHexColor(color).slice(1);
-    const [r, g, b] = [0, 2, 4].map((index) => parseInt(hex.slice(index, index + 2), 16));
-    const safeAlpha = Math.max(0, Math.min(1, alpha));
-    return `rgba(${r}, ${g}, ${b}, ${safeAlpha})`;
-}
 
 interface TimerTabProps {
     activeTimerQuery: {
@@ -52,6 +20,7 @@ interface TimerTabProps {
     activeProjectName: string;
     stopPending: boolean;
     onStopTimer: () => void;
+    onOpenManualEntry: () => void;
     formData: StartTimerPayload;
     setFormData: React.Dispatch<React.SetStateAction<StartTimerPayload>>;
     onStartSubmit: (event: FormEvent<HTMLFormElement>) => void;
@@ -91,6 +60,7 @@ export function TimerTab({
     activeProjectName,
     stopPending,
     onStopTimer,
+    onOpenManualEntry,
     formData,
     setFormData,
     onStartSubmit,
@@ -122,13 +92,11 @@ export function TimerTab({
     onLimitChange,
     limitOptions,
 }: TimerTabProps) {
-    const activeTimerLight = shiftHexColor(activeTimerAccent, 56);
-    const activeTimerMid = shiftHexColor(activeTimerAccent, 10);
-    const activeTimerDark = shiftHexColor(activeTimerAccent, -68);
+    const accentPalette = useMemo(() => buildRoleAccentPalette(activeTimerAccent), [activeTimerAccent]);
     const activeTimerCardStyle = {
-        backgroundImage: `linear-gradient(135deg, ${activeTimerLight} 0%, ${activeTimerMid} 44%, ${activeTimerDark} 100%)`,
-        boxShadow: `0 16px 34px ${hexToRgba(activeTimerAccent, 0.42)}`,
-        borderColor: hexToRgba(activeTimerDark, 0.5),
+        backgroundImage: `linear-gradient(135deg, ${accentPalette.gradientFrom} 0%, ${accentPalette.gradientMid} 44%, ${accentPalette.gradientTo} 100%)`,
+        boxShadow: `0 16px 34px ${accentPalette.accentShadow}`,
+        borderColor: accentPalette.accentBorder,
     };
 
     return (
@@ -180,6 +148,14 @@ export function TimerTab({
                 <article className="box-border rounded-xl border border-gray-200 bg-white p-[18px]">
                     <div className="mb-[10px] flex items-center justify-between">
                         <span className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-700">Yeni kayit</span>
+                        <button
+                            type="button"
+                            onClick={onOpenManualEntry}
+                            className="role-outline-btn inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition"
+                        >
+                            <PencilLine size={12} />
+                            Elle Giris
+                        </button>
                     </div>
 
                     <form className="flex flex-col gap-2" onSubmit={onStartSubmit}>
@@ -258,7 +234,7 @@ export function TimerTab({
 
                         <button
                             type="submit"
-                            className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-[13px] font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="role-accent-btn inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
                             disabled={isFormDisabled || !formData.projectId}
                         >
                             <Play size={14}/>
@@ -374,7 +350,7 @@ export function TimerTab({
                                         type="button"
                                         onClick={() => onDeleteHistoryRow(row.id)}
                                         disabled={deletePending || row.status === 'ACTIVE'}
-                                        className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="sem-danger-soft inline-flex items-center gap-1 rounded-md border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                         <Trash2 size={12} />
                                         Sil
@@ -426,7 +402,7 @@ export function TimerTab({
                                 type="button"
                                 onClick={() => onDeleteHistoryRow(row.id)}
                                 disabled={deletePending || row.status === 'ACTIVE'}
-                                className="mt-3 inline-flex w-full items-center justify-center gap-1 rounded-md border border-red-200 bg-red-50 px-2.5 py-1.5 text-[11px] font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="sem-danger-soft mt-3 inline-flex w-full items-center justify-center gap-1 rounded-md border px-2.5 py-1.5 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 <Trash2 size={12} />
                                 Kaydi Sil

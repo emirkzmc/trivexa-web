@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { AppHeader } from './AppHeader';
@@ -6,6 +6,8 @@ import { useAuthStore } from '../../features/auth/store/authStore';
 import { useActiveTimer } from '../../features/time-tracker/hooks/useActiveTimer';
 import { useStopTimer } from '../../features/time-tracker/hooks/useTimerMutations';
 import { DraggableActiveTimer } from '../../features/time-tracker/components/DraggableActiveTimer';
+import { NAV_CONFIG } from '../constants/navConfig';
+import { buildRoleAccentPalette } from '../utils/colorTheme';
 
 const PAGE_NAMES: Record<string, string> = {
     '/app/dashboard': 'Dashboard',
@@ -57,6 +59,19 @@ export function AppLayout() {
     const stopMutation = useStopTimer();
     const [isMobile, setIsMobile] = useState(() => window.innerWidth < MOBILE_BREAKPOINT);
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+    const roleAccent = useMemo(() => {
+        if (!user?.role) return '#DC2626';
+        return NAV_CONFIG[user.role]?.theme.accent ?? '#DC2626';
+    }, [user?.role]);
+    const rolePalette = useMemo(() => buildRoleAccentPalette(roleAccent), [roleAccent]);
+    const layoutStyle = useMemo<CSSProperties>(
+        () => ({
+            display: 'flex',
+            height: '100vh',
+            overflow: 'hidden',
+        }),
+        [],
+    );
 
     useEffect(() => {
         const onResize = () => {
@@ -69,6 +84,33 @@ export function AppLayout() {
         window.addEventListener('resize', onResize);
         return () => window.removeEventListener('resize', onResize);
     }, []);
+
+    useEffect(() => {
+        const root = document.documentElement;
+        const vars: Record<string, string> = {
+            '--role-accent': rolePalette.accent500,
+            '--role-accent-50': rolePalette.accent50,
+            '--role-accent-100': rolePalette.accent100,
+            '--role-accent-200': rolePalette.accent200,
+            '--role-accent-300': rolePalette.accent300,
+            '--role-accent-400': rolePalette.accent400,
+            '--role-accent-500': rolePalette.accent500,
+            '--role-accent-600': rolePalette.accent600,
+            '--role-accent-700': rolePalette.accent700,
+            '--role-accent-800': rolePalette.accent800,
+            '--role-accent-rgb': rolePalette.rgbChannels,
+            '--role-accent-soft': rolePalette.accentSoft,
+            '--role-accent-border': rolePalette.accentBorder,
+            '--role-accent-shadow': rolePalette.accentShadow,
+            '--role-gradient-from': rolePalette.gradientFrom,
+            '--role-gradient-mid': rolePalette.gradientMid,
+            '--role-gradient-to': rolePalette.gradientTo,
+        };
+
+        Object.entries(vars).forEach(([key, value]) => {
+            root.style.setProperty(key, value);
+        });
+    }, [rolePalette]);
 
     if (!user) return null;
 
@@ -96,7 +138,7 @@ export function AppLayout() {
         ?? 'Proje secilmedi';
 
     return (
-        <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+        <div style={layoutStyle}>
             {isMobile && mobileSidebarOpen && (
                 <div
                     role="button"

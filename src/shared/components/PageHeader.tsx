@@ -8,7 +8,7 @@ interface PageHeaderProps {
     actions?: ReactNode;
 }
 
-export function PageHeader({ icon, iconBg = '#DC262615', title, subtitle, actions }: PageHeaderProps) {
+export function PageHeader({ icon, iconBg = 'var(--role-accent-soft)', title, subtitle, actions }: PageHeaderProps) {
     return (
         <div style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',

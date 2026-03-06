@@ -16,6 +16,7 @@ import type {TeamSortField, TrackerTab} from './timeTracker.types';
 import {getDisplayUserName, getEntryDurationSeconds} from '../utils/timeTracker.utils';
 import {showConfirmDialog} from '../../../shared/lib/sweetAlert';
 import {NAV_CONFIG} from '../../../shared/constants/navConfig';
+import { ManualEntryModal } from './ManualEntryModal';
 
 const HISTORY_LIMIT_OPTIONS = [10, 20, 50];
 
@@ -27,6 +28,7 @@ export function TimeTrackerPage() {
     const myProjectsOnly = !hasTeamAccess;
 
     const [activeTab, setActiveTab] = useState<TrackerTab>('timer');
+    const [manualEntryOpen, setManualEntryOpen] = useState(false);
     const [formData, setFormData] = useState<StartTimerPayload>({projectId: '', taskId: '', description: ''});
 
     const [statusFilter, setStatusFilter] = useState<string>('');
@@ -346,7 +348,7 @@ export function TimeTrackerPage() {
     return (
         <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-[18px]">
             <PageHeader
-                icon={<Timer size={20} color="#DC2626"/>}
+                icon={<Timer size={20} color="var(--role-accent-600)"/>}
                 title="Time Tracker"
                 subtitle="Calisma suresini takip et, ozeti izle ve ekip hareketlerini gor"
             />
@@ -365,6 +367,7 @@ export function TimeTrackerPage() {
                     activeProjectName={activeProjectName}
                     stopPending={stopMutation.isPending}
                     onStopTimer={handleStopTimer}
+                    onOpenManualEntry={() => setManualEntryOpen(true)}
                     formData={formData}
                     setFormData={setFormData}
                     onStartSubmit={handleStartSubmit}
@@ -398,8 +401,14 @@ export function TimeTrackerPage() {
                 />
             )}
 
+            <ManualEntryModal
+                isOpen={manualEntryOpen}
+                onClose={() => setManualEntryOpen(false)}
+            />
+
             {activeTab === 'dashboard' && (
                 <DashboardTab
+                    roleAccent={activeTimerAccent}
                     hasTeamAccess={hasTeamAccess}
                     dashboardTrackedSeconds={dashboardTrackedSeconds}
                     dashboardActiveCount={dashboardActiveCount}

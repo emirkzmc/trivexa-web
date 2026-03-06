@@ -168,10 +168,12 @@ function PeriodChartTable({
     title,
     subtitle,
     rows,
+    barColor,
 }: {
     title: string;
     subtitle: string;
     rows: PeriodRow[];
+    barColor: string;
 }) {
     const chartData = {
         labels: rows.map((row) => row.label),
@@ -179,7 +181,7 @@ function PeriodChartTable({
             {
                 label: 'Saat',
                 data: rows.map((row) => Number((row.seconds / 3600).toFixed(2))),
-                backgroundColor: '#ef4444',
+                backgroundColor: barColor,
                 borderRadius: 6,
             },
         ],
@@ -219,6 +221,7 @@ function PeriodChartTable({
 }
 
 interface DashboardTabProps {
+    roleAccent: string;
     hasTeamAccess: boolean;
     dashboardTrackedSeconds: number;
     dashboardActiveCount: number;
@@ -234,6 +237,7 @@ interface DashboardTabProps {
 }
 
 export function DashboardTab({
+    roleAccent,
     hasTeamAccess,
     dashboardTrackedSeconds,
     dashboardActiveCount,
@@ -349,7 +353,7 @@ export function DashboardTab({
                         onClick={() => setSelectedPeriod('daily')}
                         className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
                             selectedPeriod === 'daily'
-                                ? 'bg-red-600 text-white'
+                                ? 'role-accent-btn'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                     >
@@ -360,7 +364,7 @@ export function DashboardTab({
                         onClick={() => setSelectedPeriod('weekly')}
                         className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
                             selectedPeriod === 'weekly'
-                                ? 'bg-red-600 text-white'
+                                ? 'role-accent-btn'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                     >
@@ -371,7 +375,7 @@ export function DashboardTab({
                         onClick={() => setSelectedPeriod('monthly')}
                         className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
                             selectedPeriod === 'monthly'
-                                ? 'bg-red-600 text-white'
+                                ? 'role-accent-btn'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                     >
@@ -383,6 +387,7 @@ export function DashboardTab({
                     title={periodConfig.title}
                     subtitle={periodConfig.subtitle}
                     rows={periodConfig.rows}
+                    barColor={roleAccent}
                 />
             </section>
 
