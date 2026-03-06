@@ -1,7 +1,13 @@
 import { defineConfig } from 'vite'
 import tailwindcss from '@tailwindcss/vite'
+import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      sonner: fileURLToPath(new URL('./src/sonner.tsx', import.meta.url)),
+    },
+  },
   plugins: [
     tailwindcss(),
   ],

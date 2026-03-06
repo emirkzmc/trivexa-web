@@ -18,6 +18,7 @@ const PAGE_NAMES: Record<string, string> = {
     '/app/finans': 'Finansal Raporlar',
     '/app/sozlesmeler': 'Sözleşmeler',
     '/app/dosyalar': 'Dosya Yönetimi',
+    '/app/roller': 'Roller ve Izinler',
     '/app/audit-log': 'Audit Log',
     '/app/ayarlar': 'Ayarlar',
     '/app/faturalar': 'Fatura Yönetimi',

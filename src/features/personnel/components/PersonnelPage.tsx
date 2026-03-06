@@ -13,6 +13,7 @@ import { PersonnelFilters } from './PersonnelFilters';
 import { PersonnelTable } from './PersonnelTable';
 import { PageHeader } from '../../../shared/components/PageHeader';
 import { Pagination } from '../../../shared/components/Pagination';
+import { showConfirmDialog } from '../../../shared/lib/sweetAlert';
 import type {
     PersonnelCreatePayload,
     PersonnelItem,
@@ -60,17 +61,28 @@ export function PersonnelPage() {
         });
     }
 
-    function handleToggleActive(item: PersonnelItem) {
+    async function handleToggleActive(item: PersonnelItem) {
         const fullName = `${item.firstName} ${item.lastName}`;
 
         if (item.isActive) {
-            if (confirm(`${fullName} deaktif edilecek. Emin misiniz?`)) {
+            const isConfirmed = await showConfirmDialog({
+                title: 'Personel deaktif edilsin mi?',
+                text: `${fullName} deaktif edilecek.`,
+                confirmText: 'Deaktif Et',
+            });
+            if (isConfirmed) {
                 deactivateMutation.mutate(item.id);
             }
             return;
         }
 
-        if (confirm(`${fullName} aktif edilecek. Emin misiniz?`)) {
+        const isConfirmed = await showConfirmDialog({
+            title: 'Personel aktif edilsin mi?',
+            text: `${fullName} aktif edilecek.`,
+            confirmText: 'Aktif Et',
+            icon: 'question',
+        });
+        if (isConfirmed) {
             activateMutation.mutate(item.id);
         }
     }

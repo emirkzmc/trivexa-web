@@ -14,6 +14,7 @@ import {DashboardTab} from './sections/DashboardTab';
 import {TimeTrackerTabs} from './sections/TimeTrackerTabs';
 import type {TeamSortField, TrackerTab} from './timeTracker.types';
 import {getDisplayUserName, getEntryDurationSeconds} from '../utils/timeTracker.utils';
+import {showConfirmDialog} from '../../../shared/lib/sweetAlert';
 
 const HISTORY_LIMIT_OPTIONS = [10, 20, 50];
 
@@ -313,8 +314,12 @@ export function TimeTrackerPage() {
         }
     }
 
-    function handleDeleteHistoryRow(id: string) {
-        const isConfirmed = window.confirm('Bu zaman kaydi kalici olarak silinsin mi?');
+    async function handleDeleteHistoryRow(id: string) {
+        const isConfirmed = await showConfirmDialog({
+            title: 'Zaman kaydi silinsin mi?',
+            text: 'Bu zaman kaydi kalici olarak silinecek.',
+            confirmText: 'Kaydi Sil',
+        });
         if (!isConfirmed) return;
         deleteMutation.mutate(id);
     }

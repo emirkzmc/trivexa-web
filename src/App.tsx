@@ -7,6 +7,7 @@ import { AppLayout } from './shared/components/AppLayout';
 import { PersonnelPage } from './features/personnel/components/PersonnelPage';
 import { TimeTrackerPage } from './features/time-tracker/components/TimeTrackerPage';
 import { AuditLogPage } from './features/audit/components/AuditLogPage';
+import { RolesPermissionsPage } from './features/roles/components/RolesPermissionsPage';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="dashboard" element={<div>Dashboard Paneli</div>} />
         <Route path="personel" element={<PersonnelPage />} />
         <Route path="time-tracker" element={<TimeTrackerPage />} />
+        <Route path="roller" element={<RolesPermissionsPage />} />
         <Route path="audit-log" element={<AuditLogPage />} />
         <Route path="*" element={<div>Yapım Aşamasında</div>} />
       </Route>
