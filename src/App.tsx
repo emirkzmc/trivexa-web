@@ -8,6 +8,7 @@ import { PersonnelPage } from './features/personnel/components/PersonnelPage';
 import { TimeTrackerPage } from './features/time-tracker/components/TimeTrackerPage';
 import { AuditLogPage } from './features/audit/components/AuditLogPage';
 import { RolesPermissionsPage } from './features/roles/components/RolesPermissionsPage';
+import { DepartmentsPage } from './features/departments/components/DepartmentsPage';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
       <Route path="/app" element={<AppLayout />}>
         <Route path="dashboard" element={<div>Dashboard Paneli</div>} />
         <Route path="personel" element={<PersonnelPage />} />
+        <Route path="departmanlar" element={<DepartmentsPage />} />
         <Route path="time-tracker" element={<TimeTrackerPage />} />
         <Route path="roller" element={<RolesPermissionsPage />} />
         <Route path="audit-log" element={<AuditLogPage />} />

@@ -101,7 +101,7 @@ export function PersonnelTable({
                             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>Durum <SortIcon field="isActive" currentSortField={sortField} currentSortDirection={sortDirection} /></div>
                         </th>
                         <th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600, color: '#6B7280', fontSize: 12, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                            İşlemler
+                            Ä°ÅŸlemler
                         </th>
                     </tr>
                 </thead>
@@ -109,7 +109,7 @@ export function PersonnelTable({
                     {isLoading && (
                         <tr>
                             <td colSpan={6} style={{ textAlign: 'center', padding: 40, color: '#9CA3AF' }}>
-                                Yükleniyor...
+                                YÃ¼kleniyor...
                             </td>
                         </tr>
                     )}
@@ -117,7 +117,7 @@ export function PersonnelTable({
                     {isError && (
                         <tr>
                             <td colSpan={6} style={{ textAlign: 'center', padding: 40, color: '#DC2626' }}>
-                                Personel listesi yüklenirken hata oluştu.
+                                Personel listesi yÃ¼klenirken hata oluÅŸtu.
                             </td>
                         </tr>
                     )}
@@ -126,8 +126,8 @@ export function PersonnelTable({
                         <tr>
                             <td colSpan={6} style={{ textAlign: 'center', padding: 40, color: '#9CA3AF' }}>
                                 {hasFilters
-                                    ? 'Bu filtrelere uygun personel bulunamadı.'
-                                    : 'Henüz kayıtlı personel bulunmuyor.'}
+                                    ? 'Bu filtrelere uygun personel bulunamadÄ±.'
+                                    : 'HenÃ¼z kayÄ±tlÄ± personel bulunmuyor.'}
                             </td>
                         </tr>
                     )}
@@ -146,7 +146,7 @@ export function PersonnelTable({
     );
 }
 
-// ─── Satır Bileşeni ──────────────────────────────────────────────────────────
+// â”€â”€â”€ SatÄ±r BileÅŸeni â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface PersonnelRowProps {
     item: PersonnelItem;
@@ -171,7 +171,14 @@ function PersonnelRow({ item, onEdit, onToggleActive }: PersonnelRowProps) {
                 {ROLE_LABELS[item.role] ?? item.role}
             </td>
             <td style={{ padding: '12px 16px', color: '#374151' }}>
-                {DEPARTMENT_LABELS[item.department] ?? item.department ?? '—'}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <span>{DEPARTMENT_LABELS[item.department] ?? item.department ?? '-'}</span>
+                    {item.subDepartmentName && (
+                        <span style={{ fontSize: 11, color: '#6B7280' }}>
+                            {item.subDepartmentName}
+                        </span>
+                    )}
+                </div>
             </td>
             <td style={{ padding: '12px 16px' }}>
                 <StatusBadge active={item.isActive ?? true} />
@@ -180,7 +187,7 @@ function PersonnelRow({ item, onEdit, onToggleActive }: PersonnelRowProps) {
                 <div style={{ display: 'flex', gap: 6 }}>
                     <button
                         onClick={() => onEdit(item)}
-                        title="Düzenle"
+                        title="DÃ¼zenle"
                         style={actionBtnStyle}
                     >
                         <Edit2 size={14} color="#6B7280" />

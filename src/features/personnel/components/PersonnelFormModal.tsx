@@ -1,15 +1,22 @@
-import { useState, type FormEvent } from 'react';
-import { DEPARTMENTS, DEPARTMENT_LABELS } from '../../../shared/constants/departments';
-import { ROLES } from '../../../shared/constants/roles';
-import { ROLE_LABELS } from '../../../shared/constants/roleLabels';
+import { useMemo, useState, type FormEvent } from 'react';
 import { Modal } from '../../../shared/components/Modal';
 import type { PersonnelItem, PersonnelCreatePayload, PersonnelUpdatePayload } from '../api/personnel.api';
+
+interface SelectOption {
+    value: string;
+    label: string;
+}
 
 interface Props {
     editItem: PersonnelItem | null;
     onSubmit: (payload: PersonnelCreatePayload | PersonnelUpdatePayload) => void;
     onClose: () => void;
     isPending: boolean;
+    roleOptions: SelectOption[];
+    departmentOptions: SelectOption[];
+    departmentModulesByDepartment: Record<string, SelectOption[]>;
+    rolesLoading?: boolean;
+    departmentsLoading?: boolean;
 }
 
 const inputStyle: React.CSSProperties = {
@@ -31,7 +38,17 @@ const labelStyle: React.CSSProperties = {
     marginBottom: 4,
 };
 
-export function PersonnelFormModal({ editItem, onSubmit, onClose, isPending }: Props) {
+export function PersonnelFormModal({
+    editItem,
+    onSubmit,
+    onClose,
+    isPending,
+    roleOptions,
+    departmentOptions,
+    departmentModulesByDepartment,
+    rolesLoading = false,
+    departmentsLoading = false,
+}: Props) {
     const isEdit = !!editItem;
 
     const [firstName, setFirstName] = useState(editItem?.firstName ?? '');
@@ -40,7 +57,32 @@ export function PersonnelFormModal({ editItem, onSubmit, onClose, isPending }: P
     const [password, setPassword] = useState('');
     const [role, setRole] = useState(editItem?.role ?? '');
     const [department, setDepartment] = useState(editItem?.department ?? '');
+    const [subDepartmentId, setSubDepartmentId] = useState(editItem?.subDepartmentId ?? '');
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    const resolvedRoleOptions = useMemo(() => {
+        if (!role || roleOptions.some((option) => option.value === role)) {
+            return roleOptions;
+        }
+        return [...roleOptions, { value: role, label: role }];
+    }, [role, roleOptions]);
+
+    const resolvedDepartmentOptions = useMemo(() => {
+        if (!department || departmentOptions.some((option) => option.value === department)) {
+            return departmentOptions;
+        }
+        return [...departmentOptions, { value: department, label: department }];
+    }, [department, departmentOptions]);
+
+    const resolvedSubDepartmentOptions = useMemo(() => {
+        const options = departmentModulesByDepartment[department] ?? [];
+        if (!subDepartmentId || options.some((option) => option.value === subDepartmentId)) {
+            return options;
+        }
+
+        const fallbackLabel = editItem?.subDepartmentName || subDepartmentId;
+        return [...options, { value: subDepartmentId, label: fallbackLabel }];
+    }, [departmentModulesByDepartment, department, subDepartmentId, editItem?.subDepartmentName]);
 
     function validate(): boolean {
         const errs: Record<string, string> = {};
@@ -51,22 +93,25 @@ export function PersonnelFormModal({ editItem, onSubmit, onClose, isPending }: P
         if (!email.trim()) {
             errs.email = 'E-posta zorunludur';
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            errs.email = 'Geçerli bir e-posta girin';
+            errs.email = 'Gecerli bir e-posta girin';
         }
 
         if (!isEdit) {
             if (!password) {
-                errs.password = 'Şifre zorunludur';
+                errs.password = 'Sifre zorunludur';
             } else if (password.length < 8) {
                 errs.password = 'Minimum 8 karakter';
             } else if (!/[A-Z]/.test(password)) {
-                errs.password = 'En az 1 büyük harf olmalı';
+                errs.password = 'En az 1 buyuk harf olmali';
             } else if (!/\d/.test(password)) {
-                errs.password = 'En az 1 rakam olmalı';
+                errs.password = 'En az 1 rakam olmali';
             }
         }
 
-        if (!role) errs.role = 'Rol seçilmelidir';
+        if (!role) errs.role = 'Rol secilmelidir';
+        if (department && resolvedSubDepartmentOptions.length > 0 && !subDepartmentId) {
+            errs.subDepartmentId = 'Alt departman secilmelidir';
+        }
 
         setErrors(errs);
         return Object.keys(errs).length === 0;
@@ -83,33 +128,35 @@ export function PersonnelFormModal({ editItem, onSubmit, onClose, isPending }: P
                 email: email.trim(),
                 role,
                 department: department || undefined,
+                subDepartmentId: subDepartmentId || undefined,
             };
             if (password) {
                 (payload as Record<string, unknown>).password = password;
             }
             onSubmit(payload);
-        } else {
-            const payload: PersonnelCreatePayload = {
-                firstName: firstName.trim(),
-                lastName: lastName.trim(),
-                email: email.trim(),
-                password,
-                role,
-                department: department || undefined,
-            };
-            onSubmit(payload);
+            return;
         }
+
+        const payload: PersonnelCreatePayload = {
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            email: email.trim(),
+            password,
+            role,
+            department: department || undefined,
+            subDepartmentId: subDepartmentId || undefined,
+        };
+        onSubmit(payload);
     }
 
     return (
         <Modal
-            title={isEdit ? 'Personel Düzenle' : 'Yeni Personel Ekle'}
+            title={isEdit ? 'Personel Duzenle' : 'Yeni Personel Ekle'}
             onClose={onClose}
-            width={480}
+            width={560}
         >
             <form onSubmit={handleSubmit}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
-                    {/* Ad */}
                     <div>
                         <label style={labelStyle}>Ad *</label>
                         <input
@@ -120,7 +167,7 @@ export function PersonnelFormModal({ editItem, onSubmit, onClose, isPending }: P
                         />
                         {errors.firstName && <p style={{ color: '#DC2626', fontSize: 11, margin: '4px 0 0' }}>{errors.firstName}</p>}
                     </div>
-                    {/* Soyad */}
+
                     <div>
                         <label style={labelStyle}>Soyad *</label>
                         <input
@@ -133,7 +180,6 @@ export function PersonnelFormModal({ editItem, onSubmit, onClose, isPending }: P
                     </div>
                 </div>
 
-                {/* E-posta */}
                 <div style={{ marginBottom: 14 }}>
                     <label style={labelStyle}>E-posta *</label>
                     <input
@@ -146,58 +192,92 @@ export function PersonnelFormModal({ editItem, onSubmit, onClose, isPending }: P
                     {errors.email && <p style={{ color: '#DC2626', fontSize: 11, margin: '4px 0 0' }}>{errors.email}</p>}
                 </div>
 
-                {/* Şifre */}
                 <div style={{ marginBottom: 14 }}>
                     <label style={labelStyle}>
-                        Şifre {isEdit ? '(boş bırakılırsa değişmez)' : '*'}
+                        Sifre {isEdit ? '(bos birakilirsa degismez)' : '*'}
                     </label>
                     <input
                         type="password"
                         style={{ ...inputStyle, borderColor: errors.password ? '#DC2626' : '#D1D5DB' }}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Min 8 karakter, 1 büyük harf, 1 rakam"
+                        placeholder="Min 8 karakter, 1 buyuk harf, 1 rakam"
                     />
                     {errors.password && <p style={{ color: '#DC2626', fontSize: 11, margin: '4px 0 0' }}>{errors.password}</p>}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 20 }}>
-                    {/* Rol */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 20 }}>
                     <div>
                         <label style={labelStyle}>Rol *</label>
                         <select
                             style={{ ...inputStyle, borderColor: errors.role ? '#DC2626' : '#D1D5DB', cursor: 'pointer' }}
                             value={role}
                             onChange={(e) => setRole(e.target.value)}
+                            disabled={rolesLoading}
                         >
-                            <option value="">Seçin...</option>
-                            {Object.entries(ROLES).map(([key, value]) => (
-                                <option key={key} value={value}>
-                                    {ROLE_LABELS[key] ?? key}
+                            <option value="">Secin...</option>
+                            {resolvedRoleOptions.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label}
                                 </option>
                             ))}
                         </select>
                         {errors.role && <p style={{ color: '#DC2626', fontSize: 11, margin: '4px 0 0' }}>{errors.role}</p>}
                     </div>
-                    {/* Departman */}
+
                     <div>
                         <label style={labelStyle}>Departman</label>
                         <select
                             style={{ ...inputStyle, cursor: 'pointer' }}
                             value={department}
-                            onChange={(e) => setDepartment(e.target.value)}
+                            onChange={(e) => {
+                                setDepartment(e.target.value);
+                                setSubDepartmentId('');
+                            }}
+                            disabled={departmentsLoading}
                         >
-                            <option value="">Seçin...</option>
-                            {Object.entries(DEPARTMENTS).map(([key, value]) => (
-                                <option key={key} value={value}>
-                                    {DEPARTMENT_LABELS[key] ?? key}
+                            <option value="">Secin...</option>
+                            {resolvedDepartmentOptions.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label}
                                 </option>
                             ))}
                         </select>
                     </div>
+
+                    <div>
+                        <label style={labelStyle}>Alt Departman</label>
+                        <select
+                            style={{
+                                ...inputStyle,
+                                borderColor: errors.subDepartmentId ? '#DC2626' : '#D1D5DB',
+                                cursor: 'pointer',
+                            }}
+                            value={subDepartmentId}
+                            onChange={(e) => setSubDepartmentId(e.target.value)}
+                            disabled={!department || departmentsLoading}
+                        >
+                            <option value="">
+                                {department
+                                    ? resolvedSubDepartmentOptions.length
+                                        ? 'Secin...'
+                                        : 'Alt departman yok'
+                                    : 'Once departman secin'}
+                            </option>
+                            {resolvedSubDepartmentOptions.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.subDepartmentId && (
+                            <p style={{ color: '#DC2626', fontSize: 11, margin: '4px 0 0' }}>
+                                {errors.subDepartmentId}
+                            </p>
+                        )}
+                    </div>
                 </div>
 
-                {/* Butonlar */}
                 <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                     <button
                         type="button"
@@ -208,7 +288,7 @@ export function PersonnelFormModal({ editItem, onSubmit, onClose, isPending }: P
                             fontWeight: 500, cursor: 'pointer',
                         }}
                     >
-                        İptal
+                        Iptal
                     </button>
                     <button
                         type="submit"
@@ -220,7 +300,7 @@ export function PersonnelFormModal({ editItem, onSubmit, onClose, isPending }: P
                             opacity: isPending ? 0.6 : 1,
                         }}
                     >
-                        {isPending ? 'Kaydediliyor...' : isEdit ? 'Güncelle' : 'Kaydet'}
+                        {isPending ? 'Kaydediliyor...' : isEdit ? 'Guncelle' : 'Kaydet'}
                     </button>
                 </div>
             </form>

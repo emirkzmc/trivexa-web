@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Download, Plus, Users } from 'lucide-react';
 import { usePersonnel } from '../hooks/usePersonnel';
 import {
@@ -14,6 +15,10 @@ import { PersonnelTable } from './PersonnelTable';
 import { PageHeader } from '../../../shared/components/PageHeader';
 import { Pagination } from '../../../shared/components/Pagination';
 import { showConfirmDialog } from '../../../shared/lib/sweetAlert';
+import { ROLE_LABELS } from '../../../shared/constants/roleLabels';
+import { DEPARTMENT_LABELS } from '../../../shared/constants/departments';
+import { getRoles } from '../../roles/api/roles.api';
+import { getDepartments } from '../../departments/api/departments.api';
 import type {
     PersonnelCreatePayload,
     PersonnelItem,
@@ -22,6 +27,15 @@ import type {
 
 export function PersonnelPage() {
     const { data, isLoading, isError, filters, setFilter, setFilters, setPage } = usePersonnel();
+    const rolesQuery = useQuery({
+        queryKey: ['roles', 'personnel-form'],
+        queryFn: getRoles,
+    });
+    const departmentsQuery = useQuery({
+        queryKey: ['departments', 'personnel-form'],
+        queryFn: getDepartments,
+    });
+
     const createMutation = useCreatePersonnel();
     const updateMutation = useUpdatePersonnel();
     const deactivateMutation = useDeactivatePersonnel();
@@ -36,6 +50,32 @@ export function PersonnelPage() {
     const total = data?.meta?.total ?? 0;
     const currentPage = filters.page ?? 1;
     const limit = filters.limit ?? 20;
+
+    const roleOptions = (rolesQuery.data ?? []).map((role) => {
+        const normalizedName = role.name.trim().toUpperCase();
+        return {
+            value: role.name,
+            label: ROLE_LABELS[normalizedName] ?? role.name,
+        };
+    });
+
+    const departmentOptions = (departmentsQuery.data ?? []).map((department) => {
+        const normalizedName = department.name.trim().toUpperCase();
+        return {
+            value: department.name,
+            label: DEPARTMENT_LABELS[normalizedName] ?? department.name,
+        };
+    });
+
+    const departmentModulesByDepartment = Object.fromEntries(
+        (departmentsQuery.data ?? []).map((department) => [
+            department.name,
+            (department.modules ?? []).map((module) => ({
+                value: module.id,
+                label: module.name,
+            })),
+        ]),
+    );
 
     function handleCreate() {
         setEditItem(null);
@@ -200,6 +240,11 @@ export function PersonnelPage() {
                     onSubmit={handleSubmit}
                     onClose={() => setModalOpen(false)}
                     isPending={createMutation.isPending || updateMutation.isPending}
+                    roleOptions={roleOptions}
+                    departmentOptions={departmentOptions}
+                    departmentModulesByDepartment={departmentModulesByDepartment}
+                    rolesLoading={rolesQuery.isLoading}
+                    departmentsLoading={departmentsQuery.isLoading}
                 />
             )}
         </div>

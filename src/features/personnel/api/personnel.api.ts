@@ -10,6 +10,8 @@ export interface PersonnelItem {
     phone?: string;
     role: string;
     department: string;
+    subDepartmentId?: string | null;
+    subDepartmentName?: string | null;
     status: string;
     isActive: boolean;
     salary?: number;
@@ -21,6 +23,7 @@ export interface PersonnelListParams {
     page?: number;
     limit?: number;
     department?: string;
+    subDepartmentId?: string;
     role?: string;
     isActive?: string;
     search?: string;
@@ -43,6 +46,7 @@ export interface PersonnelCreatePayload {
     password: string;
     role: string;
     department?: string;
+    subDepartmentId?: string;
 }
 
 export type PersonnelUpdatePayload = Partial<PersonnelCreatePayload>;
