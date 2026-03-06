@@ -11,6 +11,8 @@ import { RolesPermissionsPage } from './features/roles/components/RolesPermissio
 import { DepartmentsPage } from './features/departments/components/DepartmentsPage';
 import { ProjectsPage } from './features/projects/components/ProjectsPage';
 import { ProjectDetailPage } from './features/projects/components/ProjectDetailPage';
+import { TasksPage } from './features/tasks/components/TasksPage';
+import { TaskDetailPage } from './features/tasks/components/TaskDetailPage';
 
 function App() {
   return (
@@ -29,6 +31,8 @@ function App() {
         <Route path="projeler" element={<ProjectsPage />} />
         <Route path="projeler/yeni" element={<Navigate to="/app/projeler" replace />} />
         <Route path="projeler/:projectId" element={<ProjectDetailPage />} />
+        <Route path="gorevler" element={<TasksPage />} />
+        <Route path="gorevler/:taskId" element={<TaskDetailPage />} />
         <Route path="departmanlar" element={<DepartmentsPage />} />
         <Route path="time-tracker" element={<TimeTrackerPage />} />
         <Route path="roller" element={<RolesPermissionsPage />} />

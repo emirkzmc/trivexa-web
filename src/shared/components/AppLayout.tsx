@@ -51,6 +51,9 @@ function resolvePageName(pathname: string): string {
     if (pathname.startsWith('/app/projeler/')) {
         return 'Proje Detayi';
     }
+    if (pathname.startsWith('/app/gorevler/')) {
+        return 'Gorev Detayi';
+    }
     return PAGE_NAMES[pathname] ?? 'Dashboard';
 }
 
