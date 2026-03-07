@@ -1,4 +1,8 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { BellRing } from 'lucide-react';
+import { io, type Socket } from 'socket.io-client';
+import { toast } from 'sonner';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { AppHeader } from './AppHeader';
@@ -8,6 +12,15 @@ import { useStopTimer } from '../../features/time-tracker/hooks/useTimerMutation
 import { DraggableActiveTimer } from '../../features/time-tracker/components/DraggableActiveTimer';
 import { NAV_CONFIG } from '../constants/navConfig';
 import { buildRoleAccentPalette } from '../utils/colorTheme';
+
+interface PresenceUser {
+    userId: string;
+    email: string;
+}
+
+interface GlobalPresenceUpdatePayload {
+    activeUsers?: PresenceUser[];
+}
 
 const PAGE_NAMES: Record<string, string> = {
     '/app/dashboard': 'Dashboard',
@@ -59,15 +72,45 @@ function resolvePageName(pathname: string): string {
 
 const MOBILE_BREAKPOINT = 768;
 
+function resolveNotificationsSocketUrl(): string {
+    const explicitUrl = (import.meta.env.VITE_SOCKET_URL as string | undefined)?.trim();
+    if (explicitUrl) {
+        return explicitUrl;
+    }
+
+    const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim();
+    if (apiBaseUrl) {
+        try {
+            const parsed = new URL(apiBaseUrl);
+            return `${parsed.protocol}//${parsed.host}`;
+        } catch {
+            // Fall back to current origin.
+        }
+    }
+
+    return window.location.origin;
+}
+
 export function AppLayout() {
     const user = useAuthStore((s) => s.user);
+    const token = useAuthStore((s) => s.token);
     const logout = useAuthStore((s) => s.logout);
     const navigate = useNavigate();
     const location = useLocation();
+    const queryClient = useQueryClient();
     const activeTimerQuery = useActiveTimer();
     const stopMutation = useStopTimer();
     const [isMobile, setIsMobile] = useState(() => window.innerWidth < MOBILE_BREAKPOINT);
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+    const [liveNoticeText, setLiveNoticeText] = useState('');
+    const [showLiveNotice, setShowLiveNotice] = useState(false);
+    const [hasFreshNotification, setHasFreshNotification] = useState(false);
+    const [activePresenceUsers, setActivePresenceUsers] = useState<PresenceUser[]>([]);
+    const [isPresenceConnected, setIsPresenceConnected] = useState(false);
+    const socketRef = useRef<Socket | null>(null);
+    const presenceSocketRef = useRef<Socket | null>(null);
+    const audioContextRef = useRef<AudioContext | null>(null);
+    const noticeTimerRef = useRef<number | null>(null);
     const roleAccent = useMemo(() => {
         if (!user?.role) return '#DC2626';
         return NAV_CONFIG[user.role]?.theme.accent ?? '#DC2626';
@@ -121,6 +164,169 @@ export function AppLayout() {
         });
     }, [rolePalette]);
 
+    function playNotificationTone() {
+        try {
+            const audioContextCtor =
+                window.AudioContext
+                || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+            if (!audioContextCtor) return;
+
+            if (!audioContextRef.current) {
+                audioContextRef.current = new audioContextCtor();
+            }
+
+            const ctx = audioContextRef.current;
+            if (ctx.state === 'suspended') {
+                void ctx.resume();
+            }
+
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = 880;
+            gain.gain.value = 0.0001;
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            const now = ctx.currentTime;
+            gain.gain.exponentialRampToValueAtTime(0.08, now + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+            osc.start(now);
+            osc.stop(now + 0.35);
+        } catch {
+            // Audio may be blocked by browser permissions; fail silently.
+        }
+    }
+
+    useEffect(() => {
+        const unlockAudio = () => {
+            try {
+                const audioContextCtor =
+                    window.AudioContext
+                    || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+                if (!audioContextCtor) return;
+                if (!audioContextRef.current) {
+                    audioContextRef.current = new audioContextCtor();
+                }
+                if (audioContextRef.current.state === 'suspended') {
+                    void audioContextRef.current.resume();
+                }
+            } catch {
+                // ignore
+            }
+        };
+
+        window.addEventListener('pointerdown', unlockAudio);
+        window.addEventListener('keydown', unlockAudio);
+        return () => {
+            window.removeEventListener('pointerdown', unlockAudio);
+            window.removeEventListener('keydown', unlockAudio);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!user?.id || !token) return;
+
+        const socketUrl = resolveNotificationsSocketUrl();
+        const socket = io(`${socketUrl}/notifications`, {
+            query: { token },
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionDelay: 1_000,
+        });
+        socketRef.current = socket;
+
+        socket.on('notification', (payload: unknown) => {
+            const title =
+                typeof payload === 'object'
+                && payload !== null
+                && 'title' in payload
+                && typeof (payload as { title?: unknown }).title === 'string'
+                    ? (payload as { title: string }).title
+                    : '';
+
+            void queryClient.invalidateQueries({ queryKey: ['notifications'] });
+            void queryClient.invalidateQueries({ queryKey: ['unread-count'] });
+
+            playNotificationTone();
+            toast.info(title ? `Yeni bildiriminiz var: ${title}` : 'Yeni bildiriminiz var', {
+                duration: 3_500,
+            });
+
+            setLiveNoticeText('Yeni bildiriminiz var');
+            setShowLiveNotice(true);
+            setHasFreshNotification(true);
+
+            if (noticeTimerRef.current) {
+                window.clearTimeout(noticeTimerRef.current);
+            }
+            noticeTimerRef.current = window.setTimeout(() => {
+                setShowLiveNotice(false);
+            }, 3_500);
+        });
+
+        return () => {
+            socket.disconnect();
+            socketRef.current = null;
+        };
+    }, [user?.id, token, queryClient]);
+
+    useEffect(() => {
+        if (!user?.id || !token) return;
+
+        const socketUrl = resolveNotificationsSocketUrl();
+        const socket = io(`${socketUrl}/presence`, {
+            auth: { token },
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionDelay: 1_000,
+        });
+        presenceSocketRef.current = socket;
+
+        const handleGlobalActiveUsersUpdate = (payload: GlobalPresenceUpdatePayload) => {
+            const users = Array.isArray(payload?.activeUsers)
+                ? payload.activeUsers.filter(
+                    (presenceUser): presenceUser is PresenceUser =>
+                        !!presenceUser
+                        && typeof presenceUser.userId === 'string'
+                        && typeof presenceUser.email === 'string',
+                )
+                : [];
+            setActivePresenceUsers(users);
+        };
+
+        socket.on('connect', () => {
+            setIsPresenceConnected(true);
+            socket.emit('joinGlobalPresence');
+        });
+        socket.on('disconnect', () => {
+            setIsPresenceConnected(false);
+            setActivePresenceUsers([]);
+        });
+        socket.on('globalActiveUsersUpdate', handleGlobalActiveUsersUpdate);
+
+        return () => {
+            socket.emit('leaveGlobalPresence');
+            socket.off('globalActiveUsersUpdate', handleGlobalActiveUsersUpdate);
+            socket.disconnect();
+            presenceSocketRef.current = null;
+            setIsPresenceConnected(false);
+            setActivePresenceUsers([]);
+        };
+    }, [user?.id, token]);
+
+    useEffect(() => {
+        if (location.pathname.startsWith('/app/notifications')) {
+            setHasFreshNotification(false);
+        }
+    }, [location.pathname]);
+
+    useEffect(() => () => {
+        if (noticeTimerRef.current) {
+            window.clearTimeout(noticeTimerRef.current);
+        }
+    }, []);
+
     if (!user) return null;
 
     const pageName = resolvePageName(location.pathname);
@@ -168,6 +374,31 @@ export function AppLayout() {
                 />
             )}
 
+            {showLiveNotice && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: isMobile ? 72 : 18,
+                        right: 18,
+                        zIndex: 80,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        borderRadius: 10,
+                        border: '1px solid var(--role-accent-border)',
+                        backgroundColor: '#ffffff',
+                        padding: '10px 12px',
+                        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.12)',
+                        color: '#111827',
+                        fontSize: 13,
+                        fontWeight: 600,
+                    }}
+                >
+                    <BellRing size={15} color="var(--role-accent-600)" />
+                    {liveNoticeText}
+                </div>
+            )}
+
             <Sidebar
                 isMobile={isMobile}
                 mobileOpen={mobileSidebarOpen}
@@ -180,6 +411,11 @@ export function AppLayout() {
                     onLogout={handleLogout}
                     showMenuButton={isMobile}
                     onMenuToggle={() => setMobileSidebarOpen((prev) => !prev)}
+                    hasFreshNotification={hasFreshNotification}
+                    onClearFreshNotification={() => setHasFreshNotification(false)}
+                    activePresenceUsers={activePresenceUsers}
+                    isPresenceConnected={isPresenceConnected}
+                    currentUserId={user.id}
                 />
                 <main style={{ flex: 1, overflow: 'auto', backgroundColor: '#F9FAFB' }}>
                     <Outlet />

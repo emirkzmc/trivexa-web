@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
-import { toast } from 'sonner';
 import {
     getNotifications,
     markAsRead,
@@ -33,6 +32,13 @@ export function useNotifications() {
         setSearchParams(next, { replace: true });
     }
 
+    function setLimit(limit: number) {
+        const next = new URLSearchParams(searchParams);
+        next.set('limit', String(limit));
+        next.set('page', '1');
+        setSearchParams(next, { replace: true });
+    }
+
     const markReadMutation = useMutation({
         mutationFn: (id: string) => markAsRead(id),
         onSuccess: () => {
@@ -46,7 +52,6 @@ export function useNotifications() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['notifications'] });
             queryClient.invalidateQueries({ queryKey: ['unread-count'] });
-            toast.success('Tüm bildirimler okundu olarak işaretlendi', { duration: 3_000 });
         },
     });
 
@@ -54,7 +59,10 @@ export function useNotifications() {
         ...query,
         filters,
         setPage,
+        setLimit,
         markAsRead: markReadMutation.mutate,
         markAllAsRead: markAllReadMutation.mutate,
+        markAsReadPending: markReadMutation.isPending,
+        markAllAsReadPending: markAllReadMutation.isPending,
     };
 }

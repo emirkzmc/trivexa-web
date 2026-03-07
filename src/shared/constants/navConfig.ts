@@ -267,7 +267,7 @@ const DEVELOPER_NAV: RoleNavConfig = {
             group: 'İŞ',
             items: [
                 { label: 'Görevlerim', path: '/app/gorevlerim', icon: 'CheckSquare' },
-                { label: 'Projelerim', path: '/app/projelerim', icon: 'FolderKanban' },
+                { label: 'Projelerim', path: '/app/projeler', icon: 'FolderKanban' },
                 { label: 'Kod Süreçleri', path: '/app/kod', icon: 'Code2' },
             ],
         },
@@ -297,6 +297,7 @@ const SOCIAL_MEDIA_NAV: RoleNavConfig = {
             group: 'İŞ',
             items: [
                 { label: 'Görevlerim', path: '/app/gorevlerim', icon: 'CheckSquare' },
+                { label: 'Projelerim', path: '/app/projeler', icon: 'FolderKanban' },
                 { label: 'İçerik Planları', path: '/app/icerik-plani', icon: 'CalendarDays' },
                 { label: 'Kampanya Yönetimi', path: '/app/kampanyalar', icon: 'Megaphone' },
             ],
@@ -327,6 +328,7 @@ const CREATIVE_NAV: RoleNavConfig = {
             group: 'İŞ',
             items: [
                 { label: 'Görevlerim', path: '/app/gorevlerim', icon: 'CheckSquare' },
+                { label: 'Projelerim', path: '/app/projeler', icon: 'FolderKanban' },
                 { label: 'Tasarım Süreçleri', path: '/app/tasarim', icon: 'Palette' },
             ],
         },
@@ -356,6 +358,7 @@ const MARKETING_NAV: RoleNavConfig = {
             group: 'İŞ',
             items: [
                 { label: 'Görevlerim', path: '/app/gorevlerim', icon: 'CheckSquare' },
+                { label: 'Projelerim', path: '/app/projeler', icon: 'FolderKanban' },
                 { label: 'Kampanya Yönetimi', path: '/app/kampanyalar', icon: 'Megaphone' },
             ],
         },
@@ -385,6 +388,7 @@ const PRODUCTION_NAV: RoleNavConfig = {
             group: 'İŞ',
             items: [
                 { label: 'Görevlerim', path: '/app/gorevlerim', icon: 'CheckSquare' },
+                { label: 'Projelerim', path: '/app/projeler', icon: 'FolderKanban' },
                 { label: 'Prodüksiyon Süreçleri', path: '/app/produksiyon', icon: 'Film' },
             ],
         },

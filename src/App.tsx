@@ -13,6 +13,7 @@ import { ProjectsPage } from './features/projects/components/ProjectsPage';
 import { ProjectDetailPage } from './features/projects/components/ProjectDetailPage';
 import { TasksPage } from './features/tasks/components/TasksPage';
 import { TaskDetailPage } from './features/tasks/components/TaskDetailPage';
+import { NotificationsPage } from './features/notifications/components/NotificationsPage';
 
 function App() {
   return (
@@ -27,11 +28,14 @@ function App() {
       {/* Panel — AppLayout ile sarmalanmış tüm /app/* sayfaları */}
       <Route path="/app" element={<AppLayout />}>
         <Route path="dashboard" element={<div>Dashboard Paneli</div>} />
+        <Route path="notifications" element={<NotificationsPage />} />
         <Route path="personel" element={<PersonnelPage />} />
         <Route path="projeler" element={<ProjectsPage />} />
+        <Route path="projelerim" element={<Navigate to="/app/projeler" replace />} />
         <Route path="projeler/yeni" element={<Navigate to="/app/projeler" replace />} />
         <Route path="projeler/:projectId" element={<ProjectDetailPage />} />
         <Route path="gorevler" element={<TasksPage />} />
+        <Route path="gorevlerim" element={<Navigate to="/app/gorevler" replace />} />
         <Route path="gorevler/:taskId" element={<TaskDetailPage />} />
         <Route path="departmanlar" element={<DepartmentsPage />} />
         <Route path="time-tracker" element={<TimeTrackerPage />} />

@@ -1,4 +1,4 @@
-import {useMemo, useState} from 'react';
+import {useCallback, useMemo, useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {Timer} from 'lucide-react';
 import {PageHeader} from '../../../shared/components/PageHeader';
@@ -17,6 +17,8 @@ import {getDisplayUserName, getEntryDurationSeconds} from '../utils/timeTracker.
 import {showConfirmDialog} from '../../../shared/lib/sweetAlert';
 import {NAV_CONFIG} from '../../../shared/constants/navConfig';
 import { ManualEntryModal } from './ManualEntryModal';
+import { getPersonnel } from '../../personnel/api/personnel.api';
+import { DEPARTMENT_LABELS } from '../../../shared/constants/departments';
 
 const HISTORY_LIMIT_OPTIONS = [10, 20, 50];
 
@@ -38,6 +40,7 @@ export function TimeTrackerPage() {
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
     const [teamStatusFilter, setTeamStatusFilter] = useState<string>('');
+    const [teamDepartmentFilter, setTeamDepartmentFilter] = useState<string>('');
     const [teamUserFilter, setTeamUserFilter] = useState<string>('');
     const [teamPage, setTeamPage] = useState(1);
     const [teamLimit, setTeamLimit] = useState(10);
@@ -61,6 +64,12 @@ export function TimeTrackerPage() {
     });
 
     const shouldLoadTeamData = hasTeamAccess && (activeTab === 'team' || activeTab === 'dashboard');
+
+    const teamPersonnelQuery = useQuery({
+        queryKey: ['time-tracker', 'team-personnel'],
+        queryFn: () => getPersonnel({ page: 1, limit: 500 }),
+        enabled: shouldLoadTeamData,
+    });
 
     const teamHistoryQuery = useQuery({
         queryKey: ['timer-history', 'team', teamPage, teamLimit, teamUserFilter],
@@ -100,6 +109,15 @@ export function TimeTrackerPage() {
     const historyRows = historyQuery.data?.data ?? [];
     const teamRows = teamHistoryQuery.data?.data ?? [];
     const dashboardRows = dashboardHistoryQuery.data?.data ?? [];
+    const teamPersonnelRows = teamPersonnelQuery.data?.data ?? [];
+    const personnelMapById = useMemo(
+        () => new Map(teamPersonnelRows.map((row) => [row.id, row])),
+        [teamPersonnelRows],
+    );
+    const personnelNameById = useMemo(
+        () => new Map(teamPersonnelRows.map((row) => [row.id, `${row.firstName} ${row.lastName}`.trim() || row.email || row.id])),
+        [teamPersonnelRows],
+    );
 
     const filteredHistoryRows = useMemo(
         () => historyRows.filter((row) => !statusFilter || row.status === statusFilter),
@@ -118,6 +136,13 @@ export function TimeTrackerPage() {
 
     const resolveProjectName = (row: TimerEntry): string =>
         row.projectName || projectNameMap.get(row.projectId) || row.projectId || '-';
+
+    const resolveDepartmentName = useCallback((row: TimerEntry): string => {
+        const department = personnelMapById.get(row.userId)?.department;
+        if (!department) return '-';
+        const normalized = department.trim().toUpperCase();
+        return DEPARTMENT_LABELS[normalized as keyof typeof DEPARTMENT_LABELS] ?? department;
+    }, [personnelMapById]);
 
     const filteredAndSortedHistoryRows = useMemo(() => {
         const sorted = [...filteredHistoryRows].sort((a, b) => {
@@ -225,16 +250,35 @@ export function TimeTrackerPage() {
         const map = new Map<string, string>();
         [...teamRows, ...dashboardRows].forEach((row) => {
             if (!row.userId) return;
-            map.set(row.userId, getDisplayUserName(row));
+            map.set(row.userId, personnelNameById.get(row.userId) ?? getDisplayUserName(row));
         });
         return [...map.entries()]
             .map(([id, name]) => ({id, name}))
             .sort((a, b) => a.name.localeCompare(b.name));
-    }, [teamRows, dashboardRows]);
+    }, [teamRows, dashboardRows, personnelNameById]);
+
+    const teamDepartments = useMemo(() => {
+        const unique = new Set<string>();
+        teamRows.forEach((row) => {
+            const department = resolveDepartmentName(row);
+            if (department !== '-') {
+                unique.add(department);
+            }
+        });
+
+        return [...unique]
+            .sort((a, b) => a.localeCompare(b, 'tr'))
+            .map((name) => ({ id: name, name }));
+    }, [teamRows, resolveDepartmentName]);
 
     const filteredTeamRows = useMemo(
-        () => teamRows.filter((row) => !teamStatusFilter || row.status === teamStatusFilter),
-        [teamRows, teamStatusFilter],
+        () =>
+            teamRows.filter((row) => {
+                if (teamStatusFilter && row.status !== teamStatusFilter) return false;
+                if (teamDepartmentFilter && resolveDepartmentName(row) !== teamDepartmentFilter) return false;
+                return true;
+            }),
+        [teamRows, teamStatusFilter, teamDepartmentFilter, resolveDepartmentName],
     );
 
     const sortedTeamRows = useMemo(() => {
@@ -431,7 +475,9 @@ export function TimeTrackerPage() {
                     total={teamTotal}
                     userFilter={teamUserFilter}
                     statusFilter={teamStatusFilter}
+                    departmentFilter={teamDepartmentFilter}
                     users={teamUsers}
+                    departments={teamDepartments}
                     onUserFilterChange={(value) => {
                         setTeamUserFilter(value);
                         setTeamPage(1);
@@ -440,13 +486,18 @@ export function TimeTrackerPage() {
                         setTeamStatusFilter(value);
                         setTeamPage(1);
                     }}
+                    onDepartmentFilterChange={(value) => {
+                        setTeamDepartmentFilter(value);
+                        setTeamPage(1);
+                    }}
                     sortField={teamSortField}
                     sortDirection={teamSortDirection}
                     onSort={handleTeamSort}
-                    loading={teamHistoryQuery.isLoading}
+                    loading={teamHistoryQuery.isLoading || teamPersonnelQuery.isLoading}
                     error={teamHistoryQuery.isError}
                     sortedRows={sortedTeamRows}
                     resolveProjectName={resolveProjectName}
+                    resolveDepartmentName={resolveDepartmentName}
                     getDisplayUserName={getDisplayUserName}
                     page={teamPage}
                     totalPages={teamTotalPages}

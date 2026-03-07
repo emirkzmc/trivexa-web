@@ -8,6 +8,7 @@ import {
     MessageSquarePlus, StickyNote, LogOut, ChevronRight, X,
 } from 'lucide-react';
 import { useAuthStore } from '../../features/auth/store/authStore';
+import { useUnreadCount } from '../../features/notifications/hooks/useUnreadCount';
 import { NAV_CONFIG, type RoleNavConfig } from '../../shared/constants/navConfig';
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -37,6 +38,7 @@ export function Sidebar({
     const logoutStore = useAuthStore((s) => s.logout);
     const navigate = useNavigate();
     const [collapsed, setCollapsed] = useState(false);
+    const unreadCountQuery = useUnreadCount();
 
     if (!user) return null;
 
@@ -44,7 +46,7 @@ export function Sidebar({
     if (!config) return null;
 
     const { theme, groups } = config;
-    const unreadCount = 0;
+    const unreadCount = unreadCountQuery.data ?? 0;
     const collapsedState = isMobile ? false : collapsed;
     const sidebarWidth = isMobile
         ? MOBILE_SIDEBAR_WIDTH

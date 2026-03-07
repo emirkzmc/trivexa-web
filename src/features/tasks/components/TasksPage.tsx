@@ -1,11 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { useMutation, useQuery, useQueryClient, type QueryKey } from '@tanstack/react-query';
-import { CheckSquare, Filter, LayoutGrid, Plus, Rows3, Search } from 'lucide-react';
+import { ArrowUpDown, CheckSquare, ChevronDown, ChevronUp, Filter, LayoutGrid, Plus, Rows3, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { PageHeader } from '../../../shared/components/PageHeader';
 import { Pagination } from '../../../shared/components/Pagination';
+import { usePermission } from '../../../shared/hooks/usePermission';
+import { ROLES } from '../../../shared/constants/roles';
 import { formatDate } from '../../../shared/utils/formatDate';
+import { useAuthStore } from '../../auth/store/authStore';
 import { getProjects, getProjectMembers, type ProjectMember } from '../../projects/api/projects.api';
 import {
     createTask,
@@ -28,6 +31,25 @@ import {
 } from './tasks.utils';
 
 type TaskViewMode = 'board' | 'table';
+type TaskTableColumnKey = 'task' | 'priority' | 'assignee' | 'dueDate' | 'status';
+type ResizableTaskTableColumnKey = Exclude<TaskTableColumnKey, 'status'>;
+type SortDirection = 'asc' | 'desc';
+
+const MIN_COLUMN_WIDTH = 140;
+const INITIAL_COLUMN_WIDTHS: Record<ResizableTaskTableColumnKey, number> = {
+    task: 420,
+    priority: 150,
+    assignee: 220,
+    dueDate: 180,
+};
+const RESIZABLE_COLUMN_COUNT = Object.keys(INITIAL_COLUMN_WIDTHS).length;
+const PERSONAL_TASK_SCOPE_ROLES = new Set<string>([
+    ROLES.DEVELOPER,
+    ROLES.SOCIAL_MEDIA,
+    ROLES.CREATIVE,
+    ROLES.MARKETING,
+    ROLES.PRODUCTION,
+]);
 
 function memberName(member: ProjectMember): string {
     const fullName = `${member.firstName ?? ''} ${member.lastName ?? ''}`.trim();
@@ -63,19 +85,43 @@ function StatsCard({ title, value, subtitle }: { title: string; value: string; s
 export function TasksPage() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const currentUser = useAuthStore((state) => state.user);
+    const userRole = currentUser?.role;
+    const currentUserId = currentUser?.id ?? '';
+    const { hasPermission } = usePermission();
     const [selectedProjectId, setSelectedProjectId] = useState('');
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [priorityFilter, setPriorityFilter] = useState('');
     const [assigneeFilter, setAssigneeFilter] = useState('');
     const [viewMode, setViewMode] = useState<TaskViewMode>('board');
+    const [tableSortField, setTableSortField] = useState<TaskTableColumnKey>('task');
+    const [tableSortDirection, setTableSortDirection] = useState<SortDirection>('asc');
+    const [columnWidths, setColumnWidths] = useState<Record<ResizableTaskTableColumnKey, number>>(INITIAL_COLUMN_WIDTHS);
+    const tableContainerRef = useRef<HTMLDivElement | null>(null);
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [createModalOpen, setCreateModalOpen] = useState(false);
+    const resizeStateRef = useRef<{
+        column: ResizableTaskTableColumnKey;
+        startX: number;
+        startWidth: number;
+    } | null>(null);
+
+    const isAdminOrCeo = userRole === ROLES.ADMIN || userRole === ROLES.CEO;
+    const canReadTasks = isAdminOrCeo
+        || hasPermission('tasks:read')
+        || hasPermission('tasks:update')
+        || hasPermission('tasks:delete')
+        || hasPermission('tasks:create');
+    const canCreateTask = isAdminOrCeo || hasPermission('tasks:create');
+    const forceMyTasksOnly = !!userRole && PERSONAL_TASK_SCOPE_ROLES.has(userRole);
+    const myProjectsOnly = forceMyTasksOnly;
 
     const projectsQuery = useQuery({
-        queryKey: ['projects', 'task-selector'],
-        queryFn: () => getProjects({ page: 1, limit: 100 }),
+        queryKey: ['projects', 'task-selector', userRole, myProjectsOnly],
+        queryFn: () => getProjects({ page: 1, limit: 100, myProjectsOnly: myProjectsOnly || undefined }),
+        enabled: canReadTasks,
     });
 
     const projects = projectsQuery.data?.data ?? [];
@@ -85,15 +131,19 @@ export function TasksPage() {
     );
 
     useEffect(() => {
+        if (!canReadTasks) {
+            return;
+        }
+
         if (!selectedProjectId && projects.length > 0) {
             setSelectedProjectId(projects[0].id);
         }
-    }, [projects, selectedProjectId]);
+    }, [canReadTasks, projects, selectedProjectId]);
 
     const membersQuery = useQuery({
-        queryKey: ['project-members', selectedProjectId],
+        queryKey: ['project-members', selectedProjectId, userRole],
         queryFn: () => getProjectMembers(selectedProjectId),
-        enabled: !!selectedProjectId,
+        enabled: canReadTasks && !!selectedProjectId,
     });
 
     const members = membersQuery.data ?? [];
@@ -103,16 +153,16 @@ export function TasksPage() {
     );
 
     const tasksQuery = useQuery({
-        queryKey: ['project-tasks', selectedProjectId, statusFilter, priorityFilter, assigneeFilter],
+        queryKey: ['project-tasks', selectedProjectId, statusFilter, priorityFilter, assigneeFilter, userRole, currentUserId, forceMyTasksOnly],
         queryFn: () =>
             getProjectTasks(selectedProjectId, {
                 page: 1,
                 limit: 500,
                 status: statusFilter || undefined,
                 priority: priorityFilter || undefined,
-                assigneeId: assigneeFilter || undefined,
+                assigneeId: forceMyTasksOnly ? currentUserId || undefined : assigneeFilter || undefined,
             }),
-        enabled: !!selectedProjectId,
+        enabled: canReadTasks && !!selectedProjectId && (!forceMyTasksOnly || !!currentUserId),
     });
 
     const rows = tasksQuery.data?.data ?? [];
@@ -152,11 +202,157 @@ export function TasksPage() {
         [searchedRows],
     );
 
+    useEffect(() => {
+        function handleMouseMove(event: MouseEvent) {
+            const active = resizeStateRef.current;
+            if (!active) {
+                return;
+            }
+
+            const deltaX = event.clientX - active.startX;
+            const nextWidth = Math.max(MIN_COLUMN_WIDTH, active.startWidth + deltaX);
+
+            setColumnWidths((prev) => (
+                prev[active.column] === nextWidth
+                    ? prev
+                    : {
+                        ...prev,
+                        [active.column]: nextWidth,
+                    }
+            ));
+        }
+
+        function stopResize() {
+            if (!resizeStateRef.current) {
+                return;
+            }
+
+            resizeStateRef.current = null;
+            document.body.style.removeProperty('cursor');
+            document.body.style.removeProperty('user-select');
+        }
+
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', stopResize);
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', stopResize);
+            stopResize();
+        };
+    }, []);
+
+    useEffect(() => {
+        if (viewMode !== 'table') {
+            return;
+        }
+
+        const container = tableContainerRef.current;
+        if (!container || typeof ResizeObserver === 'undefined') {
+            return;
+        }
+
+        const observer = new ResizeObserver((entries) => {
+            const entry = entries[0];
+            const containerWidth = entry?.contentRect.width ?? 0;
+            if (containerWidth <= 0) {
+                return;
+            }
+
+            const targetTotal = Math.round(
+                Math.max(MIN_COLUMN_WIDTH * RESIZABLE_COLUMN_COUNT, containerWidth - MIN_COLUMN_WIDTH),
+            );
+
+            setColumnWidths((prev) => {
+                const prevTotal = Object.values(prev).reduce((sum, width) => sum + width, 0);
+                if (prevTotal <= 0 || Math.abs(prevTotal - targetTotal) < 1) {
+                    return prev;
+                }
+
+                const ratio = targetTotal / prevTotal;
+                const nextEntries = (Object.entries(prev) as Array<[ResizableTaskTableColumnKey, number]>)
+                    .map(([key, width]) => [key, Math.max(MIN_COLUMN_WIDTH, Math.round(width * ratio))] as const);
+                const nextTotal = nextEntries.reduce((sum, [, width]) => sum + width, 0);
+                const delta = targetTotal - nextTotal;
+
+                if (delta !== 0) {
+                    const [firstKey, firstWidth] = nextEntries[0];
+                    nextEntries[0] = [firstKey, Math.max(MIN_COLUMN_WIDTH, firstWidth + delta)];
+                }
+
+                const next = Object.fromEntries(nextEntries) as Record<ResizableTaskTableColumnKey, number>;
+                const unchanged = (Object.keys(prev) as ResizableTaskTableColumnKey[])
+                    .every((key) => prev[key] === next[key]);
+
+                return unchanged ? prev : next;
+            });
+        });
+
+        observer.observe(container);
+        return () => observer.disconnect();
+    }, [viewMode]);
+
+    const tableSortedRows = useMemo(() => {
+        const direction = tableSortDirection === 'asc' ? 1 : -1;
+        const prioritizedOrder = TASK_PRIORITY_OPTIONS.reduce<Record<string, number>>((acc, item, index) => {
+            acc[item.value] = index;
+            return acc;
+        }, {});
+        const statusOrder = TASK_STATUS_ORDER.reduce<Record<string, number>>((acc, item, index) => {
+            acc[item] = index;
+            return acc;
+        }, {});
+
+        const normalized = [...sortedRows];
+        normalized.sort((left, right) => {
+            if (tableSortField === 'task') {
+                return left.title.localeCompare(right.title, 'tr-TR', { sensitivity: 'base' }) * direction;
+            }
+
+            if (tableSortField === 'priority') {
+                const leftOrder = prioritizedOrder[(left.priority ?? '').toUpperCase()] ?? Number.MAX_SAFE_INTEGER;
+                const rightOrder = prioritizedOrder[(right.priority ?? '').toUpperCase()] ?? Number.MAX_SAFE_INTEGER;
+                return (leftOrder - rightOrder) * direction;
+            }
+
+            if (tableSortField === 'assignee') {
+                return taskAssigneeName(left).localeCompare(taskAssigneeName(right), 'tr-TR', { sensitivity: 'base' }) * direction;
+            }
+
+            if (tableSortField === 'dueDate') {
+                const leftDate = left.dueDate ? Date.parse(left.dueDate) : Number.NEGATIVE_INFINITY;
+                const rightDate = right.dueDate ? Date.parse(right.dueDate) : Number.NEGATIVE_INFINITY;
+                const safeLeft = Number.isFinite(leftDate) ? leftDate : Number.NEGATIVE_INFINITY;
+                const safeRight = Number.isFinite(rightDate) ? rightDate : Number.NEGATIVE_INFINITY;
+                return (safeLeft - safeRight) * direction;
+            }
+
+            const leftStatus = statusOrder[toTaskStatus(left.status)] ?? Number.MAX_SAFE_INTEGER;
+            const rightStatus = statusOrder[toTaskStatus(right.status)] ?? Number.MAX_SAFE_INTEGER;
+            return (leftStatus - rightStatus) * direction;
+        });
+
+        return normalized;
+    }, [sortedRows, tableSortDirection, tableSortField]);
+
     const total = sortedRows.length;
     const totalPages = Math.max(1, Math.ceil(total / limit));
+    const tableColumnPercentages = useMemo(() => {
+        const statusBaseWidth = MIN_COLUMN_WIDTH;
+        const resizableTotal = Object.values(columnWidths).reduce((sum, width) => sum + width, 0);
+        const total = resizableTotal + statusBaseWidth;
+
+        return {
+            task: (columnWidths.task / total) * 100,
+            priority: (columnWidths.priority / total) * 100,
+            assignee: (columnWidths.assignee / total) * 100,
+            dueDate: (columnWidths.dueDate / total) * 100,
+            status: (statusBaseWidth / total) * 100,
+        };
+    }, [columnWidths]);
     const pagedRows = useMemo(
-        () => sortedRows.slice((page - 1) * limit, page * limit),
-        [limit, page, sortedRows],
+        () => tableSortedRows.slice((page - 1) * limit, page * limit),
+        [limit, page, tableSortedRows],
     );
 
     useEffect(() => {
@@ -300,11 +496,60 @@ export function TasksPage() {
         await createMutation.mutateAsync(payload);
     }
 
+    function handleTableSort(column: TaskTableColumnKey) {
+        if (tableSortField === column) {
+            setTableSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+        } else {
+            setTableSortField(column);
+            setTableSortDirection('asc');
+        }
+        setPage(1);
+    }
+
+    function handleColumnResizeStart(column: ResizableTaskTableColumnKey, event: ReactMouseEvent<HTMLDivElement>) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        resizeStateRef.current = {
+            column,
+            startX: event.clientX,
+            startWidth: columnWidths[column],
+        };
+
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+    }
+
+    function renderSortIcon(column: TaskTableColumnKey) {
+        if (tableSortField !== column) {
+            return <ArrowUpDown size={13} className="text-gray-400" />;
+        }
+
+        return tableSortDirection === 'asc'
+            ? <ChevronUp size={13} className="text-red-600" />
+            : <ChevronDown size={13} className="text-red-600" />;
+    }
+
+    if (!canReadTasks) {
+        return (
+            <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
+                <PageHeader
+                    icon={<CheckSquare size={20} color="#DC2626" />}
+                    title="Gorev Yonetimi"
+                    subtitle="Gorev listesi"
+                />
+                <section className="rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-10 text-center text-sm font-medium text-yellow-800">
+                    Bu role gorev ekranina erisim izni tanimli degil.
+                </section>
+            </div>
+        );
+    }
+
     return (
         <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
             <PageHeader
                 icon={<CheckSquare size={20} color="#DC2626" />}
-                title="Gorev Yonetimi"
+                title={forceMyTasksOnly ? 'Gorevlerim' : 'Gorev Yonetimi'}
                 subtitle={
                     selectedProject
                         ? `${selectedProject.name} projesi - ${total} gorev`
@@ -320,15 +565,17 @@ export function TasksPage() {
                             {viewMode === 'board' ? <Rows3 size={14} /> : <LayoutGrid size={14} />}
                             {viewMode === 'board' ? 'Liste Gorunumu' : 'Board Gorunumu'}
                         </button>
-                        <button
-                            type="button"
-                            disabled={!selectedProjectId}
-                            onClick={() => setCreateModalOpen(true)}
-                            className="inline-flex h-9 items-center gap-2 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            <Plus size={14} />
-                            Yeni Gorev
-                        </button>
+                        {canCreateTask && (
+                            <button
+                                type="button"
+                                disabled={!selectedProjectId}
+                                onClick={() => setCreateModalOpen(true)}
+                                className="inline-flex h-9 items-center gap-2 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                <Plus size={14} />
+                                Yeni Gorev
+                            </button>
+                        )}
                     </>
                 )}
             />
@@ -411,25 +658,27 @@ export function TasksPage() {
                         </select>
                     </div>
 
-                    <div className="lg:col-span-2">
-                        <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Atanan</label>
-                        <select
-                            value={assigneeFilter}
-                            onChange={(event) => {
-                                setAssigneeFilter(event.target.value);
-                                setPage(1);
-                            }}
-                            disabled={!selectedProjectId}
-                            className="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none transition focus:border-red-500 disabled:bg-gray-100"
-                        >
-                            <option value="">Tum ekip</option>
-                            {sortedMembers.map((member) => (
-                                <option key={member.userId} value={member.userId}>
-                                    {memberName(member)}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    {!forceMyTasksOnly && (
+                        <div className="lg:col-span-2">
+                            <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Atanan</label>
+                            <select
+                                value={assigneeFilter}
+                                onChange={(event) => {
+                                    setAssigneeFilter(event.target.value);
+                                    setPage(1);
+                                }}
+                                disabled={!selectedProjectId}
+                                className="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none transition focus:border-red-500 disabled:bg-gray-100"
+                            >
+                                <option value="">Tum ekip</option>
+                                {sortedMembers.map((member) => (
+                                    <option key={member.userId} value={member.userId}>
+                                        {memberName(member)}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
                 </div>
             </section>
 
@@ -479,15 +728,85 @@ export function TasksPage() {
                         </section>
                     ) : (
                         <section className="rounded-xl border border-gray-200 bg-white p-4">
-                            <div className="overflow-x-auto">
-                                <table className="w-full min-w-[920px] text-left text-sm">
+                            <div ref={tableContainerRef} className="overflow-x-hidden">
+                                <table
+                                    className="w-full table-fixed text-left text-sm"
+                                >
+                                    <colgroup>
+                                        <col style={{ width: `${tableColumnPercentages.task}%` }} />
+                                        <col style={{ width: `${tableColumnPercentages.priority}%` }} />
+                                        <col style={{ width: `${tableColumnPercentages.assignee}%` }} />
+                                        <col style={{ width: `${tableColumnPercentages.dueDate}%` }} />
+                                        <col style={{ width: `${tableColumnPercentages.status}%` }} />
+                                    </colgroup>
                                     <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
                                         <tr>
-                                            <th className="px-3 py-2.5 font-semibold">Gorev</th>
-                                            <th className="px-3 py-2.5 font-semibold">Oncelik</th>
-                                            <th className="px-3 py-2.5 font-semibold">Atanan</th>
-                                            <th className="px-3 py-2.5 font-semibold">Son Tarih</th>
-                                            <th className="px-3 py-2.5 font-semibold">Durum</th>
+                                            <th className="group relative px-3 py-2.5 font-semibold">
+                                                <button type="button" className="flex items-center gap-1" onClick={() => handleTableSort('task')}>
+                                                    Gorev
+                                                    {renderSortIcon('task')}
+                                                </button>
+                                                <div
+                                                    role="separator"
+                                                    aria-orientation="vertical"
+                                                    aria-label="Gorev sutunu genisligini degistir"
+                                                    className="absolute right-0 top-0 h-full w-2 translate-x-1 cursor-col-resize select-none"
+                                                    onMouseDown={(event) => handleColumnResizeStart('task', event)}
+                                                >
+                                                    <span className="absolute inset-y-2 right-1 w-px bg-gray-200 transition group-hover:bg-red-300" />
+                                                </div>
+                                            </th>
+                                            <th className="group relative px-3 py-2.5 font-semibold">
+                                                <button type="button" className="flex items-center gap-1" onClick={() => handleTableSort('priority')}>
+                                                    Oncelik
+                                                    {renderSortIcon('priority')}
+                                                </button>
+                                                <div
+                                                    role="separator"
+                                                    aria-orientation="vertical"
+                                                    aria-label="Oncelik sutunu genisligini degistir"
+                                                    className="absolute right-0 top-0 h-full w-2 translate-x-1 cursor-col-resize select-none"
+                                                    onMouseDown={(event) => handleColumnResizeStart('priority', event)}
+                                                >
+                                                    <span className="absolute inset-y-2 right-1 w-px bg-gray-200 transition group-hover:bg-red-300" />
+                                                </div>
+                                            </th>
+                                            <th className="group relative px-3 py-2.5 font-semibold">
+                                                <button type="button" className="flex items-center gap-1" onClick={() => handleTableSort('assignee')}>
+                                                    Atanan
+                                                    {renderSortIcon('assignee')}
+                                                </button>
+                                                <div
+                                                    role="separator"
+                                                    aria-orientation="vertical"
+                                                    aria-label="Atanan sutunu genisligini degistir"
+                                                    className="absolute right-0 top-0 h-full w-2 translate-x-1 cursor-col-resize select-none"
+                                                    onMouseDown={(event) => handleColumnResizeStart('assignee', event)}
+                                                >
+                                                    <span className="absolute inset-y-2 right-1 w-px bg-gray-200 transition group-hover:bg-red-300" />
+                                                </div>
+                                            </th>
+                                            <th className="group relative px-3 py-2.5 font-semibold">
+                                                <button type="button" className="flex items-center gap-1" onClick={() => handleTableSort('dueDate')}>
+                                                    Son Tarih
+                                                    {renderSortIcon('dueDate')}
+                                                </button>
+                                                <div
+                                                    role="separator"
+                                                    aria-orientation="vertical"
+                                                    aria-label="Son tarih sutunu genisligini degistir"
+                                                    className="absolute right-0 top-0 h-full w-2 translate-x-1 cursor-col-resize select-none"
+                                                    onMouseDown={(event) => handleColumnResizeStart('dueDate', event)}
+                                                >
+                                                    <span className="absolute inset-y-2 right-1 w-px bg-gray-200 transition group-hover:bg-red-300" />
+                                                </div>
+                                            </th>
+                                            <th className="group relative px-3 py-2.5 font-semibold">
+                                                <button type="button" className="flex items-center gap-1" onClick={() => handleTableSort('status')}>
+                                                    Durum
+                                                    {renderSortIcon('status')}
+                                                </button>
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
@@ -520,7 +839,7 @@ export function TasksPage() {
                                                             disabled={pendingTaskId === task.id}
                                                             onClick={(event) => event.stopPropagation()}
                                                             onChange={(event) => handleStatusChange(task.id, normalizedStatus, event.target.value)}
-                                                            className="h-8 min-w-[140px] rounded-md border border-gray-300 bg-white px-2 text-xs font-medium text-gray-700 outline-none transition focus:border-red-500"
+                                                            className="h-8 w-full rounded-md border border-gray-300 bg-white px-2 text-xs font-medium text-gray-700 outline-none transition focus:border-red-500"
                                                         >
                                                             {nextStatusOptions(normalizedStatus).map((statusOption) => (
                                                                 <option key={`${task.id}-${statusOption}`} value={statusOption}>
@@ -553,14 +872,16 @@ export function TasksPage() {
                 </>
             )}
 
-            <TaskCreateModal
-                isOpen={createModalOpen}
-                onClose={() => setCreateModalOpen(false)}
-                projectName={selectedProject?.name ?? 'Proje'}
-                members={sortedMembers}
-                isPending={createMutation.isPending}
-                onCreate={handleCreateTask}
-            />
+            {canCreateTask && (
+                <TaskCreateModal
+                    isOpen={createModalOpen}
+                    onClose={() => setCreateModalOpen(false)}
+                    projectName={selectedProject?.name ?? 'Proje'}
+                    members={sortedMembers}
+                    isPending={createMutation.isPending}
+                    onCreate={handleCreateTask}
+                />
+            )}
         </div>
     );
 }

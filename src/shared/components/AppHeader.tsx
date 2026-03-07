@@ -1,13 +1,20 @@
+﻿import { useMemo, useState } from 'react';
 import { Menu } from 'lucide-react';
 import { PageTitle } from './header/PageTitle';
 import { UserAvatar } from './header/UserAvatar';
 import { RoleBadge } from './header/RoleBadge';
 import { LogoutButton } from './header/LogoutButton';
+import { NotificationsDropdown } from './header/NotificationsDropdown';
 
 interface AppHeaderUser {
     name: string;
     initials: string;
     role: string;
+}
+
+interface PresenceUser {
+    userId: string;
+    email: string;
 }
 
 interface AppHeaderProps {
@@ -16,6 +23,11 @@ interface AppHeaderProps {
     onLogout: () => void;
     onMenuToggle?: () => void;
     showMenuButton?: boolean;
+    hasFreshNotification?: boolean;
+    onClearFreshNotification?: () => void;
+    activePresenceUsers?: PresenceUser[];
+    isPresenceConnected?: boolean;
+    currentUserId?: string;
 }
 
 export function AppHeader({
@@ -24,7 +36,19 @@ export function AppHeader({
     onLogout,
     onMenuToggle,
     showMenuButton = false,
+    hasFreshNotification = false,
+    onClearFreshNotification,
+    activePresenceUsers = [],
+    isPresenceConnected = false,
+    currentUserId,
 }: AppHeaderProps) {
+    const [showPresenceDetails, setShowPresenceDetails] = useState(false);
+
+    const sortedPresenceUsers = useMemo(
+        () => [...activePresenceUsers].sort((a, b) => a.email.localeCompare(b.email, 'tr')),
+        [activePresenceUsers],
+    );
+
     return (
         <header
             style={{
@@ -42,8 +66,8 @@ export function AppHeader({
                 {showMenuButton && onMenuToggle && (
                     <button
                         onClick={onMenuToggle}
-                        aria-label="Menüyü aç"
-                        title="Menüyü aç"
+                        aria-label="Menuyu ac"
+                        title="Menuyu ac"
                         style={{
                             width: 34,
                             height: 34,
@@ -61,6 +85,59 @@ export function AppHeader({
                     </button>
                 )}
                 <PageTitle title={pageName} />
+
+                <div
+                    onMouseEnter={() => setShowPresenceDetails(true)}
+                    onMouseLeave={() => setShowPresenceDetails(false)}
+                    style={{ position: 'relative' }}
+                >
+                    <button
+                        type="button"
+                        onFocus={() => setShowPresenceDetails(true)}
+                        onBlur={() => setShowPresenceDetails(false)}
+                        className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 shadow-sm"
+                        style={{ cursor: 'default' }}
+                    >
+                        <span
+                            className={`h-2.5 w-2.5 rounded-full ${isPresenceConnected ? 'animate-pulse bg-emerald-500' : 'bg-gray-400'}`}
+                        />
+                        <span>Aktif Personel: {activePresenceUsers.length}</span>
+                    </button>
+
+                    {showPresenceDetails && (
+                        <div
+                            className="absolute left-0 z-30 mt-2 w-[min(320px,85vw)] rounded-xl border border-gray-200 bg-white p-3 shadow-xl"
+                            style={{ top: '100%' }}
+                        >
+                            <p className="mb-1 text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">
+                                Aktiflik Detayi
+                            </p>
+                            <p className="mb-2 text-[11px] text-gray-500">
+                                {isPresenceConnected ? 'Canli oturum takibi acik.' : 'Baglanti kuruluyor...'}
+                            </p>
+
+                            {sortedPresenceUsers.length === 0 ? (
+                                <p className="rounded-lg bg-gray-50 px-2.5 py-2 text-xs text-gray-600">
+                                    Su anda aktif personel yok.
+                                </p>
+                            ) : (
+                                <div className="max-h-56 space-y-1.5 overflow-auto">
+                                    {sortedPresenceUsers.map((presenceUser) => (
+                                        <div
+                                            key={presenceUser.userId}
+                                            className="rounded-md border border-gray-100 bg-gray-50 px-2.5 py-2"
+                                        >
+                                            <p className="text-xs font-semibold text-gray-900">
+                                                {presenceUser.email}
+                                                {presenceUser.userId === currentUserId ? ' (Sen)' : ''}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
 
             <div
@@ -70,6 +147,10 @@ export function AppHeader({
                     gap: 12,
                 }}
             >
+                <NotificationsDropdown
+                    hasFreshNotification={hasFreshNotification}
+                    onClearFreshNotification={onClearFreshNotification}
+                />
                 <UserAvatar initials={user.initials} />
 
                 {!showMenuButton && (
