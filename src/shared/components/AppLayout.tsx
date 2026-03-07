@@ -16,6 +16,8 @@ import { buildRoleAccentPalette } from '../utils/colorTheme';
 interface PresenceUser {
     userId: string;
     email: string;
+    displayName?: string;
+    currentPath: string;
 }
 
 interface GlobalPresenceUpdatePayload {
@@ -124,6 +126,16 @@ export function AppLayout() {
         }),
         [],
     );
+
+    function disconnectPresenceSocket() {
+        const socket = presenceSocketRef.current;
+        if (!socket) return;
+        socket.emit('leaveGlobalPresence');
+        socket.disconnect();
+        presenceSocketRef.current = null;
+        setIsPresenceConnected(false);
+        setActivePresenceUsers([]);
+    }
 
     useEffect(() => {
         const onResize = () => {
@@ -289,7 +301,8 @@ export function AppLayout() {
                     (presenceUser): presenceUser is PresenceUser =>
                         !!presenceUser
                         && typeof presenceUser.userId === 'string'
-                        && typeof presenceUser.email === 'string',
+                        && typeof presenceUser.email === 'string'
+                        && typeof presenceUser.currentPath === 'string',
                 )
                 : [];
             setActivePresenceUsers(users);
@@ -297,7 +310,7 @@ export function AppLayout() {
 
         socket.on('connect', () => {
             setIsPresenceConnected(true);
-            socket.emit('joinGlobalPresence');
+            socket.emit('joinGlobalPresence', { currentPath: location.pathname });
         });
         socket.on('disconnect', () => {
             setIsPresenceConnected(false);
@@ -314,6 +327,26 @@ export function AppLayout() {
             setActivePresenceUsers([]);
         };
     }, [user?.id, token]);
+
+    useEffect(() => {
+        const handlePageExit = () => {
+            disconnectPresenceSocket();
+        };
+
+        window.addEventListener('beforeunload', handlePageExit);
+        window.addEventListener('pagehide', handlePageExit);
+        return () => {
+            window.removeEventListener('beforeunload', handlePageExit);
+            window.removeEventListener('pagehide', handlePageExit);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!isPresenceConnected) return;
+        const socket = presenceSocketRef.current;
+        if (!socket) return;
+        socket.emit('updateGlobalPresencePath', { currentPath: location.pathname });
+    }, [isPresenceConnected, location.pathname]);
 
     useEffect(() => {
         if (location.pathname.startsWith('/app/notifications')) {
@@ -338,6 +371,7 @@ export function AppLayout() {
     };
 
     function handleLogout() {
+        disconnectPresenceSocket();
         logout();
         navigate('/login', { replace: true });
     }
@@ -416,6 +450,7 @@ export function AppLayout() {
                     activePresenceUsers={activePresenceUsers}
                     isPresenceConnected={isPresenceConnected}
                     currentUserId={user.id}
+                    currentPath={location.pathname}
                 />
                 <main style={{ flex: 1, overflow: 'auto', backgroundColor: '#F9FAFB' }}>
                     <Outlet />

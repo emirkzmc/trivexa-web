@@ -15,6 +15,8 @@ interface AppHeaderUser {
 interface PresenceUser {
     userId: string;
     email: string;
+    displayName?: string;
+    currentPath: string;
 }
 
 interface AppHeaderProps {
@@ -28,6 +30,7 @@ interface AppHeaderProps {
     activePresenceUsers?: PresenceUser[];
     isPresenceConnected?: boolean;
     currentUserId?: string;
+    currentPath?: string;
 }
 
 export function AppHeader({
@@ -41,12 +44,26 @@ export function AppHeader({
     activePresenceUsers = [],
     isPresenceConnected = false,
     currentUserId,
+    currentPath = '',
 }: AppHeaderProps) {
     const [showPresenceDetails, setShowPresenceDetails] = useState(false);
 
     const sortedPresenceUsers = useMemo(
-        () => [...activePresenceUsers].sort((a, b) => a.email.localeCompare(b.email, 'tr')),
+        () =>
+            [...activePresenceUsers].sort((a, b) => {
+                const left = (a.displayName || a.email).trim();
+                const right = (b.displayName || b.email).trim();
+                return left.localeCompare(right, 'tr');
+            }),
         [activePresenceUsers],
+    );
+    const usersOnThisPage = useMemo(
+        () => sortedPresenceUsers.filter((presenceUser) => presenceUser.currentPath === currentPath),
+        [currentPath, sortedPresenceUsers],
+    );
+    const usersOnOtherPages = useMemo(
+        () => sortedPresenceUsers.filter((presenceUser) => presenceUser.currentPath !== currentPath),
+        [currentPath, sortedPresenceUsers],
     );
 
     return (
@@ -121,18 +138,64 @@ export function AppHeader({
                                     Su anda aktif personel yok.
                                 </p>
                             ) : (
-                                <div className="max-h-56 space-y-1.5 overflow-auto">
-                                    {sortedPresenceUsers.map((presenceUser) => (
-                                        <div
-                                            key={presenceUser.userId}
-                                            className="rounded-md border border-gray-100 bg-gray-50 px-2.5 py-2"
-                                        >
-                                            <p className="text-xs font-semibold text-gray-900">
-                                                {presenceUser.email}
-                                                {presenceUser.userId === currentUserId ? ' (Sen)' : ''}
+                                <div className="max-h-64 space-y-2 overflow-auto">
+                                    <div>
+                                        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                                            Bu Sayfadaki Kisiler ({usersOnThisPage.length})
+                                        </p>
+                                        {usersOnThisPage.length === 0 ? (
+                                            <p className="rounded-md bg-gray-50 px-2.5 py-2 text-xs text-gray-500">
+                                                Bu sayfada aktif kisi yok.
                                             </p>
-                                        </div>
-                                    ))}
+                                        ) : (
+                                            <div className="space-y-1.5">
+                                                {usersOnThisPage.map((presenceUser) => (
+                                                    <div
+                                                        key={presenceUser.userId}
+                                                        className="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-2"
+                                                    >
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <p className="text-xs font-semibold text-gray-900">
+                                                                {presenceUser.displayName || presenceUser.email}
+                                                                {presenceUser.userId === currentUserId ? ' (Sen)' : ''}
+                                                            </p>
+                                                            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                                                                📍 Burada
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                                            Diger Sayfalardaki Kisiler ({usersOnOtherPages.length})
+                                        </p>
+                                        {usersOnOtherPages.length === 0 ? (
+                                            <p className="rounded-md bg-gray-50 px-2.5 py-2 text-xs text-gray-500">
+                                                Diger sayfalarda aktif kisi yok.
+                                            </p>
+                                        ) : (
+                                            <div className="space-y-1.5">
+                                                {usersOnOtherPages.map((presenceUser) => (
+                                                    <div
+                                                        key={presenceUser.userId}
+                                                        className="rounded-md border border-gray-100 bg-gray-50 px-2.5 py-2"
+                                                    >
+                                                        <p className="text-xs font-semibold text-gray-900">
+                                                            {presenceUser.displayName || presenceUser.email}
+                                                            {presenceUser.userId === currentUserId ? ' (Sen)' : ''}
+                                                        </p>
+                                                        <p className="mt-0.5 text-[11px] text-gray-500">
+                                                            Sayfa: {presenceUser.currentPath}
+                                                        </p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             )}
                         </div>
