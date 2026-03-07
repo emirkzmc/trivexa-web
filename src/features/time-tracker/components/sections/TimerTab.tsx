@@ -3,7 +3,7 @@ import { useMemo, type FormEvent } from 'react';
 import { Pagination } from '../../../../shared/components/Pagination';
 import { formatDate } from '../../../../shared/utils/formatDate';
 import { formatDuration } from '../../../../shared/utils/formatDuration';
-import { buildRoleAccentPalette } from '../../../../shared/utils/colorTheme';
+import { buildRoleAccentPalette, hexToRgba } from '../../../../shared/utils/colorTheme';
 import type { ProjectItem } from '../../../projects/api/projects.api';
 import type { TaskItem } from '../../../tasks/api/tasks.api';
 import type { StartTimerPayload, TimerEntry } from '../../api/timeTracker.api';
@@ -94,7 +94,7 @@ export function TimerTab({
 }: TimerTabProps) {
     const accentPalette = useMemo(() => buildRoleAccentPalette(activeTimerAccent), [activeTimerAccent]);
     const activeTimerCardStyle = {
-        backgroundImage: `linear-gradient(135deg, ${accentPalette.gradientFrom} 0%, ${accentPalette.gradientMid} 44%, ${accentPalette.gradientTo} 100%)`,
+        backgroundImage: `linear-gradient(135deg, ${hexToRgba(accentPalette.gradientFrom, 0.7)} 0%, ${hexToRgba(accentPalette.gradientMid, 0.7)} 44%, ${hexToRgba(accentPalette.gradientTo, 0.7)} 100%)`,
         boxShadow: `0 16px 34px ${accentPalette.accentShadow}`,
         borderColor: accentPalette.accentBorder,
     };
