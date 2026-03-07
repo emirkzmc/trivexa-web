@@ -1,5 +1,5 @@
-import { useMemo, useState, type ReactNode } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
     ArrowLeft,
     BriefcaseBusiness,
@@ -13,10 +13,12 @@ import {
     Ticket,
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import { PageHeader } from '../../../shared/components/PageHeader';
 import { ROLES } from '../../../shared/constants/roles';
 import { formatDate } from '../../../shared/utils/formatDate';
 import { useAuthStore } from '../../auth/store/authStore';
+import { createInvoice, updateInvoiceStatus, type InvoiceStatus } from '../../finance/api/invoices.api';
 import {
     getClientWorkspace,
     type ClientWorkspaceResponse,
@@ -32,6 +34,25 @@ const TAB_ITEMS: Array<{ key: DetailTab; label: string; icon: ReactNode }> = [
     { key: 'finance', label: 'Finans', icon: <CircleDollarSign size={14} /> },
     { key: 'contracts', label: 'Sozlesmeler', icon: <ShieldCheck size={14} /> },
 ];
+
+const INVOICE_STATUS_OPTIONS: InvoiceStatus[] = [
+    'DRAFT',
+    'SENT',
+    'PAID',
+    'PARTIALLY_PAID',
+    'CANCELLED',
+    'OVERDUE',
+];
+
+interface InvoiceFormState {
+    projectId: string;
+    description: string;
+    quantity: string;
+    unitPrice: string;
+    taxRate: string;
+    dueDate: string;
+    notes: string;
+}
 
 function formatMoney(value?: number) {
     if (typeof value !== 'number' || Number.isNaN(value)) {
@@ -58,6 +79,14 @@ function statusBadgeClass(status?: string) {
     }
 
     return 'bg-gray-100 text-gray-700';
+}
+
+function invoiceStatusLabel(status: string) {
+    const normalized = status.toUpperCase();
+    if (normalized === 'PARTIALLY_PAID') {
+        return 'PARTIALLY PAID';
+    }
+    return normalized;
 }
 
 function TabButton({
@@ -117,15 +146,26 @@ function findRelatedProjectName(
 }
 
 export function ClientDetailPage() {
+    const queryClient = useQueryClient();
     const navigate = useNavigate();
     const { clientId = '' } = useParams<{ clientId: string }>();
     const [activeTab, setActiveTab] = useState<DetailTab>('overview');
+    const [invoiceForm, setInvoiceForm] = useState<InvoiceFormState>({
+        projectId: '',
+        description: '',
+        quantity: '1',
+        unitPrice: '',
+        taxRate: '20',
+        dueDate: '',
+        notes: '',
+    });
     const userRole = useAuthStore((state) => state.user?.role);
 
     const canReadClients = userRole === ROLES.ADMIN
         || userRole === ROLES.MANAGER
         || userRole === ROLES.ACCOUNT_MANAGER
         || userRole === ROLES.ACCOUNTING;
+    const canManageInvoices = userRole === ROLES.ADMIN || userRole === ROLES.MANAGER;
 
     const workspaceQuery = useQuery({
         queryKey: ['client-workspace', clientId],
@@ -134,6 +174,67 @@ export function ClientDetailPage() {
     });
 
     const workspace = workspaceQuery.data;
+
+    const createInvoiceMutation = useMutation({
+        mutationFn: async () => {
+            if (!workspace) {
+                throw new Error('Musteri verisi bulunamadi.');
+            }
+
+            const description = invoiceForm.description.trim();
+            const quantity = Number(invoiceForm.quantity);
+            const unitPrice = Number(invoiceForm.unitPrice);
+            const taxRate = Number(invoiceForm.taxRate);
+
+            if (!description) {
+                throw new Error('Kalem aciklamasi zorunludur.');
+            }
+            if (!Number.isFinite(quantity) || quantity <= 0) {
+                throw new Error('Miktar 0 dan buyuk olmali.');
+            }
+            if (!Number.isFinite(unitPrice) || unitPrice < 0) {
+                throw new Error('Birim fiyat gecersiz.');
+            }
+
+            return createInvoice({
+                clientId: workspace.client.id,
+                projectId: invoiceForm.projectId || undefined,
+                items: [{ description, quantity, unitPrice }],
+                taxRate: Number.isFinite(taxRate) && taxRate >= 0 ? taxRate : 20,
+                dueDate: invoiceForm.dueDate || undefined,
+                notes: invoiceForm.notes.trim() || undefined,
+            });
+        },
+        onSuccess: async () => {
+            toast.success('Fatura olusturuldu.');
+            setInvoiceForm({
+                projectId: '',
+                description: '',
+                quantity: '1',
+                unitPrice: '',
+                taxRate: '20',
+                dueDate: '',
+                notes: '',
+            });
+            await queryClient.invalidateQueries({ queryKey: ['client-workspace', clientId] });
+        },
+        onError: (error: unknown) => {
+            const message = error instanceof Error ? error.message : 'Fatura olusturulamadi.';
+            toast.error(message);
+        },
+    });
+
+    const updateInvoiceStatusMutation = useMutation({
+        mutationFn: ({ invoiceId, status }: { invoiceId: string; status: InvoiceStatus }) =>
+            updateInvoiceStatus(invoiceId, { status }),
+        onSuccess: async () => {
+            toast.success('Fatura durumu guncellendi.');
+            await queryClient.invalidateQueries({ queryKey: ['client-workspace', clientId] });
+        },
+        onError: () => {
+            toast.error('Fatura durumu guncellenemedi.');
+        },
+    });
     const paymentMap = useMemo(
         () => new Map((workspace?.finance.paymentsByInvoice ?? []).map((item) => [item.invoiceId, item.payments])),
         [workspace?.finance.paymentsByInvoice],
@@ -154,6 +255,11 @@ export function ClientDetailPage() {
             }),
         );
     }, [workspace]);
+
+    async function handleCreateInvoice(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        await createInvoiceMutation.mutateAsync();
+    }
 
     if (!canReadClients) {
         return (
@@ -390,6 +496,105 @@ export function ClientDetailPage() {
                                 </div>
                             </article>
 
+                            {canManageInvoices && (
+                                <form
+                                    onSubmit={handleCreateInvoice}
+                                    className="rounded-xl border border-gray-200 bg-white p-4"
+                                >
+                                    <h3 className="mb-3 text-sm font-semibold text-gray-900">Yeni Fatura Olustur</h3>
+                                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                                        <div className="xl:col-span-2">
+                                            <label className="mb-1 block text-xs font-semibold text-gray-600">Kalem Aciklamasi</label>
+                                            <input
+                                                value={invoiceForm.description}
+                                                onChange={(event) => setInvoiceForm((prev) => ({ ...prev, description: event.target.value }))}
+                                                className="h-9 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                                placeholder="Hizmet aciklamasi"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="mb-1 block text-xs font-semibold text-gray-600">Proje (Opsiyonel)</label>
+                                            <select
+                                                value={invoiceForm.projectId}
+                                                onChange={(event) => setInvoiceForm((prev) => ({ ...prev, projectId: event.target.value }))}
+                                                className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                            >
+                                                <option value="">Proje sec</option>
+                                                {workspace.projects.map((project) => (
+                                                    <option key={project.id} value={project.id}>
+                                                        {project.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="mb-1 block text-xs font-semibold text-gray-600">Miktar</label>
+                                            <input
+                                                type="number"
+                                                min={0.01}
+                                                step={0.01}
+                                                value={invoiceForm.quantity}
+                                                onChange={(event) => setInvoiceForm((prev) => ({ ...prev, quantity: event.target.value }))}
+                                                className="h-9 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="mb-1 block text-xs font-semibold text-gray-600">Birim Fiyat</label>
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                step={0.01}
+                                                value={invoiceForm.unitPrice}
+                                                onChange={(event) => setInvoiceForm((prev) => ({ ...prev, unitPrice: event.target.value }))}
+                                                className="h-9 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="mb-1 block text-xs font-semibold text-gray-600">Vergi Orani (%)</label>
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                step={0.01}
+                                                value={invoiceForm.taxRate}
+                                                onChange={(event) => setInvoiceForm((prev) => ({ ...prev, taxRate: event.target.value }))}
+                                                className="h-9 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="mb-1 block text-xs font-semibold text-gray-600">Vade Tarihi</label>
+                                            <input
+                                                type="date"
+                                                value={invoiceForm.dueDate}
+                                                onChange={(event) => setInvoiceForm((prev) => ({ ...prev, dueDate: event.target.value }))}
+                                                className="h-9 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                            />
+                                        </div>
+                                        <div className="md:col-span-2 xl:col-span-3">
+                                            <label className="mb-1 block text-xs font-semibold text-gray-600">Not</label>
+                                            <textarea
+                                                rows={2}
+                                                value={invoiceForm.notes}
+                                                onChange={(event) => setInvoiceForm((prev) => ({ ...prev, notes: event.target.value }))}
+                                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                                placeholder="Opsiyonel not"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 flex justify-end">
+                                        <button
+                                            type="submit"
+                                            disabled={createInvoiceMutation.isPending}
+                                            className="inline-flex h-9 items-center rounded-lg bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-default disabled:opacity-60"
+                                        >
+                                            {createInvoiceMutation.isPending ? 'Olusturuluyor...' : 'Fatura Olustur'}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+
                             {workspace.finance.invoices.length === 0 ? (
                                 <EmptyState label="Fatura kaydi bulunmuyor." />
                             ) : (
@@ -409,6 +614,29 @@ export function ClientDetailPage() {
                                                     <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${statusBadgeClass(invoice.status)}`}>
                                                         {invoice.status || 'UNKNOWN'}
                                                     </span>
+                                                    {canManageInvoices && (
+                                                        <select
+                                                            value={invoice.status || 'DRAFT'}
+                                                            onChange={(event) => {
+                                                                const nextStatus = event.target.value as InvoiceStatus;
+                                                                if (nextStatus === invoice.status) {
+                                                                    return;
+                                                                }
+                                                                updateInvoiceStatusMutation.mutate({
+                                                                    invoiceId: invoice.id,
+                                                                    status: nextStatus,
+                                                                });
+                                                            }}
+                                                            disabled={updateInvoiceStatusMutation.isPending}
+                                                            className="h-7 rounded-md border border-gray-300 bg-white px-2 text-[11px] font-semibold text-gray-700 outline-none focus:border-red-500"
+                                                        >
+                                                            {INVOICE_STATUS_OPTIONS.map((status) => (
+                                                                <option key={status} value={status}>
+                                                                    {invoiceStatusLabel(status)}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    )}
                                                 </div>
                                                 <div className="mb-3 grid gap-2 text-xs text-gray-600 sm:grid-cols-2 xl:grid-cols-4">
                                                     <p>Tutar: {formatMoney(invoice.total)}</p>
