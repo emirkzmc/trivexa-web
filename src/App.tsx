@@ -14,6 +14,8 @@ import { ProjectDetailPage } from './features/projects/components/ProjectDetailP
 import { TasksPage } from './features/tasks/components/TasksPage';
 import { TaskDetailPage } from './features/tasks/components/TaskDetailPage';
 import { NotificationsPage } from './features/notifications/components/NotificationsPage';
+import { ClientsPage } from './features/clients/components/ClientsPage';
+import { ClientDetailPage } from './features/clients/components/ClientDetailPage';
 
 function App() {
   return (
@@ -38,6 +40,9 @@ function App() {
         <Route path="gorevlerim" element={<Navigate to="/app/gorevler" replace />} />
         <Route path="gorevler/:taskId" element={<TaskDetailPage />} />
         <Route path="departmanlar" element={<DepartmentsPage />} />
+        <Route path="musteriler" element={<ClientsPage />} />
+        <Route path="musteriler/:clientId" element={<ClientDetailPage />} />
+        <Route path="musterilerim" element={<Navigate to="/app/musteriler" replace />} />
         <Route path="time-tracker" element={<TimeTrackerPage />} />
         <Route path="roller" element={<RolesPermissionsPage />} />
         <Route path="audit-log" element={<AuditLogPage />} />

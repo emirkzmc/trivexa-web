@@ -17,10 +17,10 @@ export function useCreateClient() {
         mutationFn: (payload: ClientCreatePayload) => createClient(payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['clients'] });
-            toast.success('Müşteri başarıyla oluşturuldu', { duration: 3_000 });
+            toast.success('Musteri basariyla olusturuldu', { duration: 3_000 });
         },
         onError: () => {
-            toast.error('Müşteri oluşturulurken bir hata oluştu', { duration: 3_000 });
+            toast.error('Musteri olusturulurken bir hata olustu', { duration: 3_000 });
         },
     });
 }
@@ -32,10 +32,10 @@ export function useUpdateClient() {
             updateClient(id, payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['clients'] });
-            toast.success('Müşteri bilgileri güncellendi', { duration: 3_000 });
+            toast.success('Musteri bilgileri guncellendi', { duration: 3_000 });
         },
         onError: () => {
-            toast.error('Güncelleme sırasında bir hata oluştu', { duration: 3_000 });
+            toast.error('Guncelleme sirasinda bir hata olustu', { duration: 3_000 });
         },
     });
 }
@@ -46,22 +46,19 @@ export function useDeleteClient() {
         mutationFn: (id: string) => deleteClient(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['clients'] });
-            toast.success('Müşteri kaydı silindi', { duration: 3_000 });
+            toast.success('Musteri kaydi silindi', { duration: 3_000 });
         },
         onError: () => {
-            toast.error('Silme sırasında bir hata oluştu', { duration: 3_000 });
+            toast.error('Silme sirasinda bir hata olustu', { duration: 3_000 });
         },
     });
 }
 
 export function useGeneratePortalAccess() {
     return useMutation({
-        mutationFn: (clientId: string) => generatePortalAccess(clientId),
-        onSuccess: () => {
-            toast.success('Portal erişimi oluşturuldu', { duration: 3_000 });
-        },
+        mutationFn: (payload: { email?: string; clientId?: string }) => generatePortalAccess(payload),
         onError: () => {
-            toast.error('Portal erişimi oluşturulurken bir hata oluştu', { duration: 3_000 });
+            toast.error('Portal erisim linki olusturulurken bir hata olustu', { duration: 3_000 });
         },
     });
 }

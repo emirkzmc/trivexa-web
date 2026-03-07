@@ -239,90 +239,115 @@ export function AppLayout() {
     useEffect(() => {
         if (!user?.id || !token) return;
 
-        const socketUrl = resolveNotificationsSocketUrl();
-        const socket = io(`${socketUrl}/notifications`, {
-            query: { token },
-            transports: ['websocket', 'polling'],
-            reconnection: true,
-            reconnectionDelay: 1_000,
-        });
-        socketRef.current = socket;
+        let disposed = false;
+        let notificationsSocket: Socket | null = null;
+        const connectTimer = window.setTimeout(() => {
+            if (disposed) return;
 
-        socket.on('notification', (payload: unknown) => {
-            const title =
-                typeof payload === 'object'
-                && payload !== null
-                && 'title' in payload
-                && typeof (payload as { title?: unknown }).title === 'string'
-                    ? (payload as { title: string }).title
-                    : '';
-
-            void queryClient.invalidateQueries({ queryKey: ['notifications'] });
-            void queryClient.invalidateQueries({ queryKey: ['unread-count'] });
-
-            playNotificationTone();
-            toast.info(title ? `Yeni bildiriminiz var: ${title}` : 'Yeni bildiriminiz var', {
-                duration: 3_500,
+            const socketUrl = resolveNotificationsSocketUrl();
+            const socket = io(`${socketUrl}/notifications`, {
+                query: { token },
+                transports: ['polling', 'websocket'],
+                reconnection: true,
+                reconnectionDelay: 1_000,
             });
+            notificationsSocket = socket;
+            socketRef.current = socket;
 
-            setLiveNoticeText('Yeni bildiriminiz var');
-            setShowLiveNotice(true);
-            setHasFreshNotification(true);
+            socket.on('notification', (payload: unknown) => {
+                const title =
+                    typeof payload === 'object'
+                    && payload !== null
+                    && 'title' in payload
+                    && typeof (payload as { title?: unknown }).title === 'string'
+                        ? (payload as { title: string }).title
+                        : '';
 
-            if (noticeTimerRef.current) {
-                window.clearTimeout(noticeTimerRef.current);
-            }
-            noticeTimerRef.current = window.setTimeout(() => {
-                setShowLiveNotice(false);
-            }, 3_500);
-        });
+                void queryClient.invalidateQueries({ queryKey: ['notifications'] });
+                void queryClient.invalidateQueries({ queryKey: ['unread-count'] });
+
+                playNotificationTone();
+                toast.info(title ? `Yeni bildiriminiz var: ${title}` : 'Yeni bildiriminiz var', {
+                    duration: 3_500,
+                });
+
+                setLiveNoticeText('Yeni bildiriminiz var');
+                setShowLiveNotice(true);
+                setHasFreshNotification(true);
+
+                if (noticeTimerRef.current) {
+                    window.clearTimeout(noticeTimerRef.current);
+                }
+                noticeTimerRef.current = window.setTimeout(() => {
+                    setShowLiveNotice(false);
+                }, 3_500);
+            });
+        }, 0);
 
         return () => {
-            socket.disconnect();
-            socketRef.current = null;
+            disposed = true;
+            window.clearTimeout(connectTimer);
+            if (notificationsSocket) {
+                notificationsSocket.disconnect();
+                if (socketRef.current === notificationsSocket) {
+                    socketRef.current = null;
+                }
+            }
         };
     }, [user?.id, token, queryClient]);
 
     useEffect(() => {
         if (!user?.id || !token) return;
 
-        const socketUrl = resolveNotificationsSocketUrl();
-        const socket = io(`${socketUrl}/presence`, {
-            auth: { token },
-            transports: ['websocket', 'polling'],
-            reconnection: true,
-            reconnectionDelay: 1_000,
-        });
-        presenceSocketRef.current = socket;
+        let disposed = false;
+        let presenceSocket: Socket | null = null;
+        const connectTimer = window.setTimeout(() => {
+            if (disposed) return;
 
-        const handleGlobalActiveUsersUpdate = (payload: GlobalPresenceUpdatePayload) => {
-            const users = Array.isArray(payload?.activeUsers)
-                ? payload.activeUsers.filter(
-                    (presenceUser): presenceUser is PresenceUser =>
-                        !!presenceUser
-                        && typeof presenceUser.userId === 'string'
-                        && typeof presenceUser.email === 'string'
-                        && typeof presenceUser.currentPath === 'string',
-                )
-                : [];
-            setActivePresenceUsers(users);
-        };
+            const socketUrl = resolveNotificationsSocketUrl();
+            const socket = io(`${socketUrl}/presence`, {
+                auth: { token },
+                transports: ['polling', 'websocket'],
+                reconnection: true,
+                reconnectionDelay: 1_000,
+            });
+            presenceSocket = socket;
+            presenceSocketRef.current = socket;
 
-        socket.on('connect', () => {
-            setIsPresenceConnected(true);
-            socket.emit('joinGlobalPresence', { currentPath: location.pathname });
-        });
-        socket.on('disconnect', () => {
-            setIsPresenceConnected(false);
-            setActivePresenceUsers([]);
-        });
-        socket.on('globalActiveUsersUpdate', handleGlobalActiveUsersUpdate);
+            const handleGlobalActiveUsersUpdate = (payload: GlobalPresenceUpdatePayload) => {
+                const users = Array.isArray(payload?.activeUsers)
+                    ? payload.activeUsers.filter(
+                        (presenceUser): presenceUser is PresenceUser =>
+                            !!presenceUser
+                            && typeof presenceUser.userId === 'string'
+                            && typeof presenceUser.email === 'string'
+                            && typeof presenceUser.currentPath === 'string',
+                    )
+                    : [];
+                setActivePresenceUsers(users);
+            };
+
+            socket.on('connect', () => {
+                setIsPresenceConnected(true);
+                socket.emit('joinGlobalPresence', { currentPath: location.pathname });
+            });
+            socket.on('disconnect', () => {
+                setIsPresenceConnected(false);
+                setActivePresenceUsers([]);
+            });
+            socket.on('globalActiveUsersUpdate', handleGlobalActiveUsersUpdate);
+        }, 0);
 
         return () => {
-            socket.emit('leaveGlobalPresence');
-            socket.off('globalActiveUsersUpdate', handleGlobalActiveUsersUpdate);
-            socket.disconnect();
-            presenceSocketRef.current = null;
+            disposed = true;
+            window.clearTimeout(connectTimer);
+            if (presenceSocket) {
+                presenceSocket.emit('leaveGlobalPresence');
+                presenceSocket.disconnect();
+            }
+            if (presenceSocketRef.current === presenceSocket) {
+                presenceSocketRef.current = null;
+            }
             setIsPresenceConnected(false);
             setActivePresenceUsers([]);
         };
