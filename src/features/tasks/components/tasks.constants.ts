@@ -6,7 +6,7 @@ export const TASK_STATUS_OPTIONS: Array<{ value: TaskStatus; label: string }> = 
     { value: 'IN_PROGRESS', label: 'Devam Ediyor' },
     { value: 'IN_REVIEW', label: 'Incelemede' },
     { value: 'DONE', label: 'Tamamlandi' },
-    { value: 'BLOCKED', label: 'Bloke' },
+    { value: 'BLOCKED', label: 'Iptal Edildi' },
 ];
 
 export const TASK_PRIORITY_OPTIONS: Array<{ value: TaskPriority; label: string }> = [

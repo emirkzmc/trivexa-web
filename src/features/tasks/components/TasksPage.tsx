@@ -20,7 +20,7 @@ import {
 } from '../api/tasks.api';
 import { TaskBoardColumn } from './TaskBoardColumn';
 import { TaskCreateModal } from './TaskCreateModal';
-import { TASK_PRIORITY_OPTIONS, TASK_STATUS_OPTIONS, TASK_STATUS_ORDER } from './tasks.constants';
+import { TASK_PRIORITY_OPTIONS, TASK_STATUS_OPTIONS, TASK_STATUS_ORDER, type TaskStatus } from './tasks.constants';
 import {
     extractErrorMessage,
     nextStatusOptions,
@@ -34,6 +34,10 @@ type TaskViewMode = 'board' | 'table';
 type TaskTableColumnKey = 'task' | 'priority' | 'assignee' | 'dueDate' | 'status';
 type ResizableTaskTableColumnKey = Exclude<TaskTableColumnKey, 'status'>;
 type SortDirection = 'asc' | 'desc';
+type DragState = {
+    taskId: string;
+    currentStatus: TaskStatus;
+};
 
 const MIN_COLUMN_WIDTH = 140;
 const INITIAL_COLUMN_WIDTHS: Record<ResizableTaskTableColumnKey, number> = {
@@ -102,6 +106,8 @@ export function TasksPage() {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [createModalOpen, setCreateModalOpen] = useState(false);
+    const [dragState, setDragState] = useState<DragState | null>(null);
+    const [dropTargetStatus, setDropTargetStatus] = useState<TaskStatus | null>(null);
     const resizeStateRef = useRef<{
         column: ResizableTaskTableColumnKey;
         startX: number;
@@ -492,6 +498,45 @@ export function TasksPage() {
         statusMutation.mutate({ taskId, currentStatus, nextStatus });
     }
 
+    function handleTaskDragStart(taskId: string, currentStatus: string) {
+        setDragState({
+            taskId,
+            currentStatus: toTaskStatus(currentStatus),
+        });
+    }
+
+    function handleColumnDragOver(status: string) {
+        if (!dragState) {
+            return;
+        }
+
+        const normalizedStatus = toTaskStatus(status);
+        setDropTargetStatus((prev) => (prev === normalizedStatus ? prev : normalizedStatus));
+    }
+
+    function handleTaskDragEnd() {
+        setDragState(null);
+        setDropTargetStatus(null);
+    }
+
+    function handleColumnDrop(status: string) {
+        if (!dragState) {
+            return;
+        }
+
+        const nextStatus = toTaskStatus(status);
+        const currentStatus = dragState.currentStatus;
+
+        handleTaskDragEnd();
+
+        const allowedStatuses = nextStatusOptions(currentStatus);
+        if (!allowedStatuses.includes(nextStatus)) {
+            return;
+        }
+
+        handleStatusChange(dragState.taskId, currentStatus, nextStatus);
+    }
+
     async function handleCreateTask(payload: TaskCreatePayload) {
         await createMutation.mutateAsync(payload);
     }
@@ -719,10 +764,17 @@ export function TasksPage() {
                                 <TaskBoardColumn
                                     key={status}
                                     title={taskStatusLabel(status)}
+                                    columnStatus={status}
                                     tasks={groupedByStatus[status] ?? []}
                                     pendingTaskId={pendingTaskId}
+                                    draggingTaskId={dragState?.taskId ?? null}
+                                    isDropTarget={dropTargetStatus === status}
                                     onOpenTask={(taskId) => navigate(`/app/gorevler/${taskId}`)}
                                     onStatusChange={handleStatusChange}
+                                    onTaskDragStart={handleTaskDragStart}
+                                    onColumnDragOver={handleColumnDragOver}
+                                    onColumnDrop={handleColumnDrop}
+                                    onTaskDragEnd={handleTaskDragEnd}
                                 />
                             ))}
                         </section>
