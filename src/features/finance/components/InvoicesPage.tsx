@@ -49,7 +49,15 @@ interface InvoiceFilters {
 export function InvoicesPage() {
     const navigate = useNavigate();
     const userRole = useAuthStore((state) => state.user?.role);
-    const canReadInvoices = userRole === ROLES.ADMIN || userRole === ROLES.MANAGER;
+    const normalizedRole = String(userRole ?? '').toUpperCase();
+    const hasAccountingRole = normalizedRole === ROLES.ACCOUNTING
+        || normalizedRole.includes('ACCOUNTING')
+        || normalizedRole.includes('MUHASEBE');
+    const canReadInvoices = normalizedRole === ROLES.ADMIN
+        || normalizedRole === ROLES.MANAGER
+        || normalizedRole === ROLES.SOCIAL_MEDIA
+        || normalizedRole === 'SEO'
+        || hasAccountingRole;
     const [filters, setFilters] = useState<InvoiceFilters>({
         status: '',
         clientId: '',
@@ -102,7 +110,7 @@ export function InvoicesPage() {
                     subtitle="Yetki kontrolü"
                 />
                 <section className="rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-10 text-center text-sm font-medium text-yellow-800">
-                    Bu ekrana sadece ADMIN ve MANAGER rolleri erisebilir.
+                    Bu ekrana ADMIN, MANAGER, ACCOUNTING ve muhasebe rolleri erisebilir.
                 </section>
             </div>
         );

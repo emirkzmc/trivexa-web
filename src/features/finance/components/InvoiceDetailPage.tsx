@@ -142,15 +142,19 @@ export function InvoiceDetailPage() {
     const navigate = useNavigate();
     const { invoiceId = '' } = useParams<{ invoiceId: string }>();
     const userRole = useAuthStore((state) => state.user?.role);
-    const canReadInvoices = userRole === ROLES.ADMIN
-        || userRole === ROLES.MANAGER
-        || userRole === ROLES.ACCOUNTING
-        || userRole === ROLES.SOCIAL_MEDIA
-        || String(userRole || '').toUpperCase() === 'SEO';
-    const canDeletePayments = userRole === ROLES.ADMIN
-        || userRole === ROLES.ACCOUNTING
-        || userRole === ROLES.SOCIAL_MEDIA
-        || String(userRole || '').toUpperCase() === 'SEO';
+    const normalizedRole = String(userRole ?? '').toUpperCase();
+    const hasAccountingRole = normalizedRole === ROLES.ACCOUNTING
+        || normalizedRole.includes('ACCOUNTING')
+        || normalizedRole.includes('MUHASEBE');
+    const canReadInvoices = normalizedRole === ROLES.ADMIN
+        || normalizedRole === ROLES.MANAGER
+        || normalizedRole === ROLES.SOCIAL_MEDIA
+        || normalizedRole === 'SEO'
+        || hasAccountingRole;
+    const canDeletePayments = normalizedRole === ROLES.ADMIN
+        || normalizedRole === ROLES.SOCIAL_MEDIA
+        || normalizedRole === 'SEO'
+        || hasAccountingRole;
     const canRefundPayments = canDeletePayments;
     const [paymentAmount, setPaymentAmount] = useState<string>('');
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('BANK_TRANSFER');
