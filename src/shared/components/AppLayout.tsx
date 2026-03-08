@@ -33,7 +33,7 @@ const PAGE_NAMES: Record<string, string> = {
     '/app/projeler': 'Projeler',
     '/app/gorevler': 'Görev Yönetimi',
     '/app/time-tracker': 'Time Tracker',
-    '/app/finans-dashboard': 'Finans Dashboard',
+    '/app/finans-dashboard': 'Nakit Akisi',
     '/app/finans': 'Finansal Raporlar',
     '/app/tahsilat-takibi': 'Tahsilat Takibi',
     '/app/gider-yonetimi': 'Gider Yönetimi',

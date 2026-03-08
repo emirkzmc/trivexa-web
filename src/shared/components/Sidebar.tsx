@@ -10,6 +10,7 @@ import {
 import { useAuthStore } from '../../features/auth/store/authStore';
 import { useUnreadCount } from '../../features/notifications/hooks/useUnreadCount';
 import { NAV_CONFIG, type RoleNavConfig } from '../../shared/constants/navConfig';
+import { ROLES } from '../../shared/constants/roles';
 
 const ICON_MAP: Record<string, React.ElementType> = {
     LayoutDashboard, Bell, Users, Building2, FolderKanban, CheckSquare,
@@ -42,7 +43,17 @@ export function Sidebar({
 
     if (!user) return null;
 
-    const config = (NAV_CONFIG as Record<string, RoleNavConfig>)[user.role];
+    const navConfigMap = NAV_CONFIG as Record<string, RoleNavConfig>;
+    const rawRole = String(user.role ?? '');
+    const normalizedRole = rawRole.toUpperCase();
+    const config = navConfigMap[rawRole]
+        ?? navConfigMap[normalizedRole]
+        ?? (normalizedRole === 'SEO' ? navConfigMap[ROLES.SOCIAL_MEDIA] : undefined)
+        ?? (
+            normalizedRole.includes('MUHASEBE') || normalizedRole.includes('ACCOUNTING')
+                ? navConfigMap[ROLES.ACCOUNTING]
+                : undefined
+        );
     if (!config) return null;
 
     const { theme, groups } = config;

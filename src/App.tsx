@@ -21,6 +21,7 @@ import { InvoiceDetailPage } from './features/finance/components/InvoiceDetailPa
 import { FinanceModulePage } from './features/finance/components/FinanceModulePage';
 import { CollectionTrackingPage } from './features/finance/components/CollectionTrackingPage';
 import { ExpenseManagementPage } from './features/finance/components/ExpenseManagementPage';
+import { CashflowDashboardPage } from './features/finance/components/CashflowDashboardPage';
 
 function App() {
   return (
@@ -48,15 +49,7 @@ function App() {
         <Route path="musteriler" element={<ClientsPage />} />
         <Route path="musteriler/:clientId" element={<ClientDetailPage />} />
         <Route path="musterilerim" element={<Navigate to="/app/musteriler" replace />} />
-        <Route
-          path="finans-dashboard"
-          element={(
-            <FinanceModulePage
-              title="Finans Dashboard"
-              subtitle="Nakit akışı, tahsilat ve iade KPI görünümü."
-            />
-          )}
-        />
+        <Route path="finans-dashboard" element={<CashflowDashboardPage />} />
         <Route
           path="finans"
           element={(
