@@ -22,6 +22,7 @@ import { FinanceModulePage } from './features/finance/components/FinanceModulePa
 import { CollectionTrackingPage } from './features/finance/components/CollectionTrackingPage';
 import { ExpenseManagementPage } from './features/finance/components/ExpenseManagementPage';
 import { CashflowDashboardPage } from './features/finance/components/CashflowDashboardPage';
+import { SupportRequestsPage } from './features/tickets/components/SupportRequestsPage';
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
         <Route path="gorevler" element={<TasksPage />} />
         <Route path="gorevlerim" element={<Navigate to="/app/gorevler" replace />} />
         <Route path="gorevler/:taskId" element={<TaskDetailPage />} />
+        <Route path="talepler" element={<SupportRequestsPage />} />
         <Route path="departmanlar" element={<DepartmentsPage />} />
         <Route path="musteriler" element={<ClientsPage />} />
         <Route path="musteriler/:clientId" element={<ClientDetailPage />} />
