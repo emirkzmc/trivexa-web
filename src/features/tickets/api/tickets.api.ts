@@ -2,6 +2,10 @@ import api from '../../../shared/lib/axios';
 
 type MaybeWrapped<T> = { data?: T } | T;
 
+export const SUPPORT_REQUEST_APPROVAL_STATUSES = ['PENDING', 'APPROVED', 'REJECTED'] as const;
+export const SUPPORT_REQUEST_STAGES = ['ANALIZ', 'PLANLAMA', 'GELISTIRME', 'TEST', 'TESLIM'] as const;
+export type SupportRequestStage = (typeof SUPPORT_REQUEST_STAGES)[number];
+
 export interface TicketItem {
     id: string;
     subject: string;
@@ -28,6 +32,10 @@ export interface SupportRequestItem {
     priority: string;
     type: string;
     status: string;
+    approvalStatus: string;
+    stage?: string;
+    approvedAt?: string;
+    approvedBy?: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -45,8 +53,10 @@ export interface SupportRequestListParams {
     limit?: number;
     search?: string;
     status?: string;
+    approvalStatus?: string;
     priority?: string;
     type?: string;
+    stage?: string;
     clientId?: string;
 }
 
@@ -171,6 +181,10 @@ function normalizeSupportRequest(raw: unknown): SupportRequestItem {
         priority: toStringValue(row.priority).toUpperCase() || 'MEDIUM',
         type: toStringValue(row.type).toUpperCase() || 'SUPPORT',
         status: toStringValue(row.status).toUpperCase() || 'OPEN',
+        approvalStatus: toStringValue(row.approvalStatus ?? row.approval_status).toUpperCase() || 'PENDING',
+        stage: toStringValue(row.stage).toUpperCase() || undefined,
+        approvedAt: toStringValue(row.approvedAt ?? row.approved_at) || undefined,
+        approvedBy: toStringValue(row.approvedBy ?? row.approved_by) || undefined,
         createdAt: toStringValue(row.createdAt ?? row.created_at),
         updatedAt: toStringValue(row.updatedAt ?? row.updated_at),
     };
@@ -202,6 +216,18 @@ export async function getSupportRequests(
         limit,
         totalPages,
     };
+}
+
+export async function approveSupportRequest(id: string): Promise<void> {
+    await api.patch(`/clients/portal-requests/${id}/approve`);
+}
+
+export async function updateSupportRequestStage(id: string, stage: SupportRequestStage): Promise<void> {
+    await api.patch(`/clients/portal-requests/${id}/stage`, { stage });
+}
+
+export async function completeSupportRequest(id: string): Promise<void> {
+    await api.patch(`/clients/portal-requests/${id}/complete`);
 }
 
 export async function getTicketById(id: string): Promise<TicketItem> {
