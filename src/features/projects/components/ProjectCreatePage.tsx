@@ -135,7 +135,7 @@ export function ProjectCreatePage() {
         }
 
         if (!form.clientName.trim()) {
-            toast.error('Musteri alani zorunludur.');
+            toast.error('Müşteri alani zorunludur.');
             return;
         }
 
@@ -178,7 +178,7 @@ export function ProjectCreatePage() {
                         <div className="mt-2 h-2 rounded-full bg-white/25">
                             <div className="h-2 rounded-full bg-white" style={{ width: `${completionScore}%` }} />
                         </div>
-                        <p className="mt-2 text-xs text-white/85">Tum kritik alanlar dolunca proje olusturmaya hazir.</p>
+                        <p className="mt-2 text-xs text-white/85">Tüm kritik alanlar dolunca proje olusturmaya hazir.</p>
                     </div>
                 </div>
             </section>
@@ -229,7 +229,7 @@ export function ProjectCreatePage() {
                                 </select>
                             </div>
                             <div>
-                                <label className="mb-1 block text-xs font-semibold text-gray-600">Musteri</label>
+                                <label className="mb-1 block text-xs font-semibold text-gray-600">Müşteri</label>
                                 <input
                                     value={form.clientName}
                                     onChange={(event) => updateField('clientName', event.target.value)}
@@ -238,7 +238,7 @@ export function ProjectCreatePage() {
                                 />
                             </div>
                             <div>
-                                <label className="mb-1 block text-xs font-semibold text-gray-600">Musteri Yetkilisi</label>
+                                <label className="mb-1 block text-xs font-semibold text-gray-600">Müşteri Yetkilisi</label>
                                 <input
                                     value={form.clientContact}
                                     onChange={(event) => updateField('clientContact', event.target.value)}
@@ -400,7 +400,7 @@ export function ProjectCreatePage() {
                             </p>
                             <p className={`inline-flex w-full items-center gap-2 rounded-lg px-2.5 py-2 ${form.clientName ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
                                 <CheckCircle2 size={13} />
-                                Musteri bilgisi girildi
+                                Müşteri bilgisi girildi
                             </p>
                             <p className={`inline-flex w-full items-center gap-2 rounded-lg px-2.5 py-2 ${form.startDate && form.deadline ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
                                 <CheckCircle2 size={13} />

@@ -364,8 +364,8 @@ export function TimeTrackerPage() {
 
     async function handleDeleteHistoryRow(id: string) {
         const isConfirmed = await showConfirmDialog({
-            title: 'Zaman kaydi silinsin mi?',
-            text: 'Bu zaman kaydi kalici olarak silinecek.',
+            title: 'Zaman kaydı silinsin mi?',
+            text: 'Bu zaman kaydı kalici olarak silinecek.',
             confirmText: 'Kaydi Sil',
         });
         if (!isConfirmed) return;
@@ -394,7 +394,7 @@ export function TimeTrackerPage() {
             <PageHeader
                 icon={<Timer size={20} color="var(--role-accent-600)"/>}
                 title="Time Tracker"
-                subtitle="Calisma suresini takip et, ozeti izle ve ekip hareketlerini gor"
+                subtitle="Çalışma suresini takip et, ozeti izle ve ekip hareketlerini gor"
             />
 
             <TimeTrackerTabs

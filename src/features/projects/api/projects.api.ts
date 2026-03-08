@@ -142,6 +142,8 @@ export interface ProjectGithubCommitsParams {
 type BackendProject = Partial<{
     id: string;
     name: string;
+    project_name: string;
+    title: string;
     description: string | null;
     clientId: string | null;
     client_id: string | null;
@@ -182,7 +184,8 @@ function unwrapData<T>(payload: MaybeWrapped<T>): T {
 }
 
 function normalizeProject(project: BackendProject | null | undefined): ProjectItem | null {
-    if (!project?.id || !project.name) {
+    const projectName = project?.name ?? project?.project_name ?? project?.title;
+    if (!project?.id || !projectName) {
         return null;
     }
 
@@ -192,7 +195,7 @@ function normalizeProject(project: BackendProject | null | undefined): ProjectIt
 
     return {
         id: project.id,
-        name: project.name,
+        name: projectName,
         description: project.description ?? null,
         clientId: project.clientId ?? project.client_id ?? null,
         status: project.status ?? 'DRAFT',
@@ -271,8 +274,16 @@ export async function getProjects(
 }
 
 export async function getProjectById(id: string): Promise<ProjectItem> {
-    const { data } = await api.get<MaybeWrapped<BackendProject>>(`/projects/${id}`);
-    const normalized = normalizeProject(unwrapData(data));
+    const { data } = await api.get<MaybeWrapped<unknown>>(`/projects/${id}`);
+    const payload = unwrapData<unknown>(data);
+    const candidate = (
+        typeof payload === 'object'
+        && payload !== null
+        && 'project' in payload
+    )
+        ? (payload as { project: BackendProject }).project
+        : (payload as BackendProject);
+    const normalized = normalizeProject(candidate);
     if (!normalized) {
         throw new Error('Project response could not be parsed');
     }

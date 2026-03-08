@@ -205,7 +205,7 @@ export function PersonnelPage() {
         <div style={{ padding: '24px 32px', fontFamily: "'Poppins', system-ui, sans-serif" }}>
             <PageHeader
                 icon={<Users size={20} color="var(--role-accent-600)" />}
-                title="Personel Yonetimi"
+                title="Personel Yönetimi"
                 subtitle={`Toplam ${total} personel`}
                 actions={headerActions}
             />

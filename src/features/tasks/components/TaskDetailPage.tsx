@@ -112,7 +112,7 @@ export function TaskDetailPage() {
     const updateMutation = useMutation({
         mutationFn: async () => {
             if (!taskId) {
-                throw new Error('Gorev kimligi bulunamadi.');
+                throw new Error('Görev kimligi bulunamadı.');
             }
 
             return updateTask(taskId, {
@@ -128,17 +128,17 @@ export function TaskDetailPage() {
             if (updatedTask.projectId) {
                 await queryClient.invalidateQueries({ queryKey: ['project-tasks', updatedTask.projectId] });
             }
-            toast.success('Gorev guncellendi.');
+            toast.success('Görev güncellendi.');
         },
         onError: (error) => {
-            toast.error(extractErrorMessage(error, 'Gorev guncellenemedi.'));
+            toast.error(extractErrorMessage(error, 'Görev guncellenemedi.'));
         },
     });
 
     const statusMutation = useMutation({
         mutationFn: async (nextStatus: string) => {
             if (!taskId) {
-                throw new Error('Gorev kimligi bulunamadi.');
+                throw new Error('Görev kimligi bulunamadı.');
             }
             return updateTaskStatus(taskId, nextStatus);
         },
@@ -204,7 +204,7 @@ export function TaskDetailPage() {
                     },
                 );
             }
-            toast.success('Gorev durumu guncellendi.');
+            toast.success('Görev durumu güncellendi.');
         },
         onSettled: async () => {
             if (!projectId) {
@@ -223,22 +223,22 @@ export function TaskDetailPage() {
 
     async function handleSave() {
         if (!form.title.trim()) {
-            toast.error('Gorev adi zorunludur.');
+            toast.error('Görev adi zorunludur.');
             return;
         }
         await updateMutation.mutateAsync();
     }
 
     if (!taskId) {
-        return <div className="px-8 py-6 text-sm text-red-700">Gorev kimligi bulunamadi.</div>;
+        return <div className="px-8 py-6 text-sm text-red-700">Görev kimligi bulunamadı.</div>;
     }
 
     if (taskQuery.isLoading) {
-        return <div className="px-8 py-6 text-sm text-gray-500">Gorev detaylari yukleniyor...</div>;
+        return <div className="px-8 py-6 text-sm text-gray-500">Görev detaylari yükleniyor...</div>;
     }
 
     if (taskQuery.isError || !task) {
-        return <div className="px-8 py-6 text-sm text-red-700">Gorev detayi yuklenemedi.</div>;
+        return <div className="px-8 py-6 text-sm text-red-700">Görev detayi yüklenemedi.</div>;
     }
 
     return (
@@ -246,7 +246,7 @@ export function TaskDetailPage() {
             <PageHeader
                 icon={<CheckSquare size={20} color="#DC2626" />}
                 title={task.title}
-                subtitle={`${taskStatusLabel(task.status)} - ${projectQuery.data?.name ?? 'Proje bilgisi yukleniyor'}`}
+                subtitle={`${taskStatusLabel(task.status)} - ${projectQuery.data?.name ?? 'Proje bilgisi yükleniyor'}`}
                 actions={(
                     <button
                         type="button"
@@ -262,7 +262,7 @@ export function TaskDetailPage() {
             <div className="grid gap-4 xl:grid-cols-3">
                 <section className="space-y-4 rounded-xl border border-gray-200 bg-white p-4 xl:col-span-2">
                     <div className="space-y-1.5">
-                        <label className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Gorev Adi</label>
+                        <label className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Görev Adi</label>
                         <input
                             value={form.title}
                             onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
@@ -271,7 +271,7 @@ export function TaskDetailPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                        <label className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Aciklama</label>
+                        <label className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Açıklama</label>
                         <textarea
                             value={form.description}
                             onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
@@ -316,7 +316,7 @@ export function TaskDetailPage() {
                                     );
                                 })}
                             </select>
-                            <p className="text-[11px] text-gray-500">Birden fazla secim icin Ctrl/Cmd kullanabilirsiniz.</p>
+                            <p className="text-[11px] text-gray-500">Birden fazla seçim icin Ctrl/Cmd kullanabilirsiniz.</p>
                         </div>
 
                         <div className="space-y-1.5">
@@ -382,7 +382,7 @@ export function TaskDetailPage() {
                         <div className="mt-2 space-y-2 text-sm text-gray-700">
                             <p>
                                 <span className="font-semibold text-gray-900">Proje:</span>{' '}
-                                {projectQuery.isLoading ? 'Yukleniyor...' : projectQuery.data?.name ?? task.projectId}
+                                {projectQuery.isLoading ? 'Yükleniyor...' : projectQuery.data?.name ?? task.projectId}
                             </p>
                             <p>
                                 <span className="font-semibold text-gray-900">Atanan:</span>{' '}

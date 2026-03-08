@@ -79,7 +79,7 @@ export function ClientFormModal({
 
     return (
         <Modal
-            title={isEdit ? 'Musteri Duzenle' : 'Yeni Musteri Ekle'}
+            title={isEdit ? 'Müşteri Duzenle' : 'Yeni Müşteri Ekle'}
             onClose={onClose}
             width={620}
         >

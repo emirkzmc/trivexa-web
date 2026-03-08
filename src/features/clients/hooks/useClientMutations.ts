@@ -17,10 +17,10 @@ export function useCreateClient() {
         mutationFn: (payload: ClientCreatePayload) => createClient(payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['clients'] });
-            toast.success('Musteri basariyla olusturuldu', { duration: 3_000 });
+            toast.success('Müşteri basariyla olusturuldu', { duration: 3_000 });
         },
         onError: () => {
-            toast.error('Musteri olusturulurken bir hata olustu', { duration: 3_000 });
+            toast.error('Müşteri olusturulurken bir hata olustu', { duration: 3_000 });
         },
     });
 }
@@ -32,7 +32,7 @@ export function useUpdateClient() {
             updateClient(id, payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['clients'] });
-            toast.success('Musteri bilgileri guncellendi', { duration: 3_000 });
+            toast.success('Müşteri bilgileri güncellendi', { duration: 3_000 });
         },
         onError: () => {
             toast.error('Guncelleme sirasinda bir hata olustu', { duration: 3_000 });
@@ -46,7 +46,7 @@ export function useDeleteClient() {
         mutationFn: (id: string) => deleteClient(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['clients'] });
-            toast.success('Musteri kaydi silindi', { duration: 3_000 });
+            toast.success('Müşteri kaydı silindi', { duration: 3_000 });
         },
         onError: () => {
             toast.error('Silme sirasinda bir hata olustu', { duration: 3_000 });
@@ -58,7 +58,7 @@ export function useGeneratePortalAccess() {
     return useMutation({
         mutationFn: (payload: { email?: string; clientId?: string }) => generatePortalAccess(payload),
         onError: () => {
-            toast.error('Portal erisim linki olusturulurken bir hata olustu', { duration: 3_000 });
+            toast.error('Portal erişim linki olusturulurken bir hata olustu', { duration: 3_000 });
         },
     });
 }

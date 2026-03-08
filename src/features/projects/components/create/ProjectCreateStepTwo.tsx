@@ -29,7 +29,7 @@ export function ProjectCreateStepTwo({ controller }: ProjectCreateStepTwoProps) 
                 </article>
 
                 <article className="rounded-xl border border-gray-200 bg-white p-3">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Ekip Yonetimi</p>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Ekip Yönetimi</p>
                     <div className="space-y-2.5">
                         <div>
                             <label className="mb-1 block text-xs font-semibold text-gray-600">Proje Yoneticisi</label>
@@ -38,7 +38,7 @@ export function ProjectCreateStepTwo({ controller }: ProjectCreateStepTwoProps) 
                                 onChange={(event) => updateCreateField('projectManagerId', event.target.value)}
                                 className="h-9 w-full rounded-lg border border-gray-300 px-2.5 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
                             >
-                                <option value="">{personnelQuery.isLoading ? 'Personeller yukleniyor...' : 'Proje yoneticisi secin'}</option>
+                                <option value="">{personnelQuery.isLoading ? 'Personeller yükleniyor...' : 'Proje yoneticisi secin'}</option>
                                 {personnel.map((person) => (
                                     <option key={person.id} value={person.id}>
                                         {person.firstName} {person.lastName} - {person.department}
@@ -59,7 +59,7 @@ export function ProjectCreateStepTwo({ controller }: ProjectCreateStepTwoProps) 
                                     {!selectedDepartmentName
                                         ? 'Once departman secin'
                                         : departmentPersonnel.length === 0
-                                            ? 'Departman personeli bulunamadi'
+                                            ? 'Departman personeli bulunamadı'
                                             : 'Takim lideri secin'}
                                 </option>
                                 {departmentPersonnel.map((person) => (
@@ -91,11 +91,11 @@ export function ProjectCreateStepTwo({ controller }: ProjectCreateStepTwoProps) 
 
                             <div className="mt-2 max-h-56 overflow-y-auto rounded-lg border border-gray-200 bg-white">
                                 {personnelQuery.isLoading ? (
-                                    <div className="px-3 py-4 text-xs text-gray-500">Personeller yukleniyor...</div>
+                                    <div className="px-3 py-4 text-xs text-gray-500">Personeller yükleniyor...</div>
                                 ) : personnelQuery.isError ? (
                                     <div className="px-3 py-4 text-xs font-medium text-red-600">Personel listesi alinamadi.</div>
                                 ) : filteredPersonnel.length === 0 ? (
-                                    <div className="px-3 py-4 text-xs text-gray-500">Eslesen personel bulunamadi.</div>
+                                    <div className="px-3 py-4 text-xs text-gray-500">Eslesen personel bulunamadı.</div>
                                 ) : (
                                     <div className="divide-y divide-gray-100">
                                         {filteredPersonnel.map((person) => {

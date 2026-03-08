@@ -168,7 +168,7 @@ export function TeamTab({
     );
 
     const selectedUserName = useMemo(
-        () => users.find((item) => item.id === userFilter)?.name ?? 'Secili personel',
+        () => users.find((item) => item.id === userFilter)?.name ?? 'Seçili personel',
         [users, userFilter],
     );
 
@@ -330,17 +330,17 @@ export function TeamTab({
         <section className="rounded-xl border border-gray-200 bg-white p-4">
             <section className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-4">
                 <div className="rounded-[10px] border border-gray-200 bg-gray-50 px-3.5 py-3">
-                    <p className="m-0 mb-0.5 text-xs text-gray-500">Sayfadaki toplam sure</p>
+                    <p className="m-0 mb-0.5 text-xs text-gray-500">Sayfadaki toplam süre</p>
                     <strong className="text-base text-gray-900">
                         {formatDuration(filteredTeamRows.reduce((sum, row) => sum + getEntryDurationSeconds(row), 0))}
                     </strong>
                 </div>
                 <div className="rounded-[10px] border border-gray-200 bg-gray-50 px-3.5 py-3">
-                    <p className="m-0 mb-0.5 text-xs text-gray-500">Toplam kayit</p>
+                    <p className="m-0 mb-0.5 text-xs text-gray-500">Toplam kayıt</p>
                     <strong className="text-base text-gray-900">{total}</strong>
                 </div>
                 <div className="rounded-[10px] border border-gray-200 bg-gray-50 px-3.5 py-3">
-                    <p className="m-0 mb-0.5 text-xs text-gray-500">Gorunen calisan</p>
+                    <p className="m-0 mb-0.5 text-xs text-gray-500">Görünen calisan</p>
                     <strong className="text-base text-gray-900">{new Set(filteredTeamRows.map((row) => row.userId).filter(Boolean)).size}</strong>
                 </div>
                 <div className="rounded-[10px] border border-gray-200 bg-gray-50 px-3.5 py-3">
@@ -361,7 +361,7 @@ export function TeamTab({
                         value={userFilter}
                         onChange={(event) => onUserFilterChange(event.target.value)}
                     >
-                        <option value="">Tum calisanlar</option>
+                        <option value="">Tüm calisanlar</option>
                         {users.map((user) => (
                             <option key={user.id} value={user.id}>{user.name}</option>
                         ))}
@@ -372,7 +372,7 @@ export function TeamTab({
                         value={departmentFilter}
                         onChange={(event) => onDepartmentFilterChange(event.target.value)}
                     >
-                        <option value="">Tum departmanlar</option>
+                        <option value="">Tüm departmanlar</option>
                         {departments.map((department) => (
                             <option key={department.id} value={department.id}>{department.name}</option>
                         ))}
@@ -383,7 +383,7 @@ export function TeamTab({
                         value={statusFilter}
                         onChange={(event) => onStatusFilterChange(event.target.value)}
                     >
-                        <option value="">Tum durumlar</option>
+                        <option value="">Tüm durumlar</option>
                         <option value="ACTIVE">Calisiyor</option>
                         <option value="STOPPED">Tamamlandi</option>
                         <option value="CANCELLED">Iptal</option>
@@ -406,8 +406,8 @@ export function TeamTab({
 
             <section className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
                 <article className="rounded-xl border border-gray-200 bg-white p-4">
-                    <h4 className="m-0 text-base text-gray-900">Departman Bazli Sure Dagilimi</h4>
-                    <p className="mb-3 mt-1 text-xs text-gray-500">Hangi departmanin ne kadar takip kaydi oldugunu gorun</p>
+                    <h4 className="m-0 text-base text-gray-900">Departman Bazli Süre Dagilimi</h4>
+                    <p className="mb-3 mt-1 text-xs text-gray-500">Hangi departmanin ne kadar takip kaydı oldugunu gorun</p>
 
                     <div className="mb-3 h-[230px]">
                         <Bar data={departmentChartData} options={BAR_OPTIONS} />
@@ -420,13 +420,13 @@ export function TeamTab({
                                 <th className="px-2 py-2 font-semibold">Departman</th>
                                 <th className="px-2 py-2 font-semibold">Calisan</th>
                                 <th className="px-2 py-2 font-semibold">Kayit</th>
-                                <th className="px-2 py-2 font-semibold">Sure</th>
+                                <th className="px-2 py-2 font-semibold">Süre</th>
                             </tr>
                             </thead>
                             <tbody>
                             {departmentSummaryRows.length === 0 && (
                                 <tr>
-                                    <td colSpan={4} className="px-2 py-3 text-center text-gray-400">Departman verisi bulunamadi.</td>
+                                    <td colSpan={4} className="px-2 py-3 text-center text-gray-400">Departman verisi bulunamadı.</td>
                                 </tr>
                             )}
                             {departmentSummaryRows.map((row) => (
@@ -455,7 +455,7 @@ export function TeamTab({
                             </div>
                             <div className="space-y-2">
                                 {selectedUserProjectRows.length === 0 ? (
-                                    <p className="text-sm text-gray-400">Secili personel icin kayit bulunamadi.</p>
+                                    <p className="text-sm text-gray-400">Seçili personel icin kayıt bulunamadı.</p>
                                 ) : (
                                     selectedUserProjectRows.map((row) => (
                                         <div key={row.projectName} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
@@ -501,7 +501,7 @@ export function TeamTab({
 
                     <article className="rounded-xl border border-gray-200 bg-white p-4">
                         <h4 className="m-0 text-base text-gray-900">Personel Gunluk Trend</h4>
-                        <p className="mb-3 mt-1 text-xs text-gray-500">Son 7 gunde gunluk calisma suresi</p>
+                        <p className="mb-3 mt-1 text-xs text-gray-500">Son 7 gunde gunluk çalışma suresi</p>
                         <div className="mb-3 h-[220px]">
                             <Bar data={selectedUserDailyChartData} options={BAR_OPTIONS} />
                         </div>
@@ -533,7 +533,7 @@ export function TeamTab({
                             <div className="flex items-center gap-1">Task <SortIcon field="taskTitle" currentSortField={sortField} currentSortDirection={sortDirection}/></div>
                         </th>
                         <th onClick={() => onSort('description')} className="border-b border-gray-200 bg-gray-50 px-3 py-[11px] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500 cursor-pointer group hover:bg-gray-100 transition">
-                            <div className="flex items-center gap-1">Aciklama <SortIcon field="description" currentSortField={sortField} currentSortDirection={sortDirection}/></div>
+                            <div className="flex items-center gap-1">Açıklama <SortIcon field="description" currentSortField={sortField} currentSortDirection={sortDirection}/></div>
                         </th>
                         <th onClick={() => onSort('startedAt')} className="border-b border-gray-200 bg-gray-50 px-3 py-[11px] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500 cursor-pointer group hover:bg-gray-100 transition">
                             <div className="flex items-center gap-1">Baslangic <SortIcon field="startedAt" currentSortField={sortField} currentSortDirection={sortDirection}/></div>
@@ -542,7 +542,7 @@ export function TeamTab({
                             <div className="flex items-center gap-1">Bitis <SortIcon field="stoppedAt" currentSortField={sortField} currentSortDirection={sortDirection}/></div>
                         </th>
                         <th onClick={() => onSort('duration')} className="border-b border-gray-200 bg-gray-50 px-3 py-[11px] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500 cursor-pointer group hover:bg-gray-100 transition">
-                            <div className="flex items-center gap-1">Sure <SortIcon field="duration" currentSortField={sortField} currentSortDirection={sortDirection}/></div>
+                            <div className="flex items-center gap-1">Süre <SortIcon field="duration" currentSortField={sortField} currentSortDirection={sortDirection}/></div>
                         </th>
                         <th onClick={() => onSort('status')} className="border-b border-gray-200 bg-gray-50 px-3 py-[11px] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500 cursor-pointer group hover:bg-gray-100 transition">
                             <div className="flex items-center gap-1">Durum <SortIcon field="status" currentSortField={sortField} currentSortDirection={sortDirection}/></div>
@@ -552,19 +552,19 @@ export function TeamTab({
                     <tbody>
                     {loading && (
                         <tr>
-                            <td colSpan={9} className="px-3 py-[26px] text-center text-gray-400">Takim kayitlari yukleniyor...</td>
+                            <td colSpan={9} className="px-3 py-[26px] text-center text-gray-400">Takim kayıtları yükleniyor...</td>
                         </tr>
                     )}
 
                     {error && (
                         <tr>
-                            <td colSpan={9} className="px-3 py-[26px] text-center text-red-600">Takim kayitlari alinirken hata olustu.</td>
+                            <td colSpan={9} className="px-3 py-[26px] text-center text-red-600">Takim kayıtları alinirken hata olustu.</td>
                         </tr>
                     )}
 
                     {!loading && !error && sortedRows.length === 0 && (
                         <tr>
-                            <td colSpan={9} className="px-3 py-[26px] text-center text-gray-400">Filtreye uygun kayit bulunamadi.</td>
+                            <td colSpan={9} className="px-3 py-[26px] text-center text-gray-400">Filtreye uygun kayıt bulunamadı.</td>
                         </tr>
                     )}
 
@@ -620,7 +620,7 @@ export function TeamTab({
                                 <p className="m-0">{row.stoppedAt ? formatDate(row.stoppedAt) : '-'}</p>
                             </div>
                             <div className="col-span-2">
-                                <p className="m-0 text-[11px] text-gray-500">Sure</p>
+                                <p className="m-0 text-[11px] text-gray-500">Süre</p>
                                 <p className="m-0 font-medium text-gray-900">{formatDuration(getEntryDurationSeconds(row))}</p>
                             </div>
                         </div>
@@ -633,7 +633,7 @@ export function TeamTab({
                     <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                         <div>
                             <h4 className="m-0 text-base text-gray-900">{selectedUserName} detaylari</h4>
-                            <p className="m-0 mt-0.5 text-xs text-gray-500">Alt listeden secilen personele ait ozet ve son kayitlar</p>
+                            <p className="m-0 mt-0.5 text-xs text-gray-500">Alt listeden secilen personele ait ozet ve son kayıtlar</p>
                         </div>
                         <button
                             type="button"
@@ -650,11 +650,11 @@ export function TeamTab({
                             <p className="m-0 mt-1 text-sm font-semibold text-gray-900">{selectedUserTotals.department}</p>
                         </div>
                         <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-                            <p className="m-0 text-[11px] text-gray-500">Toplam sure</p>
+                            <p className="m-0 text-[11px] text-gray-500">Toplam süre</p>
                             <p className="m-0 mt-1 text-sm font-semibold text-gray-900">{formatDuration(selectedUserTotals.seconds)}</p>
                         </div>
                         <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-                            <p className="m-0 text-[11px] text-gray-500">Toplam kayit</p>
+                            <p className="m-0 text-[11px] text-gray-500">Toplam kayıt</p>
                             <p className="m-0 mt-1 text-sm font-semibold text-gray-900">{selectedUserTotals.entries}</p>
                         </div>
                         <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
@@ -680,11 +680,11 @@ export function TeamTab({
                             </div>
                         </article>
                         <article className="rounded-lg border border-gray-200 bg-gray-50 p-3">
-                            <h5 className="m-0 text-sm text-gray-900">Son kayitlar</h5>
-                            <p className="m-0 mt-0.5 text-xs text-gray-500">Baslangic tarihine gore son 5 kayit</p>
+                            <h5 className="m-0 text-sm text-gray-900">Son kayıtlar</h5>
+                            <p className="m-0 mt-0.5 text-xs text-gray-500">Baslangic tarihine göre son 5 kayıt</p>
                             <div className="mt-2 space-y-2">
                                 {selectedUserRecentRows.length === 0 && (
-                                    <p className="text-xs text-gray-400">Secili personel icin kayit bulunamadi.</p>
+                                    <p className="text-xs text-gray-400">Seçili personel icin kayıt bulunamadı.</p>
                                 )}
                                 {selectedUserRecentRows.map((row) => (
                                     <div key={row.id} className="rounded-md border border-gray-200 bg-white px-2.5 py-2">

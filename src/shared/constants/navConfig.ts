@@ -63,6 +63,68 @@ const THEMES: Record<string, SidebarTheme> = {
     CLIENT: { bg: '#F3F4F6', accent: '#111827', text: '#111827', muted: '#6B7280', border: '#E5E7EB' },
 };
 
+const FINANCE_MENU_ITEMS: NavItem[] = [
+    { label: 'Finans Dashboard', path: '/app/finans-dashboard', icon: 'BarChart3' },
+    { label: 'Fatura Yönetimi', path: '/app/faturalar', icon: 'Receipt' },
+    { label: 'Tahsilat Takibi', path: '/app/tahsilat-takibi', icon: 'CalendarCheck' },
+    { label: 'Gider Yönetimi', path: '/app/gider-yonetimi', icon: 'Clock' },
+    { label: 'Banka POS Mutabakat', path: '/app/banka-mutabakat', icon: 'ShieldCheck' },
+    { label: 'Müşteri Hesap Ekstresi', path: '/app/musteri-ekstresi', icon: 'FileText' },
+    { label: 'Vergi Beyan Hazırlık', path: '/app/vergi-beyan', icon: 'ClipboardList' },
+    { label: 'Finansal Raporlar', path: '/app/finans', icon: 'BarChart3' },
+];
+
+const FINANCE_PATH_SET = new Set<string>([
+    ...FINANCE_MENU_ITEMS.map((item) => item.path),
+    '/app/sozlesmeler',
+]);
+
+function withFinanceSidebar(config: RoleNavConfig): RoleNavConfig {
+    const normalizedGroups: NavGroup[] = [];
+    const financeGroup: NavGroup = {
+        group: 'FINANS',
+        items: [...FINANCE_MENU_ITEMS],
+    };
+
+    config.groups.forEach((group) => {
+        const isFinanceGroup = typeof group.group === 'string'
+            && group.group.toUpperCase().includes('FIN');
+
+        if (isFinanceGroup) {
+            return;
+        }
+
+        const cleanedItems = group.items.filter((item) => !FINANCE_PATH_SET.has(item.path));
+        if (cleanedItems.length > 0) {
+            normalizedGroups.push({
+                ...group,
+                items: cleanedItems,
+            });
+        }
+    });
+
+    const normalizeLabel = (value: string) =>
+        value
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toUpperCase();
+
+    const managementIndex = normalizedGroups.findIndex((group) => {
+        if (typeof group.group !== 'string') return false;
+        return normalizeLabel(group.group).includes('YONET');
+    });
+
+    const insertIndex = managementIndex >= 0
+        ? managementIndex + 1
+        : Math.min(1, normalizedGroups.length);
+    normalizedGroups.splice(insertIndex, 0, financeGroup);
+
+    return {
+        ...config,
+        groups: normalizedGroups,
+    };
+}
+
 // ─── ADMIN ────────────────────────────────────────────────────────────────────
 
 const ADMIN_NAV: RoleNavConfig = {
@@ -454,13 +516,13 @@ const CLIENT_NAV: RoleNavConfig = {
 // ─── ANA CONFIG ──────────────────────────────────────────────────────────────
 
 export const NAV_CONFIG: Record<string, RoleNavConfig> = {
-    [ROLES.ADMIN]: ADMIN_NAV,
-    [ROLES.CEO]: CEO_NAV,
-    [ROLES.MANAGER]: MANAGER_NAV,
-    [ROLES.ACCOUNTING]: ACCOUNTING_NAV,
+    [ROLES.ADMIN]: withFinanceSidebar(ADMIN_NAV),
+    [ROLES.CEO]: withFinanceSidebar(CEO_NAV),
+    [ROLES.MANAGER]: withFinanceSidebar(MANAGER_NAV),
+    [ROLES.ACCOUNTING]: withFinanceSidebar(ACCOUNTING_NAV),
     [ROLES.ACCOUNT_MANAGER]: ACCOUNT_MANAGER_NAV,
     [ROLES.DEVELOPER]: DEVELOPER_NAV,
-    [ROLES.SOCIAL_MEDIA]: SOCIAL_MEDIA_NAV,
+    [ROLES.SOCIAL_MEDIA]: withFinanceSidebar(SOCIAL_MEDIA_NAV),
     [ROLES.CREATIVE]: CREATIVE_NAV,
     [ROLES.MARKETING]: MARKETING_NAV,
     [ROLES.PRODUCTION]: PRODUCTION_NAV,

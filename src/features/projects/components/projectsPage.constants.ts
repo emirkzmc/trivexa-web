@@ -70,7 +70,7 @@ export const STATUS_META: Record<string, { label: string; badgeClass: string; pr
 };
 
 export const STATUS_OPTIONS = [
-    { value: '', label: 'Tum Durumlar' },
+    { value: '', label: 'Tüm Durumlar' },
     { value: 'DRAFT', label: STATUS_META.DRAFT.label },
     { value: 'PLANNING', label: STATUS_META.PLANNING.label },
     { value: 'IN_PROGRESS', label: STATUS_META.IN_PROGRESS.label },

@@ -34,7 +34,7 @@ export function useUpdatePersonnel() {
             updatePersonnel(id, payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['personnel'] });
-            toast.success('Personel bilgileri guncellendi', { duration: 3_000 });
+            toast.success('Personel bilgileri güncellendi', { duration: 3_000 });
         },
         onError: () => {
             toast.error('Guncelleme sirasinda bir hata olustu', { duration: 3_000 });

@@ -421,7 +421,7 @@ export function TasksPage() {
         },
         onError: (error, _variables, context) => {
             context?.previous.forEach(([key, data]) => queryClient.setQueryData(key, data));
-            toast.error(extractErrorMessage(error, 'Gorev durumu guncellenemedi.'));
+            toast.error(extractErrorMessage(error, 'Görev durumu guncellenemedi.'));
         },
         onSuccess: (updatedTask) => {
             if (!selectedProjectId || !updatedTask) {
@@ -472,11 +472,11 @@ export function TasksPage() {
 
             setCreateModalOpen(false);
             setPage(1);
-            toast.success('Gorev olusturuldu.');
+            toast.success('Görev olusturuldu.');
             await queryClient.invalidateQueries({ queryKey: ['project-tasks', selectedProjectId] });
         },
         onError: (error) => {
-            toast.error(extractErrorMessage(error, 'Gorev olusturulamadi.'));
+            toast.error(extractErrorMessage(error, 'Görev olusturulamadi.'));
         },
     });
 
@@ -535,11 +535,11 @@ export function TasksPage() {
             <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
                 <PageHeader
                     icon={<CheckSquare size={20} color="#DC2626" />}
-                    title="Gorev Yonetimi"
-                    subtitle="Gorev listesi"
+                    title="Görev Yönetimi"
+                    subtitle="Görev listesi"
                 />
                 <section className="rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-10 text-center text-sm font-medium text-yellow-800">
-                    Bu role gorev ekranina erisim izni tanimli degil.
+                    Bu role görev ekranina erişim izni tanimli degil.
                 </section>
             </div>
         );
@@ -549,10 +549,10 @@ export function TasksPage() {
         <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
             <PageHeader
                 icon={<CheckSquare size={20} color="#DC2626" />}
-                title={forceMyTasksOnly ? 'Gorevlerim' : 'Gorev Yonetimi'}
+                title={forceMyTasksOnly ? 'Görevlerim' : 'Görev Yönetimi'}
                 subtitle={
                     selectedProject
-                        ? `${selectedProject.name} projesi - ${total} gorev`
+                        ? `${selectedProject.name} projesi - ${total} görev`
                         : 'Lutfen once proje secin'
                 }
                 actions={(
@@ -573,7 +573,7 @@ export function TasksPage() {
                                 className="inline-flex h-9 items-center gap-2 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 <Plus size={14} />
-                                Yeni Gorev
+                                Yeni Görev
                             </button>
                         )}
                     </>
@@ -611,7 +611,7 @@ export function TasksPage() {
                                     setSearch(event.target.value);
                                     setPage(1);
                                 }}
-                                placeholder="Gorev adi, aciklama, kisi..."
+                                placeholder="Görev adi, açıklama, kisi..."
                                 className="h-10 w-full rounded-lg border border-gray-300 pl-8 pr-3 text-sm outline-none transition focus:border-red-500"
                             />
                         </div>
@@ -629,7 +629,7 @@ export function TasksPage() {
                                 }}
                                 className="h-10 w-full border-0 bg-transparent text-sm outline-none"
                             >
-                                <option value="">Tum durumlar</option>
+                                <option value="">Tüm durumlar</option>
                                 {TASK_STATUS_OPTIONS.map((item) => (
                                     <option key={item.value} value={item.value}>
                                         {item.label}
@@ -649,7 +649,7 @@ export function TasksPage() {
                             }}
                             className="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none transition focus:border-red-500"
                         >
-                            <option value="">Tum oncelikler</option>
+                            <option value="">Tüm oncelikler</option>
                             {TASK_PRIORITY_OPTIONS.map((item) => (
                                 <option key={item.value} value={item.value}>
                                     {item.label}
@@ -670,7 +670,7 @@ export function TasksPage() {
                                 disabled={!selectedProjectId}
                                 className="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none transition focus:border-red-500 disabled:bg-gray-100"
                             >
-                                <option value="">Tum ekip</option>
+                                <option value="">Tüm ekip</option>
                                 {sortedMembers.map((member) => (
                                     <option key={member.userId} value={member.userId}>
                                         {memberName(member)}
@@ -684,8 +684,8 @@ export function TasksPage() {
 
             {selectedProjectId && (
                 <section className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    <StatsCard title="Toplam Gorev" value={String(total)} subtitle="Secili filtreye gore" />
-                    <StatsCard title="Devam Eden" value={String(stats.inProgress)} subtitle="Aktif calisma" />
+                    <StatsCard title="Toplam Görev" value={String(total)} subtitle="Seçili filtreye göre" />
+                    <StatsCard title="Devam Eden" value={String(stats.inProgress)} subtitle="Aktif çalışma" />
                     <StatsCard title="Tamamlanan" value={String(stats.done)} subtitle="Biten gorevler" />
                     <StatsCard title="Bloke" value={String(stats.blocked)} subtitle="Engel bekleyen isler" />
                 </section>
@@ -705,11 +705,11 @@ export function TasksPage() {
                 </section>
             ) : tasksQuery.isError ? (
                 <section className="rounded-xl border border-red-200 bg-red-50 px-4 py-8 text-center text-sm font-medium text-red-700">
-                    Gorev listesi yuklenemedi.
+                    Görev listesi yüklenemedi.
                 </section>
             ) : total === 0 ? (
                 <section className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-12 text-center text-sm text-gray-500">
-                    Eslesen gorev bulunamadi.
+                    Eslesen görev bulunamadı.
                 </section>
             ) : (
                 <>
@@ -743,13 +743,13 @@ export function TasksPage() {
                                         <tr>
                                             <th className="group relative px-3 py-2.5 font-semibold">
                                                 <button type="button" className="flex items-center gap-1" onClick={() => handleTableSort('task')}>
-                                                    Gorev
+                                                    Görev
                                                     {renderSortIcon('task')}
                                                 </button>
                                                 <div
                                                     role="separator"
                                                     aria-orientation="vertical"
-                                                    aria-label="Gorev sutunu genisligini degistir"
+                                                    aria-label="Görev sutunu genisligini degistir"
                                                     className="absolute right-0 top-0 h-full w-2 translate-x-1 cursor-col-resize select-none"
                                                     onMouseDown={(event) => handleColumnResizeStart('task', event)}
                                                 >
@@ -821,7 +821,7 @@ export function TasksPage() {
                                                     <td className="px-3 py-2.5">
                                                         <p className="font-semibold text-gray-900">{task.title}</p>
                                                         <p className="line-clamp-1 text-xs text-gray-500">
-                                                            {task.description?.trim() || 'Aciklama eklenmemis'}
+                                                            {task.description?.trim() || 'Açıklama eklenmemis'}
                                                         </p>
                                                     </td>
                                                     <td className="px-3 py-2.5">

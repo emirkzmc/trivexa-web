@@ -196,7 +196,7 @@ export function ProjectDetailPage() {
     }, [tasks]);
     const clientLabel = clientQuery.data?.companyName
         || project?.clientId
-        || 'Musteri atanmamis';
+        || 'Müşteri atanmamis';
     const canManageGithub = userRole === 'ADMIN' || userRole === 'MANAGER';
 
     useEffect(() => {
@@ -223,7 +223,7 @@ export function ProjectDetailPage() {
     }, [githubOverviewQuery.data, selectedBranch]);
 
     if (!projectId) {
-        return <div className="px-8 py-6 text-sm text-red-600">Proje kimligi bulunamadi.</div>;
+        return <div className="px-8 py-6 text-sm text-red-600">Proje kimligi bulunamadı.</div>;
     }
 
     return (
@@ -231,7 +231,7 @@ export function ProjectDetailPage() {
             <PageHeader
                 icon={<FolderKanban size={20} color="#DC2626" />}
                 title={project?.name || 'Proje Detayi'}
-                subtitle={project ? `${statusMeta.label} - ${members.length} ekip uyesi` : 'Proje detaylari yukleniyor'}
+                subtitle={project ? `${statusMeta.label} - ${members.length} ekip uyesi` : 'Proje detaylari yükleniyor'}
                 actions={(
                     <button
                         type="button"
@@ -245,22 +245,22 @@ export function ProjectDetailPage() {
             />
 
             {projectQuery.isLoading ? (
-                <section className="rounded-xl border border-gray-200 bg-white p-6 text-sm text-gray-500">Yukleniyor...</section>
+                <section className="rounded-xl border border-gray-200 bg-white p-6 text-sm text-gray-500">Yükleniyor...</section>
             ) : projectQuery.isError || !project ? (
-                <section className="rounded-xl border border-red-200 bg-red-50 px-4 py-8 text-sm text-red-700">Proje detayi yuklenemedi.</section>
+                <section className="rounded-xl border border-red-200 bg-red-50 px-4 py-8 text-sm text-red-700">Proje detayi yüklenemedi.</section>
             ) : (
                 <>
                     <section className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                        <StatCard title="Toplam Gorev" value={String(tasks.length)} subtitle="Projeye bagli gorevler" />
-                        <StatCard title="Tamamlanan" value={String(completedTasks.length)} subtitle="Biten gorev sayisi" />
+                        <StatCard title="Toplam Görev" value={String(tasks.length)} subtitle="Projeye bağlı gorevler" />
+                        <StatCard title="Tamamlanan" value={String(completedTasks.length)} subtitle="Biten görev sayisi" />
                         <StatCard title="Ekip Uyesi" value={String(members.length)} subtitle="Projeye atanan personel" />
-                        <StatCard title="Kayitli Sure" value={formatDuration(totalTrackedSeconds)} subtitle="Aktivite gecmisi" />
+                        <StatCard title="Kayitli Süre" value={formatDuration(totalTrackedSeconds)} subtitle="Aktivite gecmisi" />
                     </section>
 
                     <section className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
                         <div className="flex flex-wrap items-center gap-2">
                             <TabButton label="Genel Bakis" icon={<CircleDashed size={14} />} active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
-                            <TabButton label="Gorevler" icon={<ListTodo size={14} />} active={activeTab === 'tasks'} onClick={() => setActiveTab('tasks')} />
+                            <TabButton label="Görevler" icon={<ListTodo size={14} />} active={activeTab === 'tasks'} onClick={() => setActiveTab('tasks')} />
                             <TabButton label="Atananlar" icon={<Users size={14} />} active={activeTab === 'team'} onClick={() => setActiveTab('team')} />
                             <TabButton label="Aktivite" icon={<Activity size={14} />} active={activeTab === 'activity'} onClick={() => setActiveTab('activity')} />
                             <TabButton label="GitHub" icon={<Github size={14} />} active={activeTab === 'github'} onClick={() => setActiveTab('github')} />
@@ -274,14 +274,14 @@ export function ProjectDetailPage() {
                                     <h2 className="text-base font-semibold text-gray-900">Proje Ozeti</h2>
                                     <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${statusMeta.badgeClass}`}>{statusMeta.label}</span>
                                 </div>
-                                <p className="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700">{project.description?.trim() || 'Aciklama bulunmuyor.'}</p>
+                                <p className="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700">{project.description?.trim() || 'Açıklama bulunmuyor.'}</p>
                                 <div className="mt-3 h-2 rounded-full bg-gray-100"><div className="h-2 rounded-full bg-red-500" style={{ width: `${statusMeta.progress}%` }} /></div>
                                 <div className="mt-3 grid gap-2 sm:grid-cols-2 text-sm">
                                     <div className="rounded-lg bg-gray-50 px-3 py-2"><p className="text-xs text-gray-500">Baslangic</p><p>{project.startDate ? formatDate(project.startDate) : '-'}</p></div>
                                     <div className="rounded-lg bg-gray-50 px-3 py-2"><p className="text-xs text-gray-500">Teslim</p><p>{project.deadline ? formatDate(project.deadline) : '-'}</p></div>
                                     <div className="rounded-lg bg-gray-50 px-3 py-2"><p className="text-xs text-gray-500">Butce</p><p>{formatMoney(project.budget)}</p></div>
                                     <div className="rounded-lg bg-gray-50 px-3 py-2"><p className="text-xs text-gray-500">Olusturma</p><p>{project.createdAt ? formatDate(project.createdAt) : '-'}</p></div>
-                                    <div className="rounded-lg bg-gray-50 px-3 py-2 sm:col-span-2"><p className="text-xs text-gray-500">Bagli Musteri</p><p>{clientLabel}</p></div>
+                                    <div className="rounded-lg bg-gray-50 px-3 py-2 sm:col-span-2"><p className="text-xs text-gray-500">Bağlı Müşteri</p><p>{clientLabel}</p></div>
                                 </div>
                             </article>
                             <article className="rounded-xl border border-gray-200 bg-white p-4">
@@ -298,12 +298,12 @@ export function ProjectDetailPage() {
 
                     {activeTab === 'tasks' && (
                         <section className="rounded-xl border border-gray-200 bg-white p-4">
-                            <h2 className="mb-3 text-base font-semibold text-gray-900">Gorevler ve Atananlar</h2>
+                            <h2 className="mb-3 text-base font-semibold text-gray-900">Görevler ve Atananlar</h2>
                             <div className="overflow-x-auto">
                                 <table className="w-full min-w-[820px] text-left text-sm">
                                     <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
                                         <tr>
-                                            <th className="px-3 py-2.5 font-semibold">Gorev</th>
+                                            <th className="px-3 py-2.5 font-semibold">Görev</th>
                                             <th className="px-3 py-2.5 font-semibold">Durum</th>
                                             <th className="px-3 py-2.5 font-semibold">Oncelik</th>
                                             <th className="px-3 py-2.5 font-semibold">Atanan Kisi</th>
@@ -328,7 +328,7 @@ export function ProjectDetailPage() {
                                                 </tr>
                                             );
                                         })}
-                                        {tasks.length === 0 && <tr><td className="px-3 py-8 text-center text-gray-500" colSpan={5}>Gorev bulunmadi.</td></tr>}
+                                        {tasks.length === 0 && <tr><td className="px-3 py-8 text-center text-gray-500" colSpan={5}>Görev bulunmadi.</td></tr>}
                                     </tbody>
                                 </table>
                             </div>
@@ -344,7 +344,7 @@ export function ProjectDetailPage() {
                                         <p className="text-sm font-semibold text-gray-900">{memberName(member)}</p>
                                         <p className="text-xs text-gray-500">{member.email || member.userId}</p>
                                         <p className="mt-2 text-xs text-gray-600">Rol: <strong>{member.role}</strong></p>
-                                        <p className="text-xs text-gray-600">Atanan gorev: <strong>{taskCountByAssignee[member.userId] ?? 0}</strong></p>
+                                        <p className="text-xs text-gray-600">Atanan görev: <strong>{taskCountByAssignee[member.userId] ?? 0}</strong></p>
                                         <p className="text-xs text-gray-600">Katilim: <strong>{member.joinedAt ? formatDate(member.joinedAt) : '-'}</strong></p>
                                     </article>
                                 ))}
@@ -361,9 +361,9 @@ export function ProjectDetailPage() {
                                     <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
                                         <tr>
                                             <th className="px-3 py-2.5 font-semibold">Kisi</th>
-                                            <th className="px-3 py-2.5 font-semibold">Gorev</th>
-                                            <th className="px-3 py-2.5 font-semibold">Aciklama</th>
-                                            <th className="px-3 py-2.5 font-semibold">Sure</th>
+                                            <th className="px-3 py-2.5 font-semibold">Görev</th>
+                                            <th className="px-3 py-2.5 font-semibold">Açıklama</th>
+                                            <th className="px-3 py-2.5 font-semibold">Süre</th>
                                             <th className="px-3 py-2.5 font-semibold">Baslangic</th>
                                         </tr>
                                     </thead>
@@ -381,7 +381,7 @@ export function ProjectDetailPage() {
                                                 </tr>
                                             );
                                         })}
-                                        {activities.length === 0 && <tr><td className="px-3 py-8 text-center text-gray-500" colSpan={5}>Aktivite kaydi bulunmuyor.</td></tr>}
+                                        {activities.length === 0 && <tr><td className="px-3 py-8 text-center text-gray-500" colSpan={5}>Aktivite kaydı bulunmuyor.</td></tr>}
                                     </tbody>
                                 </table>
                             </div>
@@ -446,15 +446,15 @@ export function ProjectDetailPage() {
 
                             {githubOverviewQuery.isLoading ? (
                                 <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-8 text-center text-sm text-gray-500">
-                                    GitHub bilgileri yukleniyor...
+                                    GitHub bilgileri yükleniyor...
                                 </p>
                             ) : githubOverviewQuery.isError ? (
                                 <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-8 text-center text-sm text-red-700">
-                                    GitHub bilgileri yuklenemedi.
+                                    GitHub bilgileri yüklenemedi.
                                 </p>
                             ) : !githubOverviewQuery.data?.connected ? (
                                 <p className="rounded-lg border border-dashed border-gray-300 px-3 py-8 text-center text-sm text-gray-500">
-                                    Bu proje icin bagli bir GitHub repository yok.
+                                    Bu proje icin bağlı bir GitHub repository yok.
                                 </p>
                             ) : (
                                 <>
@@ -507,15 +507,15 @@ export function ProjectDetailPage() {
 
                                     {githubCommitsQuery.isLoading ? (
                                         <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-8 text-center text-sm text-gray-500">
-                                            Commit gecmisi yukleniyor...
+                                            Commit gecmisi yükleniyor...
                                         </p>
                                     ) : githubCommitsQuery.isError ? (
                                         <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-8 text-center text-sm text-red-700">
-                                            Commit gecmisi yuklenemedi.
+                                            Commit gecmisi yüklenemedi.
                                         </p>
                                     ) : (githubCommitsQuery.data?.commits.length ?? 0) === 0 ? (
                                         <p className="rounded-lg border border-dashed border-gray-300 px-3 py-8 text-center text-sm text-gray-500">
-                                            Secili branch icin commit bulunamadi.
+                                            Seçili branch icin commit bulunamadı.
                                         </p>
                                     ) : (
                                         <div className="overflow-x-auto">

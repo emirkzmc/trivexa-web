@@ -2,10 +2,20 @@
 
 export type InvoiceStatus = 'DRAFT' | 'SENT' | 'PAID' | 'PARTIALLY_PAID' | 'CANCELLED' | 'OVERDUE';
 
+export interface InvoiceLineItem {
+    id: string;
+    invoiceId: string;
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    total: number;
+}
+
 export interface InvoiceEntity {
     id: string;
     invoiceNumber: string;
     clientId: string;
+    clientName?: string;
     projectId?: string;
     projectName?: string;
     status: InvoiceStatus | string;
@@ -18,6 +28,7 @@ export interface InvoiceEntity {
     notes?: string;
     createdAt: string;
     updatedAt: string;
+    items?: InvoiceLineItem[];
 }
 
 export interface InvoiceListParams {
@@ -91,22 +102,45 @@ function toRecord(value: unknown): Record<string, unknown> {
 
 function normalizeInvoice(raw: unknown): InvoiceEntity {
     const row = toRecord(raw);
+    const project = toRecord(row.project);
+    const client = toRecord(row.client);
+
     return {
         id: toStringValue(row.id),
-        invoiceNumber: toStringValue(row.invoiceNumber),
-        clientId: toStringValue(row.clientId),
-        projectId: toStringValue(row.projectId) || undefined,
-        projectName: toStringValue(row.projectName) || undefined,
+        invoiceNumber: toStringValue(row.invoiceNumber ?? row.invoice_number ?? row.id),
+        clientId: toStringValue(row.clientId ?? row.client_id ?? client.id),
+        clientName: toStringValue(row.clientName ?? row.client_name ?? client.companyName ?? client.company_name) || undefined,
+        projectId: toStringValue(row.projectId ?? row.project_id ?? project.id) || undefined,
+        projectName: toStringValue(
+            row.projectName
+            ?? row.project_name
+            ?? project.name
+            ?? project.projectName
+            ?? project.project_name,
+        ) || undefined,
         status: (toStringValue(row.status) || 'DRAFT') as InvoiceStatus,
-        subtotal: toNumberValue(row.subtotal),
-        taxRate: toNumberValue(row.taxRate),
-        taxAmount: toNumberValue(row.taxAmount),
-        total: toNumberValue(row.total),
-        issueDate: toStringValue(row.issueDate) || undefined,
-        dueDate: toStringValue(row.dueDate) || undefined,
+        subtotal: toNumberValue(row.subtotal ?? row.total_amount ?? row.total),
+        taxRate: toNumberValue(row.taxRate ?? row.tax_rate),
+        taxAmount: toNumberValue(row.taxAmount ?? row.tax_amount),
+        total: toNumberValue(row.total ?? row.total_amount),
+        issueDate: toStringValue(row.issueDate ?? row.issue_date ?? row.createdAt ?? row.created_at) || undefined,
+        dueDate: toStringValue(row.dueDate ?? row.due_date) || undefined,
         notes: toStringValue(row.notes) || undefined,
-        createdAt: toStringValue(row.createdAt),
-        updatedAt: toStringValue(row.updatedAt),
+        createdAt: toStringValue(row.createdAt ?? row.created_at),
+        updatedAt: toStringValue(row.updatedAt ?? row.updated_at ?? row.createdAt ?? row.created_at),
+        items: Array.isArray(row.items)
+            ? row.items.map((itemRaw) => {
+                const item = toRecord(itemRaw);
+                return {
+                    id: toStringValue(item.id),
+                    invoiceId: toStringValue(item.invoiceId ?? item.invoice_id),
+                    description: toStringValue(item.description),
+                    quantity: toNumberValue(item.quantity ?? 1),
+                    unitPrice: toNumberValue(item.unitPrice ?? item.unit_price ?? item.total ?? item.amount),
+                    total: toNumberValue(item.total ?? item.amount),
+                };
+            })
+            : [],
     };
 }
 

@@ -27,35 +27,41 @@ interface GlobalPresenceUpdatePayload {
 const PAGE_NAMES: Record<string, string> = {
     '/app/dashboard': 'Dashboard',
     '/app/notifications': 'Bildirimler',
-    '/app/personel': 'Personel Yonetimi',
+    '/app/personel': 'Personel Yönetimi',
     '/app/departmanlar': 'Departmanlar',
-    '/app/musteriler': 'Musteri Yonetimi',
+    '/app/musteriler': 'Müşteri Yönetimi',
     '/app/projeler': 'Projeler',
-    '/app/gorevler': 'Gorev Yonetimi',
+    '/app/gorevler': 'Görev Yönetimi',
     '/app/time-tracker': 'Time Tracker',
+    '/app/finans-dashboard': 'Finans Dashboard',
     '/app/finans': 'Finansal Raporlar',
-    '/app/sozlesmeler': 'Sozlesmeler',
-    '/app/dosyalar': 'Dosya Yonetimi',
-    '/app/roller': 'Roller ve Izinler',
+    '/app/tahsilat-takibi': 'Tahsilat Takibi',
+    '/app/gider-yonetimi': 'Gider Yönetimi',
+    '/app/banka-mutabakat': 'Banka POS Mutabakat',
+    '/app/musteri-ekstresi': 'Müşteri Hesap Ekstresi',
+    '/app/vergi-beyan': 'Vergi Beyan Hazırlık',
+    '/app/sozlesmeler': 'Sözleşmeler',
+    '/app/dosyalar': 'Dosya Yönetimi',
+    '/app/roller': 'Roller ve İzinler',
     '/app/audit-log': 'Audit Log',
     '/app/ayarlar': 'Ayarlar',
-    '/app/faturalar': 'Fatura Yonetimi',
-    '/app/musterilerim': 'Musterilerim',
+    '/app/faturalar': 'Fatura Yönetimi',
+    '/app/musterilerim': 'Müşterilerim',
     '/app/yeni-talepler': 'Yeni Talepler',
-    '/app/briefler': 'Brief Yonetimi',
-    '/app/on-onay': 'On Onay Paneli',
-    '/app/gorusmeler': 'Gorusme Yonetimi',
-    '/app/gorevlerim': 'Gorevlerim',
+    '/app/briefler': 'Brief Yönetimi',
+    '/app/on-onay': 'Ön Onay Paneli',
+    '/app/gorusmeler': 'Görüşme Yönetimi',
+    '/app/gorevlerim': 'Görevlerim',
     '/app/projelerim': 'Projelerim',
-    '/app/kod': 'Kod Surecleri',
-    '/app/dosyalarim': 'Dosyalarim',
-    '/app/icerik-plani': 'Icerik Planlari',
-    '/app/kampanyalar': 'Kampanya Yonetimi',
-    '/app/tasarim': 'Tasarim Surecleri',
-    '/app/produksiyon': 'Produksiyon Surecleri',
-    '/app/departman-atamalari': 'Departman Atamalari',
-    '/app/izin-yonetimi': 'Izin Yonetimi',
-    '/app/calisma-suresi': 'Calisma Suresi',
+    '/app/kod': 'Kod Süreçleri',
+    '/app/dosyalarim': 'Dosyalarım',
+    '/app/icerik-plani': 'İçerik Planları',
+    '/app/kampanyalar': 'Kampanya Yönetimi',
+    '/app/tasarim': 'Tasarım Süreçleri',
+    '/app/produksiyon': 'Prodüksiyon Süreçleri',
+    '/app/departman-atamalari': 'Departman Atamaları',
+    '/app/izin-yonetimi': 'İzin Yönetimi',
+    '/app/calisma-suresi': 'Çalışma Suresi',
     '/app/performans': 'Performans',
 };
 
@@ -64,10 +70,13 @@ function resolvePageName(pathname: string): string {
         return 'Yeni Proje';
     }
     if (pathname.startsWith('/app/projeler/')) {
-        return 'Proje Detayi';
+        return 'Proje Detayı';
     }
     if (pathname.startsWith('/app/gorevler/')) {
-        return 'Gorev Detayi';
+        return 'Görev Detayı';
+    }
+    if (pathname.startsWith('/app/faturalar/')) {
+        return 'Fatura Detayı';
     }
     return PAGE_NAMES[pathname] ?? 'Dashboard';
 }

@@ -151,7 +151,7 @@ export function ClientsTable({
                         {isLoading && (
                             <tr>
                                 <td colSpan={6} className="px-4 py-10 text-center text-gray-400">
-                                    Yukleniyor...
+                                    Yükleniyor...
                                 </td>
                             </tr>
                         )}
@@ -159,7 +159,7 @@ export function ClientsTable({
                         {isError && (
                             <tr>
                                 <td colSpan={6} className="px-4 py-10 text-center text-red-600">
-                                    Musteri listesi yuklenemedi.
+                                    Müşteri listesi yüklenemedi.
                                 </td>
                             </tr>
                         )}
@@ -167,7 +167,7 @@ export function ClientsTable({
                         {!isLoading && !isError && sortedRows.length === 0 && (
                             <tr>
                                 <td colSpan={6} className="px-4 py-10 text-center text-gray-400">
-                                    {hasFilters ? 'Bu filtrelere uygun musteri bulunamadi.' : 'Henuz kayitli musteri yok.'}
+                                    {hasFilters ? 'Bu filtrelere uygun müşteri bulunamadı.' : 'Henuz kayıtlı müşteri yok.'}
                                 </td>
                             </tr>
                         )}
@@ -214,7 +214,7 @@ export function ClientsTable({
                                                 event.stopPropagation();
                                                 onGenerateAccess(item);
                                             }}
-                                            title="Portal erisim linki olustur"
+                                            title="Portal erişim linki olustur"
                                             disabled={isGeneratingAccess}
                                             className="inline-flex h-8 items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-default disabled:opacity-60"
                                         >

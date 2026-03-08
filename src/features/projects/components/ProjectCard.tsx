@@ -15,7 +15,7 @@ export function ProjectCard({ project, onOpen }: { project: ProjectItem; onOpen:
                 <div>
                     <h3 className="text-sm font-semibold text-gray-900">{project.name}</h3>
                     <p className="mt-1 line-clamp-2 text-xs text-gray-500">
-                        {project.description?.trim() || 'Aciklama eklenmedi.'}
+                        {project.description?.trim() || 'Açıklama eklenmedi.'}
                     </p>
                 </div>
                 <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${meta.badgeClass}`}>

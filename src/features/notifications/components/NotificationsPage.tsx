@@ -17,7 +17,7 @@ function normalizeText(value: string): string {
 
 function getTypeLabel(type: string): string {
     const normalized = type.trim().toUpperCase();
-    if (normalized.includes('TASK')) return 'Gorev';
+    if (normalized.includes('TASK')) return 'Görev';
     if (normalized.includes('PROJECT')) return 'Proje';
     if (normalized.includes('TIME')) return 'Time Tracker';
     if (normalized.includes('INVOICE') || normalized.includes('FINANCE')) return 'Finans';
@@ -204,7 +204,7 @@ export function NotificationsPage() {
                         <input
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder="Baslik, mesaj veya tipe gore ara..."
+                            placeholder="Baslik, mesaj veya tipe göre ara..."
                             className="h-9 w-full rounded-lg border border-gray-300 pl-8 pr-3 text-sm outline-none focus:border-[color:var(--role-accent-500)] focus:ring-1 focus:ring-[color:var(--role-accent-500)]"
                         />
                     </label>
@@ -220,7 +220,7 @@ export function NotificationsPage() {
                         <div className="space-y-2">
                             {isLoading && (
                                 <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">
-                                    Bildirimler yukleniyor...
+                                    Bildirimler yükleniyor...
                                 </div>
                             )}
 
@@ -238,7 +238,7 @@ export function NotificationsPage() {
 
                             {!isLoading && !isError && rows.length > 0 && visibleRows.length === 0 && (
                                 <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">
-                                    Arama veya filtreye uygun bildirim bulunamadi.
+                                    Arama veya filtreye uygun bildirim bulunamadı.
                                 </div>
                             )}
 

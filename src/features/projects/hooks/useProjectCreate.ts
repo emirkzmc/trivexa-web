@@ -252,7 +252,7 @@ export function useProjectCreate() {
     }
 
     function handleCreateDraft() {
-        toast.info('Taslak kayit altyapisi bir sonraki adimda backend ile baglanacak.');
+        toast.info('Taslak kayıt altyapisi bir sonraki adimda backend ile baglanacak.');
     }
 
     function handleNextStep() {
@@ -261,7 +261,7 @@ export function useProjectCreate() {
             return;
         }
         if (!createForm.clientId) {
-            toast.error('Musteri secimi zorunludur.');
+            toast.error('Müşteri secimi zorunludur.');
             return;
         }
         if (!createForm.departmentId) {
@@ -280,7 +280,7 @@ export function useProjectCreate() {
             return;
         }
         if (!createForm.clientId) {
-            toast.error('Musteri secimi zorunludur.');
+            toast.error('Müşteri secimi zorunludur.');
             return;
         }
         if (!createForm.departmentId) {

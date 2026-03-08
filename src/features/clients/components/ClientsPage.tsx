@@ -108,7 +108,7 @@ export function ClientsPage() {
             className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
         >
             <Plus size={14} />
-            Yeni Musteri
+            Yeni Müşteri
         </button>
     );
 
@@ -117,8 +117,8 @@ export function ClientsPage() {
             <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
                 <PageHeader
                     icon={<Building2 size={20} color="#DC2626" />}
-                    title="Musteri Yonetimi"
-                    subtitle="Yetki kontrolu"
+                    title="Müşteri Yönetimi"
+                    subtitle="Yetki kontrolü"
                 />
                 <section className="rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-10 text-center text-sm font-medium text-yellow-800">
                     Bu ekrana sadece ADMIN ve MANAGER rolleri erisebilir.
@@ -131,8 +131,8 @@ export function ClientsPage() {
         <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
             <PageHeader
                 icon={<Building2 size={20} color="#DC2626" />}
-                title="Musteri Yonetimi"
-                subtitle={`Toplam ${total} musteri`}
+                title="Müşteri Yönetimi"
+                subtitle={`Toplam ${total} müşteri`}
                 actions={headerActions}
             />
 
@@ -168,7 +168,7 @@ export function ClientsPage() {
                         onChange={(event) => setFilter('isActive', event.target.value || undefined)}
                         className="h-9 min-w-[180px] rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
                     >
-                        <option value="">Tum Durumlar</option>
+                        <option value="">Tüm Durumlar</option>
                         <option value="true">Sadece Aktif</option>
                         <option value="false">Sadece Pasif</option>
                     </select>

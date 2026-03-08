@@ -202,7 +202,7 @@ function PeriodChartTable({
                     <tr className="border-b border-gray-200 text-left text-gray-500">
                         <th className="px-2 py-2 font-semibold">Periyot</th>
                         <th className="px-2 py-2 font-semibold">Kayit</th>
-                        <th className="px-2 py-2 font-semibold">Sure</th>
+                        <th className="px-2 py-2 font-semibold">Süre</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -325,11 +325,11 @@ export function DashboardTab({
         <>
             <section className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
                 <div className="rounded-[10px] border border-gray-200 bg-white px-3.5 py-3">
-                    <p className="m-0 mb-0.5 text-xs text-gray-500">Izlenen toplam sure (son 100 kayit)</p>
+                    <p className="m-0 mb-0.5 text-xs text-gray-500">Izlenen toplam süre (son 100 kayıt)</p>
                     <strong className="text-base text-gray-900">{formatDuration(dashboardTrackedSeconds)}</strong>
                 </div>
                 <div className="rounded-[10px] border border-gray-200 bg-white px-3.5 py-3">
-                    <p className="m-0 mb-0.5 text-xs text-gray-500">Aktif kayit</p>
+                    <p className="m-0 mb-0.5 text-xs text-gray-500">Aktif kayıt</p>
                     <strong className="text-base text-gray-900">{dashboardActiveCount}</strong>
                 </div>
                 <div className="rounded-[10px] border border-gray-200 bg-white px-3.5 py-3">
@@ -393,11 +393,11 @@ export function DashboardTab({
 
             <section className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
                 <article className="rounded-xl border border-gray-200 bg-white p-4">
-                    <h3 className="m-0 text-base text-gray-900">Projeye gore sure dagilimi</h3>
+                    <h3 className="m-0 text-base text-gray-900">Projeye göre süre dagilimi</h3>
                     <p className="mb-3 mt-1 text-xs text-gray-500">En fazla zaman harcanan projeler</p>
 
                     {dashboardTopProjects.length === 0 ? (
-                        <p className="text-sm text-gray-400">Kayit bulunamadi.</p>
+                        <p className="text-sm text-gray-400">Kayit bulunamadı.</p>
                     ) : (
                         <div className="space-y-2">
                             {dashboardTopProjects.map((item) => (
@@ -412,15 +412,15 @@ export function DashboardTab({
 
                 <article className="rounded-xl border border-gray-200 bg-white p-4">
                     <h3 className="m-0 text-base text-gray-900">
-                        {hasTeamAccess ? 'Calisan bazli toplam sure' : 'Son kayitlar'}
+                        {hasTeamAccess ? 'Calisan bazli toplam süre' : 'Son kayıtlar'}
                     </h3>
                     <p className="mb-3 mt-1 text-xs text-gray-500">
-                        {hasTeamAccess ? 'Kim ne kadar zaman harcadi' : 'En guncel hareketler'}
+                        {hasTeamAccess ? 'Kim ne kadar zaman harcadi' : 'En güncel hareketler'}
                     </p>
 
                     {hasTeamAccess ? (
                         dashboardTopUsers.length === 0 ? (
-                            <p className="text-sm text-gray-400">Kayit bulunamadi.</p>
+                            <p className="text-sm text-gray-400">Kayit bulunamadı.</p>
                         ) : (
                             <div className="space-y-2">
                                 {dashboardTopUsers.map((item, idx) => (
@@ -428,7 +428,7 @@ export function DashboardTab({
                                         <span className="text-sm text-gray-700">{item.name}</span>
                                         <div className="text-right">
                                             <strong className="block text-sm text-gray-900">{formatDuration(item.seconds)}</strong>
-                                            <span className="text-xs text-gray-500">{item.entries} kayit</span>
+                                            <span className="text-xs text-gray-500">{item.entries} kayıt</span>
                                         </div>
                                     </div>
                                 ))}
@@ -452,7 +452,7 @@ export function DashboardTab({
 
             <section className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
                 <article className="rounded-xl border border-gray-200 bg-white p-4">
-                    <h3 className="m-0 text-base text-gray-900">Proje bazli calisma ozeti</h3>
+                    <h3 className="m-0 text-base text-gray-900">Proje bazli çalışma ozeti</h3>
                     <p className="mb-3 mt-1 text-xs text-gray-500">Hangi projede ne kadar calisildigini detayli gorun</p>
 
                     <div className="overflow-x-auto">
@@ -462,14 +462,14 @@ export function DashboardTab({
                                 <th className="px-2 py-2 font-semibold">Proje</th>
                                 <th className="px-2 py-2 font-semibold">Kayit</th>
                                 <th className="px-2 py-2 font-semibold">Aktif</th>
-                                <th className="px-2 py-2 font-semibold">Toplam Sure</th>
+                                <th className="px-2 py-2 font-semibold">Toplam Süre</th>
                                 <th className="px-2 py-2 font-semibold">Son Islem</th>
                             </tr>
                             </thead>
                             <tbody>
                             {projectSummaryRows.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="px-2 py-4 text-center text-gray-400">Proje bazli kayit bulunamadi.</td>
+                                    <td colSpan={5} className="px-2 py-4 text-center text-gray-400">Proje bazli kayıt bulunamadı.</td>
                                 </tr>
                             )}
                             {projectSummaryRows.map((row) => (
@@ -488,7 +488,7 @@ export function DashboardTab({
 
                 <article className="rounded-xl border border-gray-200 bg-white p-4">
                     <h3 className="m-0 text-base text-gray-900">Timer detaylari</h3>
-                    <p className="mb-3 mt-1 text-xs text-gray-500">Aktif timer ve son zaman kayit detaylari</p>
+                    <p className="mb-3 mt-1 text-xs text-gray-500">Aktif timer ve son zaman kayıt detaylari</p>
 
                     <div className="mb-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
                         <p className="m-0 text-xs text-gray-500">Aktif Timer</p>
@@ -506,7 +506,7 @@ export function DashboardTab({
 
                     <div className="space-y-2">
                         {recentTimerRows.length === 0 && (
-                            <p className="text-sm text-gray-400">Son kayit bulunamadi.</p>
+                            <p className="text-sm text-gray-400">Son kayıt bulunamadı.</p>
                         )}
                         {recentTimerRows.map((row) => (
                             <div key={row.id} className="rounded-lg border border-gray-200 bg-white px-3 py-2">

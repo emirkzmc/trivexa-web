@@ -16,6 +16,10 @@ import { TaskDetailPage } from './features/tasks/components/TaskDetailPage';
 import { NotificationsPage } from './features/notifications/components/NotificationsPage';
 import { ClientsPage } from './features/clients/components/ClientsPage';
 import { ClientDetailPage } from './features/clients/components/ClientDetailPage';
+import { InvoicesPage } from './features/finance/components/InvoicesPage';
+import { InvoiceDetailPage } from './features/finance/components/InvoiceDetailPage';
+import { FinanceModulePage } from './features/finance/components/FinanceModulePage';
+import { CollectionTrackingPage } from './features/finance/components/CollectionTrackingPage';
 
 function App() {
   return (
@@ -43,6 +47,66 @@ function App() {
         <Route path="musteriler" element={<ClientsPage />} />
         <Route path="musteriler/:clientId" element={<ClientDetailPage />} />
         <Route path="musterilerim" element={<Navigate to="/app/musteriler" replace />} />
+        <Route
+          path="finans-dashboard"
+          element={(
+            <FinanceModulePage
+              title="Finans Dashboard"
+              subtitle="Nakit akışı, tahsilat ve iade KPI görünümü."
+            />
+          )}
+        />
+        <Route
+          path="finans"
+          element={(
+            <FinanceModulePage
+              title="Finansal Raporlar"
+              subtitle="Dönemsel gelir-gider, marj ve tahsilat performans raporları."
+            />
+          )}
+        />
+        <Route path="faturalar" element={<InvoicesPage />} />
+        <Route path="faturalar/:invoiceId" element={<InvoiceDetailPage />} />
+        <Route
+          path="tahsilat-takibi"
+          element={<CollectionTrackingPage />}
+        />
+        <Route
+          path="gider-yonetimi"
+          element={(
+            <FinanceModulePage
+              title="Gider Yönetimi"
+              subtitle="Departman bazli gider giriş, onay ve kontrol süreçleri."
+            />
+          )}
+        />
+        <Route
+          path="banka-mutabakat"
+          element={(
+            <FinanceModulePage
+              title="Banka POS Mutabakat"
+              subtitle="Banka hareketleri ile sistem ödeme kayıtlarını eslestirme."
+            />
+          )}
+        />
+        <Route
+          path="musteri-ekstresi"
+          element={(
+            <FinanceModulePage
+              title="Müşteri Hesap Ekstresi"
+              subtitle="Fatura, ödeme ve iade hareketlerinin tek hesap dokumu."
+            />
+          )}
+        />
+        <Route
+          path="vergi-beyan"
+          element={(
+            <FinanceModulePage
+              title="Vergi Beyan Hazirlik"
+              subtitle="KDV ve dönemsel beyan için ön-hazırlık ve export ekranları."
+            />
+          )}
+        />
         <Route path="time-tracker" element={<TimeTrackerPage />} />
         <Route path="roller" element={<RolesPermissionsPage />} />
         <Route path="audit-log" element={<AuditLogPage />} />

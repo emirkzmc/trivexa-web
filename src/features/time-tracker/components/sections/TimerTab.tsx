@@ -147,14 +147,14 @@ export function TimerTab({
 
                 <article className="box-border rounded-xl border border-gray-200 bg-white p-[18px]">
                     <div className="mb-[10px] flex items-center justify-between">
-                        <span className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-700">Yeni kayit</span>
+                        <span className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-700">Yeni kayıt</span>
                         <button
                             type="button"
                             onClick={onOpenManualEntry}
                             className="role-outline-btn inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition"
                         >
                             <PencilLine size={12} />
-                            Elle Giris
+                            Elle Giriş
                         </button>
                     </div>
 
@@ -177,11 +177,11 @@ export function TimerTab({
                         >
                             <option value="">
                                 {projectLoading
-                                    ? 'Projeler yukleniyor...'
+                                    ? 'Projeler yükleniyor...'
                                     : projectError
                                         ? 'Projeler alinamadi'
                                         : projects.length === 0
-                                            ? 'Proje bulunamadi'
+                                            ? 'Proje bulunamadı'
                                             : 'Proje secin'}
                             </option>
                             {projects.map((project) => (
@@ -205,11 +205,11 @@ export function TimerTab({
                                 {!formData.projectId
                                     ? 'Once proje secin'
                                     : taskLoading
-                                        ? 'Tasklar yukleniyor...'
+                                        ? 'Tasklar yükleniyor...'
                                         : taskError
                                             ? 'Tasklar alinamadi'
                                             : tasks.length === 0
-                                                ? 'Task bulunamadi'
+                                                ? 'Task bulunamadı'
                                                 : 'Task secin (opsiyonel)'}
                             </option>
                             {tasks.map((task) => (
@@ -219,7 +219,7 @@ export function TimerTab({
                             ))}
                         </select>
 
-                        <label htmlFor="description" className="text-xs font-semibold text-gray-700">Aciklama</label>
+                        <label htmlFor="description" className="text-xs font-semibold text-gray-700">Açıklama</label>
                         <textarea
                             id="description"
                             value={formData.description}
@@ -248,14 +248,14 @@ export function TimerTab({
                 <div className="flex items-center gap-2.5 rounded-[10px] border border-gray-200 bg-white px-3.5 py-3">
                     <Clock3 size={16} color="#1F2937"/>
                     <div>
-                        <p className="m-0 mb-0.5 text-xs text-gray-500">Gorunen sure</p>
+                        <p className="m-0 mb-0.5 text-xs text-gray-500">Görünen süre</p>
                         <strong className="text-base text-gray-900">{formatDuration(trackedSecondsInList)}</strong>
                     </div>
                 </div>
                 <div className="flex items-center gap-2.5 rounded-[10px] border border-gray-200 bg-white px-3.5 py-3">
                     <History size={16} color="#1F2937"/>
                     <div>
-                        <p className="m-0 mb-0.5 text-xs text-gray-500">Toplam kayit</p>
+                        <p className="m-0 mb-0.5 text-xs text-gray-500">Toplam kayıt</p>
                         <strong className="text-base text-gray-900">{total}</strong>
                     </div>
                 </div>
@@ -272,7 +272,7 @@ export function TimerTab({
                 <div className="mb-3 flex flex-col items-start justify-between gap-3 min-[900px]:flex-row min-[900px]:items-center">
                     <div>
                         <h3 className="m-0 text-lg text-gray-900">Kayit gecmisi</h3>
-                        <p className="mt-0.5 mb-0 text-xs text-gray-500">Durum ve sure detaylari</p>
+                        <p className="mt-0.5 mb-0 text-xs text-gray-500">Durum ve süre detaylari</p>
                     </div>
 
                     <select
@@ -280,7 +280,7 @@ export function TimerTab({
                         value={statusFilter}
                         onChange={(event) => onStatusFilterChange(event.target.value)}
                     >
-                        <option value="">Tum durumlar</option>
+                        <option value="">Tüm durumlar</option>
                         <option value="ACTIVE">Calisiyor</option>
                         <option value="STOPPED">Tamamlandi</option>
                         <option value="CANCELLED">Iptal</option>
@@ -295,7 +295,7 @@ export function TimerTab({
                                 <div className="flex items-center gap-1">Proje <SortIcon field="projectName" currentSortField={sortField} currentSortDirection={sortDirection}/></div>
                             </th>
                             <th onClick={() => onSort('description')} className="border-b border-gray-200 bg-gray-50 px-3 py-[11px] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500 cursor-pointer group hover:bg-gray-100 transition">
-                                <div className="flex items-center gap-1">Aciklama <SortIcon field="description" currentSortField={sortField} currentSortDirection={sortDirection}/></div>
+                                <div className="flex items-center gap-1">Açıklama <SortIcon field="description" currentSortField={sortField} currentSortDirection={sortDirection}/></div>
                             </th>
                             <th onClick={() => onSort('startedAt')} className="border-b border-gray-200 bg-gray-50 px-3 py-[11px] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500 cursor-pointer group hover:bg-gray-100 transition">
                                 <div className="flex items-center gap-1">Baslangic <SortIcon field="startedAt" currentSortField={sortField} currentSortDirection={sortDirection}/></div>
@@ -304,7 +304,7 @@ export function TimerTab({
                                 <div className="flex items-center gap-1">Bitis <SortIcon field="stoppedAt" currentSortField={sortField} currentSortDirection={sortDirection}/></div>
                             </th>
                             <th onClick={() => onSort('duration')} className="border-b border-gray-200 bg-gray-50 px-3 py-[11px] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500 cursor-pointer group hover:bg-gray-100 transition">
-                                <div className="flex items-center gap-1">Sure <SortIcon field="duration" currentSortField={sortField} currentSortDirection={sortDirection}/></div>
+                                <div className="flex items-center gap-1">Süre <SortIcon field="duration" currentSortField={sortField} currentSortDirection={sortDirection}/></div>
                             </th>
                             <th onClick={() => onSort('status')} className="border-b border-gray-200 bg-gray-50 px-3 py-[11px] text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500 cursor-pointer group hover:bg-gray-100 transition">
                                 <div className="flex items-center gap-1">Durum <SortIcon field="status" currentSortField={sortField} currentSortDirection={sortDirection}/></div>
@@ -317,19 +317,19 @@ export function TimerTab({
                         <tbody>
                         {historyLoading && (
                             <tr>
-                                <td colSpan={7} className="px-3 py-[26px] text-center text-gray-400">Kayitlar yukleniyor...</td>
+                                <td colSpan={7} className="px-3 py-[26px] text-center text-gray-400">Kayıtlar yükleniyor...</td>
                             </tr>
                         )}
 
                         {historyError && (
                             <tr>
-                                <td colSpan={7} className="px-3 py-[26px] text-center text-red-600">Kayitlar alinirken bir hata olustu.</td>
+                                <td colSpan={7} className="px-3 py-[26px] text-center text-red-600">Kayıtlar alinirken bir hata olustu.</td>
                             </tr>
                         )}
 
                         {!historyLoading && !historyError && filteredAndSortedHistoryRows.length === 0 && (
                             <tr>
-                                <td colSpan={7} className="px-3 py-[26px] text-center text-gray-400">Filtreye uygun kayit bulunamadi.</td>
+                                <td colSpan={7} className="px-3 py-[26px] text-center text-gray-400">Filtreye uygun kayıt bulunamadı.</td>
                             </tr>
                         )}
 
@@ -363,15 +363,15 @@ export function TimerTab({
                 </div>
 
                 {historyLoading && (
-                    <p className="px-3 py-[26px] text-center text-sm text-gray-400 md:hidden">Kayitlar yukleniyor...</p>
+                    <p className="px-3 py-[26px] text-center text-sm text-gray-400 md:hidden">Kayıtlar yükleniyor...</p>
                 )}
 
                 {historyError && (
-                    <p className="px-3 py-[26px] text-center text-sm text-red-600 md:hidden">Kayitlar alinirken bir hata olustu.</p>
+                    <p className="px-3 py-[26px] text-center text-sm text-red-600 md:hidden">Kayıtlar alinirken bir hata olustu.</p>
                 )}
 
                 {!historyLoading && !historyError && filteredAndSortedHistoryRows.length === 0 && (
-                    <p className="px-3 py-[26px] text-center text-sm text-gray-400 md:hidden">Filtreye uygun kayit bulunamadi.</p>
+                    <p className="px-3 py-[26px] text-center text-sm text-gray-400 md:hidden">Filtreye uygun kayıt bulunamadı.</p>
                 )}
 
                 <div className="space-y-3 md:hidden">
@@ -394,7 +394,7 @@ export function TimerTab({
                                     <p className="m-0">{row.stoppedAt ? formatDate(row.stoppedAt) : '-'}</p>
                                 </div>
                                 <div className="col-span-2">
-                                    <p className="m-0 text-[11px] text-gray-500">Sure</p>
+                                    <p className="m-0 text-[11px] text-gray-500">Süre</p>
                                     <p className="m-0 font-medium text-gray-900">{formatDuration(getEntryDurationSeconds(row))}</p>
                                 </div>
                             </div>

@@ -13,7 +13,7 @@ interface NotificationsDropdownProps {
 
 function getTypeLabel(type: string): string {
     const normalized = type.trim().toUpperCase();
-    if (normalized.includes('TASK')) return 'Gorev';
+    if (normalized.includes('TASK')) return 'Görev';
     if (normalized.includes('PROJECT')) return 'Proje';
     if (normalized.includes('TIME')) return 'Time';
     if (normalized.includes('FINANCE') || normalized.includes('INVOICE')) return 'Finans';
@@ -232,7 +232,7 @@ export function NotificationsDropdown({
                     <div style={{ maxHeight: 380, overflowY: 'auto', padding: 8 }}>
                         {latestQuery.isLoading && (
                             <div style={{ padding: 10, fontSize: 12, color: '#6B7280' }}>
-                                Bildirimler yukleniyor...
+                                Bildirimler yükleniyor...
                             </div>
                         )}
 
@@ -334,7 +334,7 @@ export function NotificationsDropdown({
                                 gap: 6,
                             }}
                         >
-                            Tum bildirimleri gor
+                            Tüm bildirimleri gor
                             <ExternalLink size={12} />
                         </button>
                     </div>

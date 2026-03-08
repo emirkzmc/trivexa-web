@@ -66,7 +66,7 @@ export function TaskBoardColumn({
                                 </div>
 
                                 <p className="mb-2 line-clamp-2 text-xs text-gray-500">
-                                    {task.description?.trim() || 'Aciklama eklenmemis'}
+                                    {task.description?.trim() || 'Açıklama eklenmemis'}
                                 </p>
 
                                 <div className="mb-2 flex items-center justify-between gap-2 text-[11px] text-gray-500">

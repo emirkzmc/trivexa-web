@@ -336,7 +336,7 @@ export function PersonnelTable({
                         {isLoading && (
                             <tr>
                                 <td colSpan={6} className="px-4 py-10 text-center text-gray-400">
-                                    Yukleniyor...
+                                    Yükleniyor...
                                 </td>
                             </tr>
                         )}
@@ -353,8 +353,8 @@ export function PersonnelTable({
                             <tr>
                                 <td colSpan={6} className="px-4 py-10 text-center text-gray-400">
                                     {hasFilters
-                                        ? 'Bu filtrelere uygun personel bulunamadi.'
-                                        : 'Henuz kayitli personel bulunmuyor.'}
+                                        ? 'Bu filtrelere uygun personel bulunamadı.'
+                                        : 'Henuz kayıtlı personel bulunmuyor.'}
                                 </td>
                             </tr>
                         )}

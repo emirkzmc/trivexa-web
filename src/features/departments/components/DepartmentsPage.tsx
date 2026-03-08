@@ -1,4 +1,4 @@
-﻿import { useMemo, useState, type FormEvent } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Building2, Pencil, Plus, Search, Trash2, Users } from 'lucide-react';
 import { toast } from 'sonner';
@@ -77,7 +77,7 @@ export function DepartmentsPage() {
         mutationFn: ({ id, payload }: { id: string; payload: { name?: string; description?: string } }) =>
             updateDepartment(id, payload),
         onSuccess: async () => {
-            toast.success('Departman guncellendi.');
+            toast.success('Departman güncellendi.');
             await queryClient.invalidateQueries({ queryKey: ['departments'] });
             handleCloseModal();
         },
@@ -97,7 +97,7 @@ export function DepartmentsPage() {
         mutationFn: ({ moduleId, payload }: { moduleId: string; payload: { name?: string; description?: string; teamLeadId?: string } }) =>
             updateDepartmentModule(moduleId, payload),
         onSuccess: async () => {
-            toast.success('Alt modul guncellendi.');
+            toast.success('Alt modul güncellendi.');
             await queryClient.invalidateQueries({ queryKey: ['departments'] });
             handleCloseModuleModal();
         },
@@ -253,7 +253,7 @@ export function DepartmentsPage() {
         event.preventDefault();
 
         if (!moduleDepartment) {
-            setModuleFormError('Departman secimi bulunamadi.');
+            setModuleFormError('Departman secimi bulunamadı.');
             return;
         }
 
@@ -331,7 +331,7 @@ export function DepartmentsPage() {
                 </article>
 
                 <article className="rounded-xl border border-gray-200 bg-white p-4">
-                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Aciklama Girilen</p>
+                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Açıklama Girilen</p>
                     <p className="mt-1 text-2xl font-bold text-gray-900">{hasDescriptionCount}</p>
                 </article>
 
@@ -362,7 +362,7 @@ export function DepartmentsPage() {
                         <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
                             <tr>
                                 <th className="px-4 py-3 font-semibold">Departman Adi</th>
-                                <th className="px-4 py-3 font-semibold">Aciklama</th>
+                                <th className="px-4 py-3 font-semibold">Açıklama</th>
                                 <th className="px-4 py-3 font-semibold">Alt Moduller</th>
                                 <th className="px-4 py-3 font-semibold">Guncelleme</th>
                                 <th className="px-4 py-3 font-semibold">Islem</th>
@@ -372,19 +372,19 @@ export function DepartmentsPage() {
                             {departmentsQuery.isLoading ? (
                                 <tr>
                                     <td colSpan={5} className="px-4 py-10 text-center text-gray-500">
-                                        Departmanlar yukleniyor...
+                                        Departmanlar yükleniyor...
                                     </td>
                                 </tr>
                             ) : departmentsQuery.isError ? (
                                 <tr>
                                     <td colSpan={5} className="px-4 py-10 text-center text-red-600">
-                                        Departmanlar yuklenemedi.
+                                        Departmanlar yüklenemedi.
                                     </td>
                                 </tr>
                             ) : filteredDepartments.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="px-4 py-10 text-center text-gray-500">
-                                        Gosterilecek departman bulunamadi.
+                                        Gosterilecek departman bulunamadı.
                                     </td>
                                 </tr>
                             ) : (
@@ -392,7 +392,7 @@ export function DepartmentsPage() {
                                     <tr key={department.id} className="hover:bg-gray-50 align-top">
                                         <td className="px-4 py-3 font-semibold text-gray-900">{department.name}</td>
                                         <td className="px-4 py-3 text-gray-600">
-                                            {department.description?.trim() || 'Aciklama yok'}
+                                            {department.description?.trim() || 'Açıklama yok'}
                                         </td>
                                         <td className="px-4 py-3 text-gray-600">
                                             {department.modules.length === 0 ? (
@@ -488,12 +488,12 @@ export function DepartmentsPage() {
                         </div>
 
                         <div>
-                            <label className="mb-1 block text-xs font-semibold text-gray-700">Aciklama</label>
+                            <label className="mb-1 block text-xs font-semibold text-gray-700">Açıklama</label>
                             <textarea
                                 value={form.description}
                                 onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
                                 rows={3}
-                                placeholder="Departmanin gorev alani"
+                                placeholder="Departmanin görev alani"
                                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
                             />
                         </div>
@@ -542,12 +542,12 @@ export function DepartmentsPage() {
                         </div>
 
                         <div>
-                            <label className="mb-1 block text-xs font-semibold text-gray-700">Aciklama</label>
+                            <label className="mb-1 block text-xs font-semibold text-gray-700">Açıklama</label>
                             <textarea
                                 value={moduleForm.description}
                                 onChange={(event) => setModuleForm((prev) => ({ ...prev, description: event.target.value }))}
                                 rows={3}
-                                placeholder="Alt modulun gorev tanimi"
+                                placeholder="Alt modulun görev tanimi"
                                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
                             />
                         </div>

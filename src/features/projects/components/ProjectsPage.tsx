@@ -304,22 +304,22 @@ export function ProjectsPage() {
             <PageHeader
                 icon={<FolderKanban size={20} color="#DC2626" />}
                 title={myProjectsOnly ? 'Projelerim' : 'Projeler'}
-                subtitle={`Toplam ${total} proje kaydi`}
+                subtitle={`Toplam ${total} proje kaydı`}
                 actions={actions}
             />
 
             {!canReadProjects && (
                 <section className="rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-10 text-center text-sm font-medium text-yellow-800">
-                    Bu role proje listesine erisim izni tanimli degil.
+                    Bu role proje listesine erişim izni tanimli degil.
                 </section>
             )}
 
             {canReadProjects && (
                 <section className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    <StatsCard title="Toplam Proje" value={String(total)} subtitle="Filtrelenmis toplam kayit" />
+                    <StatsCard title="Toplam Proje" value={String(total)} subtitle="Filtrelenmis toplam kayıt" />
                     <StatsCard title="Devam Eden" value={String(stats.inProgress)} subtitle="Aktif operasyon surecinde" />
                     <StatsCard title="Tamamlanan" value={String(stats.completed)} subtitle="Tamamlanmis proje adedi" />
-                    <StatsCard title="Sayfa Butcesi" value={formatMoney(stats.totalBudget)} subtitle="Gorunen kayitlara gore" />
+                    <StatsCard title="Sayfa Butcesi" value={formatMoney(stats.totalBudget)} subtitle="Görünen kayitlara göre" />
                 </section>
             )}
 
@@ -331,7 +331,7 @@ export function ProjectsPage() {
                         <input
                             value={search}
                             onChange={(event) => handleSearchChange(event.target.value)}
-                            placeholder="Proje adi veya aciklama ara..."
+                            placeholder="Proje adi veya açıklama ara..."
                             className="h-9 w-full rounded-lg border border-gray-300 pl-8 pr-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
                         />
                     </div>
@@ -364,11 +364,11 @@ export function ProjectsPage() {
                     </div>
                 ) : projectsQuery.isError ? (
                     <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-10 text-center text-sm font-medium text-red-600">
-                        Proje listesi yuklenemedi.
+                        Proje listesi yüklenemedi.
                     </div>
                 ) : rows.length === 0 ? (
                     <div className="rounded-lg border border-dashed border-gray-300 px-4 py-10 text-center text-sm text-gray-500">
-                        Eslesen proje bulunamadi.
+                        Eslesen proje bulunamadı.
                     </div>
                 ) : view === 'grid' ? (
                     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">

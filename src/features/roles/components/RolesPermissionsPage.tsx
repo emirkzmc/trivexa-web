@@ -71,7 +71,7 @@ export function RolesPermissionsPage() {
     const saveMutation = useMutation({
         mutationFn: (payload: AssignPermissionsPayload) => assignPermissions(payload),
         onSuccess: async (_, payload) => {
-            toast.success('Rol izinleri guncellendi.');
+            toast.success('Rol izinleri güncellendi.');
             await queryClient.invalidateQueries({ queryKey: ['role-permissions', payload.roleId] });
         },
     });
@@ -217,7 +217,7 @@ export function RolesPermissionsPage() {
         <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
             <PageHeader
                 icon={<ShieldCheck size={20} color="var(--role-accent-600)" />}
-                title="Roller ve Izinler"
+                title="Roller ve İzinler"
                 subtitle="Rolleri secip izinleri backend uzerinden yonetin."
                 actions={(
                     <>
@@ -236,7 +236,7 @@ export function RolesPermissionsPage() {
                             className="inline-flex h-9 items-center gap-2 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-300"
                         >
                             <Save size={14} />
-                            {saveMutation.isPending ? 'Kaydediliyor...' : 'Izinleri Kaydet'}
+                            {saveMutation.isPending ? 'Kaydediliyor...' : 'İzinleri Kaydet'}
                         </button>
                     </>
                 )}
@@ -255,7 +255,7 @@ export function RolesPermissionsPage() {
                     <div className="mb-2 inline-flex rounded-lg bg-blue-100 p-2 text-blue-600">
                         <KeyRound size={16} />
                     </div>
-                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Toplam Izin</p>
+                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Toplam İzin</p>
                     <p className="mt-1 text-2xl font-bold text-gray-900">{permissionPool.length}</p>
                 </article>
 
@@ -263,7 +263,7 @@ export function RolesPermissionsPage() {
                     <div className="mb-2 inline-flex rounded-lg bg-emerald-100 p-2 text-emerald-600">
                         <CheckSquare size={16} />
                     </div>
-                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Secili Rol Izin</p>
+                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Seçili Rol İzin</p>
                     <p className="mt-1 text-2xl font-bold text-gray-900">{selectedCount}</p>
                 </article>
 
@@ -278,7 +278,7 @@ export function RolesPermissionsPage() {
 
             {hasPageError && (
                 <div className="mb-4 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
-                    Roller veya izinler yuklenemedi. API baglantisini kontrol edin.
+                    Roller veya izinler yüklenemedi. API baglantisini kontrol edin.
                 </div>
             )}
 
@@ -287,7 +287,7 @@ export function RolesPermissionsPage() {
                     <h2 className="mb-2 px-2 text-sm font-semibold text-gray-900">Roller</h2>
 
                     {isPageLoading ? (
-                        <p className="px-2 py-6 text-sm text-gray-500">Roller yukleniyor...</p>
+                        <p className="px-2 py-6 text-sm text-gray-500">Roller yükleniyor...</p>
                     ) : (rolesQuery.data?.length ?? 0) === 0 ? (
                         <p className="px-2 py-6 text-sm text-gray-500">Gosterilecek rol yok.</p>
                     ) : (
@@ -331,7 +331,7 @@ export function RolesPermissionsPage() {
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="mt-1 text-xs text-gray-500">{role.description || 'Aciklama yok'}</p>
+                                        <p className="mt-1 text-xs text-gray-500">{role.description || 'Açıklama yok'}</p>
                                     </button>
                                 );
                             })}
@@ -344,10 +344,10 @@ export function RolesPermissionsPage() {
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                             <div>
                                 <h2 className="text-base font-semibold text-gray-900">
-                                    {selectedRole ? `${selectedRole.name} Izin Matrisi` : 'Izin Matrisi'}
+                                    {selectedRole ? `${selectedRole.name} İzin Matrisi` : 'İzin Matrisi'}
                                 </h2>
                                 <p className="text-xs text-gray-500">
-                                    Izin secimleri backend'den okunur ve kaydet ile backend'e yazilir.
+                                    İzin seçimleri backend'den okunur ve kaydet ile backend'e yazılır.
                                 </p>
                             </div>
 
@@ -379,7 +379,7 @@ export function RolesPermissionsPage() {
                                 value={search}
                                 onChange={(event) => setSearch(event.target.value)}
                                 type="text"
-                                placeholder="Izin ara (ad, aciklama veya ID)"
+                                placeholder="İzin ara (ad, açıklama veya ID)"
                                 className="h-9 w-full rounded-lg border border-gray-300 pl-8 pr-3 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                         </label>
@@ -390,8 +390,8 @@ export function RolesPermissionsPage() {
                             <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
                                 <tr>
                                     <th className="px-4 py-3 font-semibold">Durum</th>
-                                    <th className="px-4 py-3 font-semibold">Izin Adi</th>
-                                    <th className="px-4 py-3 font-semibold">Aciklama</th>
+                                    <th className="px-4 py-3 font-semibold">İzin Adi</th>
+                                    <th className="px-4 py-3 font-semibold">Açıklama</th>
                                     <th className="px-4 py-3 font-semibold">ID</th>
                                 </tr>
                             </thead>
@@ -399,13 +399,13 @@ export function RolesPermissionsPage() {
                                 {isPageLoading ? (
                                     <tr>
                                         <td colSpan={4} className="px-4 py-10 text-center text-gray-500">
-                                            Izinler yukleniyor...
+                                            İzinler yükleniyor...
                                         </td>
                                     </tr>
                                 ) : rolePermissionsQuery.isLoading ? (
                                     <tr>
                                         <td colSpan={4} className="px-4 py-10 text-center text-gray-500">
-                                            Secili rol izinleri yukleniyor...
+                                            Seçili rol izinleri yükleniyor...
                                         </td>
                                     </tr>
                                 ) : rolePermissionsQuery.isError ? (
@@ -417,7 +417,7 @@ export function RolesPermissionsPage() {
                                 ) : filteredPermissions.length === 0 ? (
                                     <tr>
                                         <td colSpan={4} className="px-4 py-10 text-center text-gray-500">
-                                            Aramaya uygun izin bulunamadi.
+                                            Aramaya uygun izin bulunamadı.
                                         </td>
                                     </tr>
                                 ) : (
@@ -434,12 +434,12 @@ export function RolesPermissionsPage() {
                                                             onChange={() => handleTogglePermission(permission.id)}
                                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                                         />
-                                                        {checked ? 'Izinli' : 'Kapali'}
+                                                        {checked ? 'İzinli' : 'Kapalı'}
                                                     </label>
                                                 </td>
                                                 <td className="px-4 py-3 font-semibold text-gray-800">{permission.name}</td>
                                                 <td className="px-4 py-3 text-gray-600">
-                                                    {permission.description || 'Aciklama yok'}
+                                                    {permission.description || 'Açıklama yok'}
                                                 </td>
                                                 <td className="px-4 py-3 font-mono text-xs text-gray-500">{permission.id}</td>
                                             </tr>
@@ -476,7 +476,7 @@ export function RolesPermissionsPage() {
                         </div>
 
                         <div>
-                            <label className="mb-1 block text-xs font-semibold text-gray-700">Aciklama</label>
+                            <label className="mb-1 block text-xs font-semibold text-gray-700">Açıklama</label>
                             <textarea
                                 value={newRoleDescription}
                                 onChange={(event) => setNewRoleDescription(event.target.value)}

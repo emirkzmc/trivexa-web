@@ -33,7 +33,7 @@ export function ProjectCreateStepOne({ controller }: ProjectCreateStepOneProps) 
                     </div>
 
                     <div>
-                        <label className="mb-1 block text-xs font-semibold text-gray-600">Musteri</label>
+                        <label className="mb-1 block text-xs font-semibold text-gray-600">Müşteri</label>
                         <select
                             value={createForm.clientId}
                             onChange={(event) => updateCreateField('clientId', event.target.value)}
@@ -41,12 +41,12 @@ export function ProjectCreateStepOne({ controller }: ProjectCreateStepOneProps) 
                         >
                             <option value="">
                                 {clientsQuery.isLoading
-                                    ? 'Musteriler yukleniyor...'
+                                    ? 'Müşteriler yükleniyor...'
                                     : clientsQuery.isError
-                                        ? 'Musteriler alinamadi'
+                                        ? 'Müşteriler alinamadi'
                                         : clients.length === 0
-                                            ? 'Musteri bulunamadi'
-                                            : 'Musteri secin'}
+                                            ? 'Müşteri bulunamadı'
+                                            : 'Müşteri secin'}
                             </option>
                             {clients.map((client) => (
                                 <option key={client.id} value={client.id}>
@@ -64,7 +64,7 @@ export function ProjectCreateStepOne({ controller }: ProjectCreateStepOneProps) 
                             className="h-9 w-full rounded-lg border border-gray-300 px-2.5 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
                         >
                             <option value="">
-                                {departmentsQuery.isLoading ? 'Departmanlar yukleniyor...' : 'Departman secin'}
+                                {departmentsQuery.isLoading ? 'Departmanlar yükleniyor...' : 'Departman secin'}
                             </option>
                             {departmentOptions.map((department) => (
                                 <option key={department.id} value={department.id}>
@@ -122,7 +122,7 @@ export function ProjectCreateStepOne({ controller }: ProjectCreateStepOneProps) 
                     </div>
 
                     <div>
-                        <label className="mb-1 block text-xs font-semibold text-gray-600">Aciklama</label>
+                        <label className="mb-1 block text-xs font-semibold text-gray-600">Açıklama</label>
                         <textarea
                             value={createForm.description}
                             onChange={(event) => updateCreateField('description', event.target.value)}
@@ -189,7 +189,7 @@ export function ProjectCreateStepOne({ controller }: ProjectCreateStepOneProps) 
                     </div>
 
                     <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 py-2 text-xs text-gray-600">
-                        Secili departman: <strong>{selectedDepartmentName || '-'}</strong>
+                        Seçili departman: <strong>{selectedDepartmentName || '-'}</strong>
                     </div>
                 </div>
             </article>

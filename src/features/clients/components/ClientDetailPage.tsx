@@ -89,6 +89,16 @@ function invoiceStatusLabel(status: string) {
     return normalized;
 }
 
+function formatPaymentMethod(value?: string) {
+    if (!value) return '-';
+    const normalized = value.toUpperCase();
+    if (normalized === 'BANK_TRANSFER') return 'Banka Havalesi';
+    if (normalized === 'CREDIT_CARD') return 'Kredi Karti';
+    if (normalized === 'CASH') return 'Nakit';
+    if (normalized === 'OTHER') return 'Diger';
+    return value;
+}
+
 function TabButton({
     label,
     icon,
@@ -178,7 +188,7 @@ export function ClientDetailPage() {
     const createInvoiceMutation = useMutation({
         mutationFn: async () => {
             if (!workspace) {
-                throw new Error('Musteri verisi bulunamadi.');
+                throw new Error('Müşteri verisi bulunamadı.');
             }
 
             const description = invoiceForm.description.trim();
@@ -189,6 +199,9 @@ export function ClientDetailPage() {
             if (!description) {
                 throw new Error('Kalem aciklamasi zorunludur.');
             }
+            if (!invoiceForm.projectId) {
+                throw new Error('Fatura olustururken proje secimi zorunludur.');
+            }
             if (!Number.isFinite(quantity) || quantity <= 0) {
                 throw new Error('Miktar 0 dan buyuk olmali.');
             }
@@ -198,7 +211,7 @@ export function ClientDetailPage() {
 
             return createInvoice({
                 clientId: workspace.client.id,
-                projectId: invoiceForm.projectId || undefined,
+                projectId: invoiceForm.projectId,
                 items: [{ description, quantity, unitPrice }],
                 taxRate: Number.isFinite(taxRate) && taxRate >= 0 ? taxRate : 20,
                 dueDate: invoiceForm.dueDate || undefined,
@@ -228,7 +241,7 @@ export function ClientDetailPage() {
         mutationFn: ({ invoiceId, status }: { invoiceId: string; status: InvoiceStatus }) =>
             updateInvoiceStatus(invoiceId, { status }),
         onSuccess: async () => {
-            toast.success('Fatura durumu guncellendi.');
+            toast.success('Fatura durumu güncellendi.');
             await queryClient.invalidateQueries({ queryKey: ['client-workspace', clientId] });
         },
         onError: () => {
@@ -266,28 +279,28 @@ export function ClientDetailPage() {
             <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
                 <PageHeader
                     icon={<Building2 size={20} color="#DC2626" />}
-                    title="Musteri Detayi"
-                    subtitle="Yetki kontrolu"
+                    title="Müşteri Detayi"
+                    subtitle="Yetki kontrolü"
                 />
                 <section className="rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-10 text-center text-sm font-medium text-yellow-800">
-                    Bu ekrana erisim yetkiniz bulunmuyor.
+                    Bu ekrana erişim yetkiniz bulunmuyor.
                 </section>
             </div>
         );
     }
 
     if (!clientId) {
-        return <div className="px-8 py-6 text-sm text-red-700">Musteri kimligi bulunamadi.</div>;
+        return <div className="px-8 py-6 text-sm text-red-700">Müşteri kimligi bulunamadı.</div>;
     }
 
     return (
         <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
             <PageHeader
                 icon={<Building2 size={20} color="#DC2626" />}
-                title={workspace?.client.companyName || 'Musteri Detayi'}
+                title={workspace?.client.companyName || 'Müşteri Detayi'}
                 subtitle={workspace
                     ? `${workspace.summary.totalProjects} proje, ${workspace.summary.totalTickets} ticket, ${workspace.summary.totalFeedbacks} geri bildirim`
-                    : 'Musteri verileri yukleniyor'}
+                    : 'Müşteri verileri yükleniyor'}
                 actions={(
                     <button
                         type="button"
@@ -301,9 +314,9 @@ export function ClientDetailPage() {
             />
 
             {workspaceQuery.isLoading ? (
-                <section className="rounded-xl border border-gray-200 bg-white p-6 text-sm text-gray-500">Musteri detaylari yukleniyor...</section>
+                <section className="rounded-xl border border-gray-200 bg-white p-6 text-sm text-gray-500">Müşteri detaylari yükleniyor...</section>
             ) : workspaceQuery.isError || !workspace ? (
-                <section className="rounded-xl border border-red-200 bg-red-50 px-4 py-8 text-sm text-red-700">Musteri detayi yuklenemedi.</section>
+                <section className="rounded-xl border border-red-200 bg-red-50 px-4 py-8 text-sm text-red-700">Müşteri detayi yüklenemedi.</section>
             ) : (
                 <>
                     <section className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -320,10 +333,10 @@ export function ClientDetailPage() {
                         <StatCard
                             title="Ticket"
                             value={String(workspace.summary.totalTickets)}
-                            subtitle="Musteriyle iliskili kayitlar"
+                            subtitle="Müşteriyle ilişkili kayıtlar"
                         />
                         <StatCard
-                            title="Kalan Odeme"
+                            title="Kalan Ödeme"
                             value={formatMoney(workspace.summary.outstandingAmount)}
                             subtitle={`Toplam fatura ${formatMoney(workspace.summary.totalInvoiced)}`}
                         />
@@ -346,7 +359,7 @@ export function ClientDetailPage() {
                     {activeTab === 'overview' && (
                         <section className="grid gap-4 xl:grid-cols-2">
                             <article className="rounded-xl border border-gray-200 bg-white p-4">
-                                <h2 className="mb-3 text-base font-semibold text-gray-900">Musteri Bilgileri</h2>
+                                <h2 className="mb-3 text-base font-semibold text-gray-900">Müşteri Bilgileri</h2>
                                 <div className="grid gap-2 text-sm">
                                     <div className="rounded-lg bg-gray-50 px-3 py-2">
                                         <p className="text-xs text-gray-500">Sirket</p>
@@ -389,7 +402,7 @@ export function ClientDetailPage() {
                                         <p className="text-lg font-bold text-gray-900">{formatMoney(workspace.finance.totalInvoiced)}</p>
                                     </div>
                                     <div className="rounded-lg border border-gray-200 px-3 py-2">
-                                        <p className="text-xs text-gray-500">Toplanan Odeme</p>
+                                        <p className="text-xs text-gray-500">Toplanan Ödeme</p>
                                         <p className="text-lg font-bold text-gray-900">{formatMoney(workspace.finance.totalCollected)}</p>
                                     </div>
                                     <div className="rounded-lg border border-gray-200 px-3 py-2">
@@ -407,7 +420,7 @@ export function ClientDetailPage() {
 
                     {activeTab === 'projects' && (
                         <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                            {workspace.projects.length === 0 && <EmptyState label="Musteriye bagli proje kaydi bulunmuyor." />}
+                            {workspace.projects.length === 0 && <EmptyState label="Müşteriye bağlı proje kaydı bulunmuyor." />}
                             {workspace.projects.map((project) => (
                                 <article key={project.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                                     <div className="mb-2 flex items-center justify-between gap-2">
@@ -428,7 +441,7 @@ export function ClientDetailPage() {
 
                     {activeTab === 'feedbacks' && (
                         <section className="space-y-3">
-                            {workspace.feedbacks.length === 0 && <EmptyState label="Geri bildirim veya toplanti kaydi bulunmuyor." />}
+                            {workspace.feedbacks.length === 0 && <EmptyState label="Geri bildirim veya toplanti kaydı bulunmuyor." />}
                             {workspace.feedbacks.map((feedback) => {
                                 const projectLabel = feedback.projectId
                                     ? workspace.projects.find((project) => project.id === feedback.projectId)?.name ?? feedback.projectId
@@ -457,7 +470,7 @@ export function ClientDetailPage() {
 
                     {activeTab === 'tickets' && (
                         <section className="space-y-3">
-                            {workspace.tickets.length === 0 && <EmptyState label="Musteriyle iliskili ticket kaydi bulunmuyor." />}
+                            {workspace.tickets.length === 0 && <EmptyState label="Müşteriyle ilişkili ticket kaydı bulunmuyor." />}
                             {workspace.tickets.map((ticket) => (
                                 <article key={ticket.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                                     <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -487,7 +500,7 @@ export function ClientDetailPage() {
                                     <p className="mt-1 text-xl font-bold text-gray-900">{formatMoney(workspace.finance.totalInvoiced)}</p>
                                 </div>
                                 <div className="rounded-xl border border-gray-200 bg-white p-4">
-                                    <p className="text-xs uppercase tracking-wide text-gray-500">Toplanan Odeme</p>
+                                    <p className="text-xs uppercase tracking-wide text-gray-500">Toplanan Ödeme</p>
                                     <p className="mt-1 text-xl font-bold text-emerald-700">{formatMoney(workspace.finance.totalCollected)}</p>
                                 </div>
                                 <div className="rounded-xl border border-gray-200 bg-white p-4">
@@ -514,13 +527,14 @@ export function ClientDetailPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="mb-1 block text-xs font-semibold text-gray-600">Proje (Opsiyonel)</label>
+                                            <label className="mb-1 block text-xs font-semibold text-gray-600">Proje</label>
                                             <select
                                                 value={invoiceForm.projectId}
                                                 onChange={(event) => setInvoiceForm((prev) => ({ ...prev, projectId: event.target.value }))}
                                                 className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                                required
                                             >
-                                                <option value="">Proje sec</option>
+                                                <option value="" disabled>Proje sec</option>
                                                 {workspace.projects.map((project) => (
                                                     <option key={project.id} value={project.id}>
                                                         {project.name}
@@ -553,7 +567,7 @@ export function ClientDetailPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="mb-1 block text-xs font-semibold text-gray-600">Vergi Orani (%)</label>
+                                            <label className="mb-1 block text-xs font-semibold text-gray-600">Vergi Oranı (%)</label>
                                             <input
                                                 type="number"
                                                 min={0}
@@ -596,7 +610,7 @@ export function ClientDetailPage() {
                             )}
 
                             {workspace.finance.invoices.length === 0 ? (
-                                <EmptyState label="Fatura kaydi bulunmuyor." />
+                                <EmptyState label="Fatura kaydı bulunmuyor." />
                             ) : (
                                 <div className="space-y-3">
                                     {workspace.finance.invoices.map((invoice) => {
@@ -651,14 +665,35 @@ export function ClientDetailPage() {
                                                         Odemeler
                                                     </p>
                                                     {payments.length === 0 ? (
-                                                        <p className="text-xs text-gray-500">Bu faturaya ait odeme kaydi bulunmuyor.</p>
+                                                        <p className="text-xs text-gray-500">Bu faturaya ait ödeme kaydı bulunmuyor.</p>
                                                     ) : (
-                                                        <ul className="space-y-1 text-xs text-gray-700">
+                                                        <ul className="space-y-2 text-xs text-gray-700">
                                                             {payments.map((payment) => (
-                                                                <li key={payment.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-white px-2.5 py-1.5">
-                                                                    <span>{payment.paymentDate ? formatDate(payment.paymentDate) : '-'}</span>
-                                                                    <span>{payment.method || '-'}</span>
-                                                                    <strong>{formatMoney(payment.amount)}</strong>
+                                                                <li key={payment.id} className="rounded-md bg-white px-2.5 py-2">
+                                                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                                                        <strong>{formatMoney(payment.amount)}</strong>
+                                                                        <span>{payment.paymentDate ? formatDate(payment.paymentDate) : '-'}</span>
+                                                                    </div>
+                                                                    <div className="mt-1 grid gap-x-3 gap-y-1 text-[11px] text-gray-600 sm:grid-cols-2">
+                                                                        <p>Yontem: {formatPaymentMethod(payment.method)}</p>
+                                                                        <p>Para Birimi: {payment.currency || 'TRY'}</p>
+                                                                        <p>Referans: {payment.reference || '-'}</p>
+                                                                        <p>Kaydeden: {payment.recordedByName || '-'}</p>
+                                                                        <p>
+                                                                            Dekont: {payment.receiptUrl ? (
+                                                                                <a
+                                                                                    href={payment.receiptUrl}
+                                                                                    target="_blank"
+                                                                                    rel="noreferrer"
+                                                                                    className="font-medium text-red-700 underline"
+                                                                                >
+                                                                                    Goruntule
+                                                                                </a>
+                                                                            ) : '-'}
+                                                                        </p>
+                                                                        <p>Olusturma: {payment.createdAt ? formatDate(payment.createdAt) : '-'}</p>
+                                                                    </div>
+                                                                    <p className="mt-1 text-[11px] text-gray-700">Not: {payment.notes || '-'}</p>
                                                                 </li>
                                                             ))}
                                                         </ul>
@@ -674,7 +709,7 @@ export function ClientDetailPage() {
 
                     {activeTab === 'contracts' && (
                         <section className="space-y-3">
-                            {workspace.contracts.length === 0 && <EmptyState label="Sozlesme kaydi bulunmuyor." />}
+                            {workspace.contracts.length === 0 && <EmptyState label="Sozlesme kaydı bulunmuyor." />}
                             {workspace.contracts.map((contract) => (
                                 <article key={contract.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                                     <div className="mb-2 flex flex-wrap items-center gap-2">

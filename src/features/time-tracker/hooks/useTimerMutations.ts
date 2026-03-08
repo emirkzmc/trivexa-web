@@ -78,10 +78,10 @@ export function useCreateManualEntry() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['active-timer'] });
             queryClient.invalidateQueries({ queryKey: ['timer-history'] });
-            toast.success('Manuel kayit olusturuldu', { duration: 3000 });
+            toast.success('Manuel kayıt olusturuldu', { duration: 3000 });
         },
         onError: () => {
-            toast.error('Manuel kayit olusturulurken bir hata olustu', { duration: 3000 });
+            toast.error('Manuel kayıt olusturulurken bir hata olustu', { duration: 3000 });
         },
     });
 }

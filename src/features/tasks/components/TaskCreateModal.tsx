@@ -64,7 +64,7 @@ export function TaskCreateModal({
         event.preventDefault();
 
         if (!form.title.trim()) {
-            toast.error('Gorev adi zorunludur.');
+            toast.error('Görev adi zorunludur.');
             return;
         }
 
@@ -88,7 +88,7 @@ export function TaskCreateModal({
             >
                 <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-6 py-4">
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Gorev Olustur</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Görev Olustur</p>
                         <h3 className="mt-1 text-lg font-semibold text-gray-900">{projectName}</h3>
                     </div>
                     <button
@@ -102,7 +102,7 @@ export function TaskCreateModal({
 
                 <form className="space-y-4 px-6 py-5" onSubmit={handleSubmit}>
                     <div className="space-y-1.5">
-                        <label className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Gorev Adi</label>
+                        <label className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Görev Adi</label>
                         <input
                             value={form.title}
                             onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
@@ -112,12 +112,12 @@ export function TaskCreateModal({
                     </div>
 
                     <div className="space-y-1.5">
-                        <label className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Aciklama</label>
+                        <label className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Açıklama</label>
                         <textarea
                             value={form.description}
                             onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
                             rows={4}
-                            placeholder="Gorev kapsamini ve teslim kriterlerini yazin..."
+                            placeholder="Görev kapsamini ve teslim kriterlerini yazin..."
                             className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/10"
                         />
                     </div>
@@ -155,7 +155,7 @@ export function TaskCreateModal({
                                     </option>
                                 ))}
                             </select>
-                            <p className="text-[11px] text-gray-500">Birden fazla secim icin Ctrl/Cmd kullanabilirsiniz.</p>
+                            <p className="text-[11px] text-gray-500">Birden fazla seçim icin Ctrl/Cmd kullanabilirsiniz.</p>
                         </div>
 
                         <div className="space-y-1.5">
@@ -186,7 +186,7 @@ export function TaskCreateModal({
                             className="inline-flex h-10 items-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             <Plus size={14} />
-                            {isPending ? 'Kaydediliyor...' : 'Gorev Ekle'}
+                            {isPending ? 'Kaydediliyor...' : 'Görev Ekle'}
                         </button>
                     </div>
                 </form>

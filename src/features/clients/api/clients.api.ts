@@ -92,8 +92,13 @@ export interface ClientWorkspacePayment {
     amount?: number;
     paymentDate?: string;
     method?: string;
+    currency?: string;
     reference?: string;
     notes?: string;
+    receiptUrl?: string;
+    recordedBy?: string;
+    recordedByName?: string;
+    createdAt?: string;
 }
 
 export interface ClientWorkspaceContract {
@@ -316,12 +321,17 @@ function normalizeWorkspacePayment(raw: unknown): ClientWorkspacePayment {
     const row = toRecord(raw);
     return {
         id: toStringValue(row.id),
-        invoiceId: toStringValue(row.invoiceId) || undefined,
+        invoiceId: toStringValue(row.invoiceId ?? row.invoice_id) || undefined,
         amount: toOptionalNumberValue(row.amount),
-        paymentDate: toStringValue(row.paymentDate) || undefined,
+        paymentDate: toStringValue(row.paymentDate ?? row.payment_date) || undefined,
         method: toStringValue(row.method) || undefined,
+        currency: toStringValue(row.currency) || undefined,
         reference: toStringValue(row.reference) || undefined,
         notes: toStringValue(row.notes) || undefined,
+        receiptUrl: toStringValue(row.receiptUrl ?? row.receipt_url) || undefined,
+        recordedBy: toStringValue(row.recordedBy ?? row.recorded_by) || undefined,
+        recordedByName: toStringValue(row.recordedByName ?? row.recorded_by_name) || undefined,
+        createdAt: toStringValue(row.createdAt ?? row.created_at) || undefined,
     };
 }
 
