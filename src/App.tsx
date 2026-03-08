@@ -1,4 +1,4 @@
-
+﻿
 import './App.css';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoginForm } from './features/auth/components/LoginForm';
@@ -18,24 +18,25 @@ import { ClientsPage } from './features/clients/components/ClientsPage';
 import { ClientDetailPage } from './features/clients/components/ClientDetailPage';
 import { InvoicesPage } from './features/finance/components/InvoicesPage';
 import { InvoiceDetailPage } from './features/finance/components/InvoiceDetailPage';
-import { FinanceModulePage } from './features/finance/components/FinanceModulePage';
 import { CollectionTrackingPage } from './features/finance/components/CollectionTrackingPage';
 import { ExpenseManagementPage } from './features/finance/components/ExpenseManagementPage';
 import { CashflowDashboardPage } from './features/finance/components/CashflowDashboardPage';
 import { SupportRequestsPage } from './features/tickets/components/SupportRequestsPage';
 import { CustomerStatementPage } from './features/finance/components/CustomerStatementPage';
+import { BankReconciliationPage } from './features/finance/components/BankReconciliationPage';
+import { TaxDeclarationPrepPage } from './features/finance/components/TaxDeclarationPrepPage';
 
 function App() {
   return (
     <Routes>
-      {/* Tanıtım / public alan ileride eklenecek */}
+      {/* TanÄ±tÄ±m / public alan ileride eklenecek */}
       <Route path="/" element={<Navigate to="/login" replace />} />
 
       {/* Auth */}
       <Route path="/login" element={<LoginForm />} />
       <Route path="/app/first-login" element={<FirstLoginPage />} />
 
-      {/* Panel — AppLayout ile sarmalanmış tüm /app/* sayfaları */}
+      {/* Panel â€” AppLayout ile sarmalanmÄ±ÅŸ tÃ¼m /app/* sayfalarÄ± */}
       <Route path="/app" element={<AppLayout />}>
         <Route path="dashboard" element={<div>Dashboard Paneli</div>} />
         <Route path="notifications" element={<NotificationsPage />} />
@@ -52,16 +53,8 @@ function App() {
         <Route path="musteriler" element={<ClientsPage />} />
         <Route path="musteriler/:clientId" element={<ClientDetailPage />} />
         <Route path="musterilerim" element={<Navigate to="/app/musteriler" replace />} />
-        <Route path="finans-dashboard" element={<CashflowDashboardPage />} />
-        <Route
-          path="finans"
-          element={(
-            <FinanceModulePage
-              title="Finansal Raporlar"
-              subtitle="Dönemsel gelir-gider, marj ve tahsilat performans raporları."
-            />
-          )}
-        />
+        <Route path="finans" element={<CashflowDashboardPage />} />
+        <Route path="finans-dashboard" element={<Navigate to="/app/finans" replace />} />
         <Route path="faturalar" element={<InvoicesPage />} />
         <Route path="faturalar/:invoiceId" element={<InvoiceDetailPage />} />
         <Route
@@ -74,12 +67,7 @@ function App() {
         />
         <Route
           path="banka-mutabakat"
-          element={(
-            <FinanceModulePage
-              title="Banka POS Mutabakat"
-              subtitle="Banka hareketleri ile sistem ödeme kayıtlarını eslestirme."
-            />
-          )}
+          element={<BankReconciliationPage />}
         />
         <Route
           path="musteri-ekstresi"
@@ -87,17 +75,12 @@ function App() {
         />
         <Route
           path="vergi-beyan"
-          element={(
-            <FinanceModulePage
-              title="Vergi Beyan Hazirlik"
-              subtitle="KDV ve dönemsel beyan için ön-hazırlık ve export ekranları."
-            />
-          )}
+          element={<TaxDeclarationPrepPage />}
         />
         <Route path="time-tracker" element={<TimeTrackerPage />} />
         <Route path="roller" element={<RolesPermissionsPage />} />
         <Route path="audit-log" element={<AuditLogPage />} />
-        <Route path="*" element={<div>Yapım Aşamasında</div>} />
+        <Route path="*" element={<div>YapÄ±m AÅŸamasÄ±nda</div>} />
       </Route>
 
       {/* Fallback */}
@@ -107,4 +90,5 @@ function App() {
 }
 
 export default App;
+
 

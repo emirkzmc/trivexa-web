@@ -1,6 +1,6 @@
 import { type FormEvent, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Receipt } from 'lucide-react';
+import { ArrowLeft, Download, Receipt } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { PageHeader } from '../../../shared/components/PageHeader';
@@ -27,6 +27,7 @@ import {
     type PaymentCurrency,
     type PaymentMethod,
 } from '../api/payments.api';
+import { exportTable, type ExportFormat } from '../utils/tableExport';
 
 const STATUS_OPTIONS: InvoiceStatus[] = [
     'DRAFT',
@@ -186,6 +187,8 @@ export function InvoiceDetailPage() {
     const [auditPage, setAuditPage] = useState<number>(1);
     const [auditLimit, setAuditLimit] = useState<number>(10);
     const [auditSortDirection, setAuditSortDirection] = useState<'ASC' | 'DESC'>('DESC');
+    const [exportFormat, setExportFormat] = useState<ExportFormat>('csv');
+    const [exportDataset, setExportDataset] = useState<'LINES' | 'PAYMENTS' | 'AUDIT'>('LINES');
 
     const invoiceQuery = useQuery({
         queryKey: ['invoice-detail', invoiceId],
@@ -622,6 +625,108 @@ export function InvoiceDetailPage() {
         );
     }
 
+    const exportRowCount = exportDataset === 'LINES'
+        ? lines.length
+        : exportDataset === 'PAYMENTS'
+            ? filteredPayments.length
+            : filteredPaymentAuditRows.length;
+
+    async function handleExport() {
+        if (!invoice) {
+            toast.error('Fatura verisi hazir degil.');
+            return;
+        }
+        if (exportRowCount === 0) {
+            toast.error('Disa aktarim icin kayit bulunmuyor.');
+            return;
+        }
+
+        try {
+            if (exportDataset === 'LINES') {
+                await exportTable({
+                    format: exportFormat,
+                    fileBaseName: `fatura-detay-kalemler-${invoiceId}`,
+                    title: `Fatura Kalemleri - ${invoice.invoiceNumber || invoiceId}`,
+                    columns: [
+                        { key: 'invoiceNumber', label: 'Fatura No' },
+                        { key: 'description', label: 'Aciklama' },
+                        { key: 'quantity', label: 'Miktar' },
+                        { key: 'unitPrice', label: 'Birim Fiyat' },
+                        { key: 'total', label: 'Toplam' },
+                    ],
+                    rows: lines.map((line) => ({
+                        invoiceNumber: invoice.invoiceNumber || '-',
+                        description: line.description || '-',
+                        quantity: line.quantity ?? 0,
+                        unitPrice: formatMoney(line.unitPrice),
+                        total: formatMoney(line.total),
+                    })),
+                });
+            } else if (exportDataset === 'PAYMENTS') {
+                await exportTable({
+                    format: exportFormat,
+                    fileBaseName: `fatura-detay-odemeler-${invoiceId}`,
+                    title: `Odeme Gecmisi - ${invoice.invoiceNumber || invoiceId}`,
+                    columns: [
+                        { key: 'type', label: 'Kayit Tipi' },
+                        { key: 'amount', label: 'Tutar' },
+                        { key: 'method', label: 'Yontem' },
+                        { key: 'currency', label: 'Para Birimi' },
+                        { key: 'paymentDate', label: 'Odeme Tarihi' },
+                        { key: 'reference', label: 'Referans' },
+                        { key: 'recordedBy', label: 'Kaydeden' },
+                        { key: 'notes', label: 'Not' },
+                        { key: 'createdAt', label: 'Sistem Kaydi' },
+                    ],
+                    rows: filteredPayments.map((payment) => ({
+                        type: Number(payment.amount) < 0 ? 'IADE' : 'ODEME',
+                        amount: formatMoney(payment.amount),
+                        method: formatPaymentMethod(payment.method),
+                        currency: payment.currency || 'TRY',
+                        paymentDate: payment.paymentDate ? formatDate(payment.paymentDate) : '-',
+                        reference: payment.reference || '-',
+                        recordedBy: payment.recordedByName || '-',
+                        notes: payment.notes || '-',
+                        createdAt: formatDateTime(payment.createdAt),
+                    })),
+                });
+            } else {
+                await exportTable({
+                    format: exportFormat,
+                    fileBaseName: `fatura-detay-audit-${invoiceId}`,
+                    title: `Odeme Audit Kayitlari - ${invoice.invoiceNumber || invoiceId}`,
+                    columns: [
+                        { key: 'createdAt', label: 'Islem Zamani' },
+                        { key: 'event', label: 'Event' },
+                        { key: 'action', label: 'Action' },
+                        { key: 'user', label: 'Kullanici' },
+                        { key: 'changedFields', label: 'Degisen Alanlar' },
+                    ],
+                    rows: filteredPaymentAuditRows.map((item) => {
+                        const eventTypeValue = typeof item.details?.eventType === 'string'
+                            ? item.details.eventType
+                            : '';
+                        const changedFields = Array.isArray(item.details?.changedFields)
+                            ? item.details.changedFields.map((value) => String(value)).join(', ')
+                            : '-';
+
+                        return {
+                            createdAt: formatDateTime(item.createdAt),
+                            event: formatAuditEventLabel(item.action, eventTypeValue),
+                            action: String(item.action || '-').toUpperCase(),
+                            user: item.userName || item.userId || 'Sistem',
+                            changedFields,
+                        };
+                    }),
+                });
+            }
+
+            toast.success(`Rapor ${exportFormat.toUpperCase()} formatinda indirildi.`);
+        } catch {
+            toast.error('Rapor disa aktarilamadi.');
+        }
+    }
+
     return (
         <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
                 <PageHeader
@@ -629,15 +734,45 @@ export function InvoiceDetailPage() {
                     title={invoice?.invoiceNumber || 'Fatura Detayi'}
                 subtitle={invoice ? `${clientQuery.data?.companyName || invoice.clientName || '-'} - ${formatMoney(invoice.total)}` : 'Fatura verisi yükleniyor'}
                     actions={(
-                        <button
-                        type="button"
-                        onClick={() => navigate('/app/faturalar')}
-                        className="inline-flex h-9 items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
-                    >
-                        <ArrowLeft size={14} />
-                        Faturalara Don
-                    </button>
-                )}
+                        <>
+                            <select
+                                value={exportDataset}
+                                onChange={(event) => setExportDataset(event.target.value as 'LINES' | 'PAYMENTS' | 'AUDIT')}
+                                className="h-9 rounded-lg border border-gray-300 bg-white px-2 text-xs font-semibold text-gray-700 outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                            >
+                                <option value="LINES">Kalemler</option>
+                                <option value="PAYMENTS">Odemeler</option>
+                                <option value="AUDIT">Audit</option>
+                            </select>
+                            <select
+                                value={exportFormat}
+                                onChange={(event) => setExportFormat(event.target.value as ExportFormat)}
+                                className="h-9 rounded-lg border border-gray-300 bg-white px-2 text-xs font-semibold text-gray-700 outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                            >
+                                <option value="csv">CSV</option>
+                                <option value="xlsx">EXCEL</option>
+                                <option value="pdf">PDF</option>
+                                <option value="docx">WORD</option>
+                            </select>
+                            <button
+                                type="button"
+                                onClick={handleExport}
+                                disabled={exportRowCount === 0}
+                                className="inline-flex h-9 items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <Download size={14} />
+                                {exportFormat.toUpperCase()}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => navigate('/app/faturalar')}
+                                className="inline-flex h-9 items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                            >
+                                <ArrowLeft size={14} />
+                                Faturalara Don
+                            </button>
+                        </>
+                    )}
             />
 
             {invoiceQuery.isLoading ? (

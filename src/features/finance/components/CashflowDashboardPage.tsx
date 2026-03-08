@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart3 } from 'lucide-react';
+import { ArrowRight, BarChart3, CalendarCheck, Clock, Download, Receipt } from 'lucide-react';
 import { Bar } from 'react-chartjs-2';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import {
   BarElement,
   CategoryScale,
@@ -15,7 +17,9 @@ import { PageHeader } from '../../../shared/components/PageHeader';
 import { ROLES } from '../../../shared/constants/roles';
 import { formatDate } from '../../../shared/utils/formatDate';
 import { useAuthStore } from '../../auth/store/authStore';
+import { getClients } from '../../clients/api/clients.api';
 import { getCashflowOverview } from '../api/cashflow.api';
+import { exportTable, type ExportFormat } from '../utils/tableExport';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
@@ -62,6 +66,7 @@ function normalizeStatus(value: string | undefined) {
 }
 
 export function CashflowDashboardPage() {
+  const navigate = useNavigate();
   const userRole = useAuthStore((state) => state.user?.role);
   const role = String(userRole || '').toUpperCase();
   const hasAccountingRole = role === ROLES.ACCOUNTING || role.includes('ACCOUNTING') || role.includes('MUHASEBE');
@@ -73,10 +78,17 @@ export function CashflowDashboardPage() {
     || hasAccountingRole;
 
   const [monthCount, setMonthCount] = useState<6 | 12>(6);
+  const [clientFilter, setClientFilter] = useState('');
+  const [exportFormat, setExportFormat] = useState<ExportFormat>('csv');
 
   const overviewQuery = useQuery({
     queryKey: ['cashflow-overview', monthCount],
     queryFn: () => getCashflowOverview({ months: monthCount }),
+    enabled: canRead,
+  });
+  const clientsQuery = useQuery({
+    queryKey: ['cashflow-dashboard-clients'],
+    queryFn: () => getClients({ page: 1, limit: 100 }),
     enabled: canRead,
   });
 
@@ -138,16 +150,166 @@ export function CashflowDashboardPage() {
   const overdueInvoices = overviewQuery.data?.overdueInvoices ?? [];
   const upcomingReceivables = overviewQuery.data?.upcomingReceivables ?? [];
   const upcomingExpensePayments = overviewQuery.data?.upcomingExpensePayments ?? [];
+  const normalizedClientFilter = clientFilter.trim().toLocaleLowerCase('tr-TR');
+
+  const clientOptions = useMemo(() => {
+    const options = new Set<string>();
+    (clientsQuery.data?.data ?? []).forEach((client) => {
+      if (client.companyName) options.add(client.companyName);
+    });
+    overdueInvoices.forEach((row) => {
+      if (row.clientName) options.add(row.clientName);
+    });
+    upcomingReceivables.forEach((row) => {
+      if (row.clientName) options.add(row.clientName);
+    });
+    return Array.from(options).sort((a, b) => a.localeCompare(b, 'tr-TR'));
+  }, [clientsQuery.data?.data, overdueInvoices, upcomingReceivables]);
+
+  const filteredOverdueInvoices = useMemo(
+    () => overdueInvoices.filter((row) => {
+      if (!normalizedClientFilter) return true;
+      return String(row.clientName || '')
+        .toLocaleLowerCase('tr-TR')
+        .includes(normalizedClientFilter);
+    }),
+    [normalizedClientFilter, overdueInvoices],
+  );
+  const filteredUpcomingReceivables = useMemo(
+    () => upcomingReceivables.filter((row) => {
+      if (!normalizedClientFilter) return true;
+      return String(row.clientName || '')
+        .toLocaleLowerCase('tr-TR')
+        .includes(normalizedClientFilter);
+    }),
+    [normalizedClientFilter, upcomingReceivables],
+  );
+
+  async function handleExport() {
+    try {
+      const chartRows = (overviewQuery.data?.chart ?? []).map((point) => ({
+        period: point.label,
+        inflow: Number(point.inflow || 0),
+        outflow: Number(point.outflow || 0),
+        net: Number(point.net || 0),
+      }));
+
+      await exportTable({
+        format: exportFormat,
+        fileBaseName: 'finans-dashboard',
+        title: 'Finans Dashboard Raporu',
+        columns: [
+          { key: 'period', label: 'Donem' },
+          { key: 'inflow', label: 'Tahsilat' },
+          { key: 'outflow', label: 'Gider' },
+          { key: 'net', label: 'Net' },
+        ],
+        rows: chartRows,
+        sheetName: 'NakitAkisi',
+      });
+    } catch {
+      toast.error('Rapor disa aktarimi basarisiz oldu.');
+    }
+  }
 
   return (
     <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
       <PageHeader
         icon={<BarChart3 size={20} color="#059669" />}
-        title="Nakit Akisi Dashboard"
-        subtitle="Tahsilat, gider ve net nakit akis gorunumu"
+        title="Finans Dashboard"
+        subtitle="Tahsilat, gider ve net nakit akis ozeti"
       />
 
-      <section className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
+        <div className="grid gap-3 md:grid-cols-3">
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-gray-600">Donem</label>
+            <select
+              value={monthCount}
+              onChange={(event) => setMonthCount(Number(event.target.value) as 6 | 12)}
+              className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+            >
+              <option value={6}>Son 6 Ay</option>
+              <option value={12}>Son 12 Ay</option>
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-gray-600">Musteri Filtresi</label>
+            <select
+              value={clientFilter}
+              onChange={(event) => setClientFilter(event.target.value)}
+              className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+            >
+              <option value="">Tum Musteriler</option>
+              {clientOptions.map((clientName) => (
+                <option key={clientName} value={clientName}>
+                  {clientName}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <p className="mb-1 block text-xs font-semibold text-gray-600">Hizli Aksiyonlar</p>
+            <div className="flex h-9 items-center gap-2">
+              <button
+                type="button"
+                onClick={() => navigate('/app/faturalar')}
+                className="inline-flex h-9 flex-1 items-center justify-center gap-1 rounded-lg border border-sky-200 bg-sky-50 px-2 text-xs font-semibold text-sky-700 transition hover:bg-sky-100"
+              >
+                <Receipt size={14} />
+                Faturalar
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/app/tahsilat-takibi')}
+                className="inline-flex h-9 flex-1 items-center justify-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2 text-xs font-semibold text-amber-700 transition hover:bg-amber-100"
+              >
+                <CalendarCheck size={14} />
+                Tahsilat
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/app/gider-yonetimi')}
+                className="inline-flex h-9 flex-1 items-center justify-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
+              >
+                <Clock size={14} />
+                Gider
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="mt-3 flex justify-end gap-2">
+          <select
+            value={exportFormat}
+            onChange={(event) => setExportFormat(event.target.value as ExportFormat)}
+            className="h-9 rounded-lg border border-gray-300 bg-white px-2 text-xs font-semibold text-gray-700 outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+          >
+            <option value="csv">CSV</option>
+            <option value="xlsx">EXCEL</option>
+            <option value="pdf">PDF</option>
+            <option value="docx">WORD</option>
+          </select>
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={(overviewQuery.data?.chart ?? []).length === 0}
+            className="inline-flex h-9 items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Download size={13} />
+            {exportFormat.toUpperCase()} Indir
+          </button>
+        </div>
+      </section>
+
+      <section className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Toplam Tahsilat</p>
+          <p className="mt-1 text-2xl font-bold text-emerald-700">{formatMoney(kpis.totalInflow)}</p>
+        </article>
+        <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Toplam Gider</p>
+          <p className="mt-1 text-2xl font-bold text-rose-700">{formatMoney(kpis.totalOutflow)}</p>
+        </article>
         <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Net Nakit</p>
           <p className={`mt-1 text-2xl font-bold ${kpis.netCash >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
@@ -175,14 +337,14 @@ export function CashflowDashboardPage() {
             <h2 className="text-base font-semibold text-gray-900">Aylik Nakit Akisi</h2>
             <p className="text-xs text-gray-500">Gerceklesen tahsilat, gider ve net bakiye</p>
           </div>
-          <select
-            value={monthCount}
-            onChange={(event) => setMonthCount(Number(event.target.value) as 6 | 12)}
-            className="h-9 rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+          <button
+            type="button"
+            onClick={() => navigate('/app/tahsilat-takibi')}
+            className="inline-flex h-9 items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
           >
-            <option value={6}>Son 6 Ay</option>
-            <option value={12}>Son 12 Ay</option>
-          </select>
+            Detayli Tahsilat Ekrani
+            <ArrowRight size={14} />
+          </button>
         </div>
         <div className="h-[340px]">
           {isLoading ? (
@@ -211,13 +373,13 @@ export function CashflowDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {overdueInvoices.length === 0 ? (
+                {filteredOverdueInvoices.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-2 py-4 text-center text-gray-400">
-                      Geciken fatura bulunmuyor.
+                      Secilen filtreye uygun geciken fatura bulunmuyor.
                     </td>
                   </tr>
-                ) : overdueInvoices.map((row) => (
+                ) : filteredOverdueInvoices.map((row) => (
                   <tr key={row.id} className="border-b border-gray-100">
                     <td className="px-2 py-2 text-gray-700">{row.invoiceNumber || '-'}</td>
                     <td className="px-2 py-2 text-gray-700">{row.clientName || '-'}</td>
@@ -245,13 +407,13 @@ export function CashflowDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {upcomingReceivables.length === 0 ? (
+                {filteredUpcomingReceivables.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="px-2 py-4 text-center text-gray-400">
-                      Yaklasan tahsilat kaydi bulunmuyor.
+                      Secilen filtreye uygun yaklasan tahsilat kaydi bulunmuyor.
                     </td>
                   </tr>
-                ) : upcomingReceivables.map((row) => (
+                ) : filteredUpcomingReceivables.map((row) => (
                   <tr key={row.id} className="border-b border-gray-100">
                     <td className="px-2 py-2 text-gray-700">{row.invoiceNumber || '-'}</td>
                     <td className="px-2 py-2 text-gray-700">{row.clientName || '-'}</td>

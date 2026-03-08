@@ -64,14 +64,13 @@ const THEMES: Record<string, SidebarTheme> = {
 };
 
 const FINANCE_MENU_ITEMS: NavItem[] = [
-    { label: 'Nakit Akisi', path: '/app/finans-dashboard', icon: 'BarChart3' },
+    { label: 'Finans Dashboard', path: '/app/finans', icon: 'BarChart3' },
     { label: 'Fatura Yönetimi', path: '/app/faturalar', icon: 'Receipt' },
     { label: 'Tahsilat Takibi', path: '/app/tahsilat-takibi', icon: 'CalendarCheck' },
     { label: 'Gider Yönetimi', path: '/app/gider-yonetimi', icon: 'Clock' },
     { label: 'Banka POS Mutabakat', path: '/app/banka-mutabakat', icon: 'ShieldCheck' },
     { label: 'Müşteri Hesap Ekstresi', path: '/app/musteri-ekstresi', icon: 'FileText' },
     { label: 'Vergi Beyan Hazırlık', path: '/app/vergi-beyan', icon: 'ClipboardList' },
-    { label: 'Finansal Raporlar', path: '/app/finans', icon: 'BarChart3' },
 ];
 
 const FINANCE_PATH_SET = new Set<string>([

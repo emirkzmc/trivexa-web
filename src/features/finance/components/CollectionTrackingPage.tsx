@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowDown, ArrowUp, ArrowUpDown, CalendarCheck } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, CalendarCheck, Download, ExternalLink } from 'lucide-react';
 import {
     useCallback,
     useEffect,
@@ -10,6 +10,7 @@ import {
     type ReactNode,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { PageHeader } from '../../../shared/components/PageHeader';
 import { ROLES } from '../../../shared/constants/roles';
 import { formatDate } from '../../../shared/utils/formatDate';
@@ -17,6 +18,7 @@ import { useAuthStore } from '../../auth/store/authStore';
 import { getClients } from '../../clients/api/clients.api';
 import { getInvoices, type InvoiceEntity, type InvoiceStatus } from '../api/invoices.api';
 import { getPaymentsByInvoice } from '../api/payments.api';
+import { exportTable, type ExportFormat } from '../utils/tableExport';
 
 type DueState = 'PAID' | 'OVERDUE' | 'DUE_SOON' | 'OPEN';
 type SortDirection = 'asc' | 'desc';
@@ -31,6 +33,7 @@ type TableSortField =
     | 'overdueDays'
     | 'dueState';
 type TableColumnKey = TableSortField;
+type FocusPreset = 'ALL' | 'DUE_TODAY' | 'DUE_7_DAYS' | 'OVERDUE_30_PLUS';
 
 interface CollectionRow extends InvoiceEntity {
     collected: number;
@@ -163,6 +166,8 @@ export function CollectionTrackingPage() {
     });
     const [sortField, setSortField] = useState<TableSortField>('overdueDays');
     const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+    const [focusPreset, setFocusPreset] = useState<FocusPreset>('ALL');
+    const [exportFormat, setExportFormat] = useState<ExportFormat>('csv');
     const [columnWidths, setColumnWidths] = useState<Record<TableColumnKey, number>>(INITIAL_COLUMN_WIDTHS);
     const tableContainerRef = useRef<HTMLDivElement | null>(null);
     const resizeStateRef = useRef<{
@@ -222,6 +227,8 @@ export function CollectionTrackingPage() {
     const rows = useMemo(() => {
         const now = new Date();
         now.setHours(0, 0, 0, 0);
+        const next7Days = new Date(now);
+        next7Days.setDate(now.getDate() + 7);
         const dueStart = toStartOfDay(filters.dueStart);
         const dueEnd = toStartOfDay(filters.dueEnd);
         const search = filters.search.trim().toLowerCase();
@@ -265,10 +272,25 @@ export function CollectionTrackingPage() {
                 if (dueStart && (!dueDate || dueDate.getTime() < dueStart.getTime())) return false;
                 if (dueEnd && (!dueDate || dueDate.getTime() > dueEnd.getTime())) return false;
                 if (filters.onlyOverdue && row.overdueDays <= 0) return false;
+                if (focusPreset === 'DUE_TODAY') {
+                    if (!dueDate) return false;
+                    if (row.outstanding <= 0) return false;
+                    if (dueDate.getTime() !== now.getTime()) return false;
+                }
+                if (focusPreset === 'DUE_7_DAYS') {
+                    if (!dueDate) return false;
+                    if (row.outstanding <= 0) return false;
+                    if (dueDate.getTime() < now.getTime() || dueDate.getTime() > next7Days.getTime()) return false;
+                }
+                if (focusPreset === 'OVERDUE_30_PLUS') {
+                    if (row.outstanding <= 0) return false;
+                    if (row.overdueDays < 30) return false;
+                }
                 return true;
             });
     }, [
         clientMap,
+        focusPreset,
         filters.search,
         filters.projectSearch,
         filters.dueStart,
@@ -303,6 +325,35 @@ export function CollectionTrackingPage() {
         const overdueAmount = overdueRows.reduce((sum, row) => sum + row.outstanding, 0);
         const collectionRate = totalAmount > 0 ? Math.round((totalCollected / totalAmount) * 100) : 0;
         return { totalOutstanding, overdueCount: overdueRows.length, overdueAmount, collectionRate };
+    }, [rows]);
+
+    const overduePriorityRows = useMemo(
+        () => [...rows]
+            .filter((row) => row.dueState === 'OVERDUE' && row.outstanding > 0)
+            .sort((a, b) => (b.overdueDays - a.overdueDays) || (b.outstanding - a.outstanding))
+            .slice(0, 5),
+        [rows],
+    );
+    const dueSoonPriorityRows = useMemo(
+        () => [...rows]
+            .filter((row) => row.dueState === 'DUE_SOON' && row.outstanding > 0)
+            .sort((a, b) => (toStartOfDay(a.dueDate)?.getTime() ?? 0) - (toStartOfDay(b.dueDate)?.getTime() ?? 0))
+            .slice(0, 5),
+        [rows],
+    );
+    const weeklyPlanAmount = useMemo(() => {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const next7Days = new Date(now);
+        next7Days.setDate(now.getDate() + 7);
+
+        return rows.reduce((sum, row) => {
+            const dueDate = toStartOfDay(row.dueDate);
+            if (!dueDate) return sum;
+            if (row.outstanding <= 0) return sum;
+            if (dueDate.getTime() < now.getTime() || dueDate.getTime() > next7Days.getTime()) return sum;
+            return sum + row.outstanding;
+        }, 0);
     }, [rows]);
 
     const resizeColumnsToContainer = useCallback((containerWidth: number) => {
@@ -403,6 +454,56 @@ export function CollectionTrackingPage() {
         }));
     }
 
+    function resetAllFilters() {
+        setFocusPreset('ALL');
+        setFilters({
+            search: '',
+            projectSearch: '',
+            clientId: '',
+            status: '',
+            dueStart: '',
+            dueEnd: '',
+            onlyOverdue: false,
+            page: 1,
+            limit: 20,
+        });
+    }
+
+    async function exportCurrentRows() {
+        try {
+            await exportTable({
+                format: exportFormat,
+                fileBaseName: 'tahsilat-takibi',
+                title: 'Tahsilat Takibi Raporu',
+                columns: [
+                    { key: 'invoiceNumber', label: 'Fatura' },
+                    { key: 'clientName', label: 'Musteri' },
+                    { key: 'projectName', label: 'Proje' },
+                    { key: 'total', label: 'Toplam' },
+                    { key: 'collected', label: 'Tahsilat' },
+                    { key: 'outstanding', label: 'Kalan' },
+                    { key: 'dueDate', label: 'Vade' },
+                    { key: 'overdueDays', label: 'Gecikme' },
+                    { key: 'dueState', label: 'Durum' },
+                ],
+                rows: sortedRows.map((row) => ({
+                    invoiceNumber: row.invoiceNumber || '-',
+                    clientName: row.clientName || clientMap.get(row.clientId) || '-',
+                    projectName: row.projectName || '-',
+                    total: row.total || 0,
+                    collected: row.collected || 0,
+                    outstanding: row.outstanding || 0,
+                    dueDate: row.dueDate ? formatDate(row.dueDate) : '-',
+                    overdueDays: row.overdueDays > 0 ? row.overdueDays : 0,
+                    dueState: getDueStateLabel(row.dueState),
+                })),
+                sheetName: 'Tahsilat',
+            });
+        } catch {
+            toast.error('Rapor disa aktarimi basarisiz oldu.');
+        }
+    }
+
     function handleColumnResizeStart(column: TableColumnKey, event: ReactMouseEvent<HTMLDivElement>) {
         event.preventDefault();
         event.stopPropagation();
@@ -459,6 +560,117 @@ export function CollectionTrackingPage() {
                 </article>
             </section>
 
+            <section className="mb-4 grid gap-4 xl:grid-cols-3">
+                <article className="rounded-xl border border-gray-200 bg-white p-4">
+                    <h3 className="text-sm font-semibold text-gray-900">Odak Presetleri</h3>
+                    <p className="mb-3 text-xs text-gray-500">Oncelikli tahsilat segmentlerini tek tikla filtreleyin.</p>
+                    <div className="grid gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setFocusPreset('ALL')}
+                            className={`inline-flex h-9 items-center justify-start rounded-lg border px-3 text-xs font-semibold transition ${
+                                focusPreset === 'ALL' ? 'border-slate-300 bg-slate-100 text-slate-800' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                            }`}
+                        >
+                            Tum Kayitlar
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setFocusPreset('DUE_TODAY')}
+                            className={`inline-flex h-9 items-center justify-start rounded-lg border px-3 text-xs font-semibold transition ${
+                                focusPreset === 'DUE_TODAY' ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                            }`}
+                        >
+                            Bugun Vadesi Gelenler
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setFocusPreset('DUE_7_DAYS')}
+                            className={`inline-flex h-9 items-center justify-start rounded-lg border px-3 text-xs font-semibold transition ${
+                                focusPreset === 'DUE_7_DAYS' ? 'border-amber-300 bg-amber-50 text-amber-700' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                            }`}
+                        >
+                            7 Gun Icindeki Tahsilatlar
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setFocusPreset('OVERDUE_30_PLUS')}
+                            className={`inline-flex h-9 items-center justify-start rounded-lg border px-3 text-xs font-semibold transition ${
+                                focusPreset === 'OVERDUE_30_PLUS' ? 'border-rose-300 bg-rose-50 text-rose-700' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                            }`}
+                        >
+                            30+ Gun Gecikenler
+                        </button>
+                    </div>
+                </article>
+
+                <article className="rounded-xl border border-gray-200 bg-white p-4">
+                    <h3 className="text-sm font-semibold text-gray-900">Kritik Tahsilat Listesi</h3>
+                    <p className="mb-3 text-xs text-gray-500">En riskli gecikmeleri hizli aksiyona cevirin.</p>
+                    {overduePriorityRows.length === 0 ? (
+                        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+                            Kritik gecikmede fatura bulunmuyor.
+                        </p>
+                    ) : (
+                        <div className="space-y-2">
+                            {overduePriorityRows.map((row) => (
+                                <button
+                                    key={row.id}
+                                    type="button"
+                                    onClick={() => navigate(`/app/faturalar/${row.id}`)}
+                                    className="flex w-full items-center justify-between gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-left transition hover:bg-rose-100"
+                                >
+                                    <div className="min-w-0">
+                                        <p className="truncate text-xs font-semibold text-rose-800">{row.invoiceNumber || 'Fatura'}</p>
+                                        <p className="truncate text-[11px] text-rose-700">{row.clientName || '-'}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[11px] font-semibold text-rose-800">{row.overdueDays} gun</p>
+                                        <p className="text-[11px] text-rose-700">{formatMoney(row.outstanding)}</p>
+                                    </div>
+                                    <ExternalLink size={13} className="shrink-0 text-rose-600" />
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </article>
+
+                <article className="rounded-xl border border-gray-200 bg-white p-4">
+                    <h3 className="text-sm font-semibold text-gray-900">Bu Hafta Aksiyon</h3>
+                    <p className="mb-3 text-xs text-gray-500">Onumuzdeki 7 gun icin tahsilat plan ozeti.</p>
+                    <div className="mb-3 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-blue-700">Haftalik Tahsilat Potansiyeli</p>
+                        <p className="mt-1 text-xl font-bold text-blue-700">{formatMoney(weeklyPlanAmount)}</p>
+                    </div>
+                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                        Yaklasan Kayitlar ({dueSoonPriorityRows.length})
+                    </p>
+                    <div className="space-y-2">
+                        {dueSoonPriorityRows.length === 0 ? (
+                            <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-500">
+                                7 gun icinde tahsilat kaydi bulunmuyor.
+                            </p>
+                        ) : dueSoonPriorityRows.map((row) => (
+                            <button
+                                key={row.id}
+                                type="button"
+                                onClick={() => navigate(`/app/faturalar/${row.id}`)}
+                                className="w-full rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-left transition hover:bg-amber-100"
+                            >
+                                <div className="flex items-center justify-between gap-2">
+                                    <p className="truncate text-xs font-semibold text-amber-800">{row.clientName || row.invoiceNumber || '-'}</p>
+                                    <div className="inline-flex items-center gap-1">
+                                        <p className="text-[11px] font-semibold text-amber-700">{formatMoney(row.outstanding)}</p>
+                                        <ExternalLink size={12} className="text-amber-600" />
+                                    </div>
+                                </div>
+                                <p className="mt-0.5 text-[11px] text-amber-700">Vade: {row.dueDate ? formatDate(row.dueDate) : '-'}</p>
+                            </button>
+                        ))}
+                    </div>
+                </article>
+            </section>
+
             <section className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
                 <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                     <input type="text" value={filters.search} onChange={(e) => setFilter('search', e.target.value)} placeholder="Fatura no / müşteri / proje ara" className="h-9 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500" />
@@ -487,6 +699,34 @@ export function CollectionTrackingPage() {
                         <option value={20}>20</option>
                         <option value={50}>50</option>
                     </select>
+                </div>
+                <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
+                    <button
+                        type="button"
+                        onClick={resetAllFilters}
+                        className="inline-flex h-9 items-center rounded-lg border border-gray-300 bg-white px-3 text-xs font-semibold text-gray-700 transition hover:bg-gray-100"
+                    >
+                        Filtreleri Sifirla
+                    </button>
+                    <select
+                        value={exportFormat}
+                        onChange={(event) => setExportFormat(event.target.value as ExportFormat)}
+                        className="h-9 rounded-lg border border-gray-300 bg-white px-2 text-xs font-semibold text-gray-700 outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                    >
+                        <option value="csv">CSV</option>
+                        <option value="xlsx">EXCEL</option>
+                        <option value="pdf">PDF</option>
+                        <option value="docx">WORD</option>
+                    </select>
+                    <button
+                        type="button"
+                        onClick={exportCurrentRows}
+                        disabled={sortedRows.length === 0}
+                        className="inline-flex h-9 items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        <Download size={13} />
+                        {exportFormat.toUpperCase()} Indir
+                    </button>
                 </div>
             </section>
 
@@ -524,7 +764,17 @@ export function CollectionTrackingPage() {
                             {invoicesQuery.isError && <tr><td colSpan={COLUMNS.length} className="px-4 py-10 text-center text-red-600">Tahsilat verileri yüklenemedi.</td></tr>}
                             {!invoicesQuery.isLoading && !invoicesQuery.isError && sortedRows.length === 0 && <tr><td colSpan={COLUMNS.length} className="px-4 py-10 text-center text-gray-400">Bu filtrelere uygun kayıt bulunamadı.</td></tr>}
                             {sortedRows.map((row) => (
-                                <tr key={row.id} onClick={() => navigate(`/app/faturalar/${row.id}`)} className="cursor-pointer border-b border-gray-100 transition hover:bg-gray-50">
+                                <tr
+                                    key={row.id}
+                                    onClick={() => navigate(`/app/faturalar/${row.id}`)}
+                                    className={`cursor-pointer border-b border-gray-100 transition hover:bg-gray-50 ${
+                                        row.dueState === 'OVERDUE'
+                                            ? 'bg-rose-50/40'
+                                            : row.dueState === 'DUE_SOON'
+                                                ? 'bg-amber-50/40'
+                                                : ''
+                                    }`}
+                                >
                                     {COLUMNS.map((column) => (
                                         <td
                                             key={column.key}

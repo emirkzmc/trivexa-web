@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, ReceiptText, X } from 'lucide-react';
+import { Check, Download, ReceiptText, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageHeader } from '../../../shared/components/PageHeader';
 import { ROLES } from '../../../shared/constants/roles';
@@ -16,6 +16,7 @@ import {
     type ExpenseCurrency,
     type ExpenseStatus,
 } from '../api/expenses.api';
+import { exportTable, type ExportFormat } from '../utils/tableExport';
 
 const CATEGORY_OPTIONS: Array<{ value: ExpenseCategory; label: string }> = [
     { value: 'OFFICE', label: 'Ofis' },
@@ -56,6 +57,7 @@ export function ExpenseManagementPage() {
     const [statusFilter, setStatusFilter] = useState<'' | ExpenseStatus>('');
     const [categoryFilter, setCategoryFilter] = useState<'' | ExpenseCategory>('');
     const [departmentFilter, setDepartmentFilter] = useState('');
+    const [exportFormat, setExportFormat] = useState<ExportFormat>('csv');
     const [form, setForm] = useState({
         description: '',
         amount: '',
@@ -135,6 +137,35 @@ export function ExpenseManagementPage() {
         });
     }
 
+    async function handleExport() {
+        try {
+            await exportTable({
+                format: exportFormat,
+                fileBaseName: 'gider-yonetimi',
+                title: 'Gider Yonetimi Raporu',
+                columns: [
+                    { key: 'description', label: 'Aciklama' },
+                    { key: 'category', label: 'Kategori' },
+                    { key: 'department', label: 'Departman' },
+                    { key: 'amount', label: 'Tutar' },
+                    { key: 'date', label: 'Tarih' },
+                    { key: 'status', label: 'Durum' },
+                ],
+                rows: rows.map((row) => ({
+                    description: row.description || '-',
+                    category: CATEGORY_OPTIONS.find((item) => item.value === String(row.category || '').toUpperCase() as ExpenseCategory)?.label || String(row.category || '-'),
+                    department: row.department || '-',
+                    amount: Number(row.amount || 0),
+                    date: row.expenseDate ? formatDate(row.expenseDate) : '-',
+                    status: String(row.status || '').toUpperCase(),
+                })),
+                sheetName: 'Giderler',
+            });
+        } catch {
+            toast.error('Rapor disa aktarimi basarisiz oldu.');
+        }
+    }
+
     if (!canRead) {
         return (
             <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
@@ -201,6 +232,27 @@ export function ExpenseManagementPage() {
                             </option>
                         ))}
                     </select>
+                </div>
+                <div className="mt-3 flex justify-end gap-2">
+                    <select
+                        value={exportFormat}
+                        onChange={(event) => setExportFormat(event.target.value as ExportFormat)}
+                        className="h-9 rounded-lg border border-gray-300 bg-white px-2 text-xs font-semibold text-gray-700 outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                    >
+                        <option value="csv">CSV</option>
+                        <option value="xlsx">EXCEL</option>
+                        <option value="pdf">PDF</option>
+                        <option value="docx">WORD</option>
+                    </select>
+                    <button
+                        type="button"
+                        onClick={handleExport}
+                        disabled={rows.length === 0}
+                        className="inline-flex h-9 items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        <Download size={13} />
+                        {exportFormat.toUpperCase()} Indir
+                    </button>
                 </div>
             </section>
 

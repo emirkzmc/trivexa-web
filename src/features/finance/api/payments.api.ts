@@ -50,6 +50,16 @@ export interface PaymentAuditQueryParams {
     userId?: string;
 }
 
+export interface PaymentListQueryParams {
+    page?: number;
+    limit?: number;
+    invoiceId?: string;
+    method?: PaymentMethod;
+    startDate?: string;
+    endDate?: string;
+    search?: string;
+}
+
 export interface CreatePaymentPayload {
     invoiceId: string;
     amount: number;
@@ -163,6 +173,12 @@ export async function createPayment(payload: CreatePaymentPayload): Promise<Paym
 
 export async function getPaymentsByInvoice(invoiceId: string): Promise<PaymentItem[]> {
     const { data } = await api.get<MaybeWrapped<PaymentItem[]>>(`/payments/invoice/${invoiceId}`);
+    const payload = unwrapData<PaymentItem[]>(data);
+    return Array.isArray(payload) ? payload.map(normalizePayment) : [];
+}
+
+export async function getPayments(params?: PaymentListQueryParams): Promise<PaymentItem[]> {
+    const { data } = await api.get<MaybeWrapped<PaymentItem[]>>('/payments', { params });
     const payload = unwrapData<PaymentItem[]>(data);
     return Array.isArray(payload) ? payload.map(normalizePayment) : [];
 }
