@@ -64,7 +64,7 @@ const THEMES: Record<string, SidebarTheme> = {
 };
 
 const FINANCE_MENU_ITEMS: NavItem[] = [
-    { label: 'Finans Dashboard', path: '/app/finans-dashboard', icon: 'BarChart3' },
+    { label: 'Nakit Akisi', path: '/app/finans-dashboard', icon: 'BarChart3' },
     { label: 'Fatura Yönetimi', path: '/app/faturalar', icon: 'Receipt' },
     { label: 'Tahsilat Takibi', path: '/app/tahsilat-takibi', icon: 'CalendarCheck' },
     { label: 'Gider Yönetimi', path: '/app/gider-yonetimi', icon: 'Clock' },
@@ -524,4 +524,6 @@ export const NAV_CONFIG: Record<string, RoleNavConfig> = {
     [ROLES.PRODUCTION]: PRODUCTION_NAV,
     [ROLES.HR]: HR_NAV,
     [ROLES.CLIENT]: CLIENT_NAV,
+    SEO: withFinanceSidebar(SOCIAL_MEDIA_NAV),
+    MUHASEBE: withFinanceSidebar(ACCOUNTING_NAV),
 };
