@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Building2, Plus, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -6,15 +7,24 @@ import { PageHeader } from '../../../shared/components/PageHeader';
 import { Pagination } from '../../../shared/components/Pagination';
 import { ROLES } from '../../../shared/constants/roles';
 import { useAuthStore } from '../../auth/store/authStore';
-import type {
-    ClientCreatePayload,
-    ClientItem,
-    ClientUpdatePayload,
+import {
+    getLandingContactRequests,
+    type ClientCreatePayload,
+    type ClientItem,
+    type ClientUpdatePayload,
+    type LandingContactRequestItem,
 } from '../api/clients.api';
-import { useCreateClient, useGeneratePortalAccess, useUpdateClient } from '../hooks/useClientMutations';
+import {
+    useApproveLandingContactRequest,
+    useCreateClient,
+    useGeneratePortalAccess,
+    useRejectLandingContactRequest,
+    useUpdateClient,
+} from '../hooks/useClientMutations';
 import { useClients } from '../hooks/useClients';
 import { ClientFormModal } from './ClientFormModal';
 import { ClientsTable } from './ClientsTable';
+import { LandingContactRequestsTable } from './LandingContactRequestsTable';
 
 export function ClientsPage() {
     const navigate = useNavigate();
@@ -33,6 +43,17 @@ export function ClientsPage() {
     const createMutation = useCreateClient();
     const updateMutation = useUpdateClient();
     const portalAccessMutation = useGeneratePortalAccess();
+    const approveLandingContactMutation = useApproveLandingContactRequest();
+    const rejectLandingContactMutation = useRejectLandingContactRequest();
+
+    const pendingRequestsQuery = useQuery({
+        queryKey: ['landing-contact-requests', 'pending'],
+        queryFn: () => getLandingContactRequests({ page: 1, limit: 20, status: 'PENDING' }),
+        enabled: canReadClients,
+        refetchInterval: canReadClients ? 10_000 : false,
+        refetchIntervalInBackground: true,
+        refetchOnWindowFocus: true,
+    });
 
     const [modalOpen, setModalOpen] = useState(false);
     const [editItem, setEditItem] = useState<ClientItem | null>(null);
@@ -42,6 +63,7 @@ export function ClientsPage() {
     const currentPage = filters.page ?? 1;
     const limit = filters.limit ?? 20;
     const hasFilters = !!(filters.search || filters.isActive);
+    const pendingRequests = pendingRequestsQuery.data?.data ?? [];
 
     const stats = useMemo(() => {
         const activeCount = rows.filter((item) => item.isActive).length;
@@ -101,6 +123,18 @@ export function ClientsPage() {
         }
     }
 
+    async function handleApproveContactRequest(item: LandingContactRequestItem) {
+        await approveLandingContactMutation.mutateAsync(item.id);
+    }
+
+    async function handleRejectContactRequest(item: LandingContactRequestItem) {
+        const reason = window.prompt('Reddetme nedeni (opsiyonel):')?.trim();
+        await rejectLandingContactMutation.mutateAsync({
+            id: item.id,
+            reason: reason || undefined,
+        });
+    }
+
     const headerActions = (
         <button
             type="button"
@@ -108,7 +142,7 @@ export function ClientsPage() {
             className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
         >
             <Plus size={14} />
-            Yeni Müşteri
+            Yeni Musteri
         </button>
     );
 
@@ -117,8 +151,8 @@ export function ClientsPage() {
             <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
                 <PageHeader
                     icon={<Building2 size={20} color="#DC2626" />}
-                    title="Müşteri Yönetimi"
-                    subtitle="Yetki kontrolü"
+                    title="Musteri Yonetimi"
+                    subtitle="Yetki kontrolu"
                 />
                 <section className="rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-10 text-center text-sm font-medium text-yellow-800">
                     Bu ekrana sadece ADMIN ve MANAGER rolleri erisebilir.
@@ -131,10 +165,30 @@ export function ClientsPage() {
         <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
             <PageHeader
                 icon={<Building2 size={20} color="#DC2626" />}
-                title="Müşteri Yönetimi"
-                subtitle={`Toplam ${total} müşteri`}
+                title="Musteri Yonetimi"
+                subtitle={`Toplam ${total} musteri`}
                 actions={headerActions}
             />
+
+            <section className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
+                <div className="mb-3 flex items-center justify-between">
+                    <div>
+                        <h2 className="text-base font-semibold text-gray-900">Yeni Musteri Onaylari</h2>
+                        <p className="text-xs text-gray-500">Landing iletisim formundan gelen bekleyen talepler</p>
+                    </div>
+                    <span className="rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">
+                        Bekleyen: {pendingRequests.length}
+                    </span>
+                </div>
+                <LandingContactRequestsTable
+                    data={pendingRequests}
+                    isLoading={pendingRequestsQuery.isLoading}
+                    isError={pendingRequestsQuery.isError}
+                    isPendingAction={approveLandingContactMutation.isPending || rejectLandingContactMutation.isPending}
+                    onApprove={handleApproveContactRequest}
+                    onReject={handleRejectContactRequest}
+                />
+            </section>
 
             <section className="mb-4 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-xl border border-gray-200 bg-white p-4">
@@ -168,7 +222,7 @@ export function ClientsPage() {
                         onChange={(event) => setFilter('isActive', event.target.value || undefined)}
                         className="h-9 min-w-[180px] rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
                     >
-                        <option value="">Tüm Durumlar</option>
+                        <option value="">Tum Durumlar</option>
                         <option value="true">Sadece Aktif</option>
                         <option value="false">Sadece Pasif</option>
                     </select>

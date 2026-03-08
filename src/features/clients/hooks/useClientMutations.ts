@@ -5,6 +5,8 @@ import {
     updateClient,
     deleteClient,
     generatePortalAccess,
+    approveLandingContactRequest,
+    rejectLandingContactRequest,
 } from '../api/clients.api';
 import type {
     ClientCreatePayload,
@@ -17,10 +19,10 @@ export function useCreateClient() {
         mutationFn: (payload: ClientCreatePayload) => createClient(payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['clients'] });
-            toast.success('Müşteri basariyla olusturuldu', { duration: 3_000 });
+            toast.success('Musteri basariyla olusturuldu', { duration: 3_000 });
         },
         onError: () => {
-            toast.error('Müşteri olusturulurken bir hata olustu', { duration: 3_000 });
+            toast.error('Musteri olusturulurken bir hata olustu', { duration: 3_000 });
         },
     });
 }
@@ -32,7 +34,7 @@ export function useUpdateClient() {
             updateClient(id, payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['clients'] });
-            toast.success('Müşteri bilgileri güncellendi', { duration: 3_000 });
+            toast.success('Musteri bilgileri guncellendi', { duration: 3_000 });
         },
         onError: () => {
             toast.error('Guncelleme sirasinda bir hata olustu', { duration: 3_000 });
@@ -46,7 +48,7 @@ export function useDeleteClient() {
         mutationFn: (id: string) => deleteClient(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['clients'] });
-            toast.success('Müşteri kaydı silindi', { duration: 3_000 });
+            toast.success('Musteri kaydi silindi', { duration: 3_000 });
         },
         onError: () => {
             toast.error('Silme sirasinda bir hata olustu', { duration: 3_000 });
@@ -58,7 +60,37 @@ export function useGeneratePortalAccess() {
     return useMutation({
         mutationFn: (payload: { email?: string; clientId?: string }) => generatePortalAccess(payload),
         onError: () => {
-            toast.error('Portal erişim linki olusturulurken bir hata olustu', { duration: 3_000 });
+            toast.error('Portal erisim linki olusturulurken bir hata olustu', { duration: 3_000 });
+        },
+    });
+}
+
+export function useApproveLandingContactRequest() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id: string) => approveLandingContactRequest(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['landing-contact-requests'] });
+            queryClient.invalidateQueries({ queryKey: ['clients'] });
+            toast.success('Musteri talebi onaylandi ve kayit olusturuldu.', { duration: 3_000 });
+        },
+        onError: () => {
+            toast.error('Onay islemi sirasinda bir hata olustu.', { duration: 3_000 });
+        },
+    });
+}
+
+export function useRejectLandingContactRequest() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
+            rejectLandingContactRequest(id, { reason }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['landing-contact-requests'] });
+            toast.success('Musteri talebi reddedildi.', { duration: 3_000 });
+        },
+        onError: () => {
+            toast.error('Red islemi sirasinda bir hata olustu.', { duration: 3_000 });
         },
     });
 }

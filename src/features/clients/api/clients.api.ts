@@ -141,6 +141,40 @@ export interface ClientWorkspaceResponse {
     contracts: ClientWorkspaceContract[];
 }
 
+export type LandingContactRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export interface LandingContactRequestItem {
+    id: string;
+    fullName: string;
+    email: string;
+    phone?: string | null;
+    company?: string | null;
+    subject: string;
+    message: string;
+    status: LandingContactRequestStatus;
+    source: string;
+    reason?: string | null;
+    reviewedBy?: string | null;
+    reviewedAt?: string | null;
+    linkedClientId?: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface LandingContactRequestListParams {
+    page?: number;
+    limit?: number;
+    status?: LandingContactRequestStatus;
+    search?: string;
+}
+
+export interface LandingContactRequestListResponse {
+    data: LandingContactRequestItem[];
+    total: number;
+    page: number;
+    limit: number;
+}
+
 type RawClientRow = Partial<{
     id: unknown;
     companyName: unknown;
@@ -470,4 +504,83 @@ export async function getClientWorkspace(id: string): Promise<ClientWorkspaceRes
     const { data } = await api.get<MaybeWrapped<ClientWorkspaceResponse>>(`/clients/${id}/workspace`);
     const payload = unwrapData<ClientWorkspaceResponse>(data);
     return normalizeClientWorkspace(payload);
+}
+
+function normalizeLandingContactRequest(raw: unknown): LandingContactRequestItem {
+    const row = toRecord(raw);
+    const normalizeStatus = toStringValue(row.status).toUpperCase();
+    const status: LandingContactRequestStatus = normalizeStatus === 'APPROVED'
+        ? 'APPROVED'
+        : normalizeStatus === 'REJECTED'
+            ? 'REJECTED'
+            : 'PENDING';
+
+    return {
+        id: toStringValue(row.id),
+        fullName: toStringValue(row.fullName ?? row.full_name),
+        email: toStringValue(row.email),
+        phone: toStringValue(row.phone) || null,
+        company: toStringValue(row.company) || null,
+        subject: toStringValue(row.subject),
+        message: toStringValue(row.message),
+        status,
+        source: toStringValue(row.source) || 'LANDING',
+        reason: toStringValue(row.reason) || null,
+        reviewedBy: toStringValue(row.reviewedBy ?? row.reviewed_by) || null,
+        reviewedAt: toStringValue(row.reviewedAt ?? row.reviewed_at) || null,
+        linkedClientId: toStringValue(row.linkedClientId ?? row.linked_client_id) || null,
+        createdAt: toStringValue(row.createdAt ?? row.created_at),
+        updatedAt: toStringValue(row.updatedAt ?? row.updated_at ?? row.createdAt ?? row.created_at),
+    };
+}
+
+export async function getLandingContactRequests(
+    params: LandingContactRequestListParams = {},
+): Promise<LandingContactRequestListResponse> {
+    const { data } = await api.get<MaybeWrapped<{
+        data?: unknown[];
+        meta?: {
+            total?: unknown;
+            page?: unknown;
+            limit?: unknown;
+        };
+    }>>('/landing/contact-requests', { params });
+
+    const payload = unwrapData<{
+        data?: unknown[];
+        meta?: {
+            total?: unknown;
+            page?: unknown;
+            limit?: unknown;
+        };
+    }>(data);
+    const rows = Array.isArray(payload?.data)
+        ? payload.data.map(normalizeLandingContactRequest)
+        : [];
+    const meta = payload?.meta ?? {};
+
+    return {
+        data: rows,
+        total: toNumberValue(meta.total ?? rows.length),
+        page: toNumberValue(meta.page ?? params.page ?? 1) || 1,
+        limit: toNumberValue(meta.limit ?? params.limit ?? 20) || 20,
+    };
+}
+
+export async function approveLandingContactRequest(id: string): Promise<LandingContactRequestItem> {
+    const { data } = await api.patch<MaybeWrapped<unknown>>(`/landing/contact-requests/${id}/approve`);
+    const payload = unwrapData<unknown>(data);
+    return normalizeLandingContactRequest(payload);
+}
+
+export async function rejectLandingContactRequest(
+    id: string,
+    payload?: { reason?: string },
+): Promise<LandingContactRequestItem> {
+    const { data } = await api.patch<MaybeWrapped<unknown>>(
+        `/landing/contact-requests/${id}/reject`,
+        payload ?? {},
+    );
+    const responsePayload = unwrapData<unknown>(data);
+    return normalizeLandingContactRequest(responsePayload);
 }
