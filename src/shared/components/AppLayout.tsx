@@ -402,6 +402,7 @@ export function AppLayout() {
         name: user.name ?? '',
         initials: (user.name ?? '?').charAt(0).toUpperCase(),
         role: user.role ?? '',
+        email: user.email ?? '',
     };
 
     function handleLogout() {

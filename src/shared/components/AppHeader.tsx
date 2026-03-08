@@ -1,15 +1,14 @@
-﻿import { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Menu } from 'lucide-react';
 import { PageTitle } from './header/PageTitle';
-import { UserAvatar } from './header/UserAvatar';
-import { RoleBadge } from './header/RoleBadge';
-import { LogoutButton } from './header/LogoutButton';
 import { NotificationsDropdown } from './header/NotificationsDropdown';
+import { UserMenuDropdown } from './header/UserMenuDropdown';
 
 interface AppHeaderUser {
     name: string;
     initials: string;
     role: string;
+    email?: string;
 }
 
 interface PresenceUser {
@@ -160,7 +159,7 @@ export function AppHeader({
                                                                 {presenceUser.userId === currentUserId ? ' (Sen)' : ''}
                                                             </p>
                                                             <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
-                                                                📍 Burada
+                                                                Burada
                                                             </span>
                                                         </div>
                                                     </div>
@@ -214,23 +213,7 @@ export function AppHeader({
                     hasFreshNotification={hasFreshNotification}
                     onClearFreshNotification={onClearFreshNotification}
                 />
-                <UserAvatar initials={user.initials} />
-
-                {!showMenuButton && (
-                    <span
-                        style={{
-                            fontSize: 13,
-                            fontWeight: 600,
-                            color: '#111827',
-                            whiteSpace: 'nowrap',
-                        }}
-                    >
-                        {user.name}
-                    </span>
-                )}
-
-                {!showMenuButton && <RoleBadge role={user.role} />}
-                <LogoutButton onLogout={onLogout} />
+                <UserMenuDropdown user={user} onLogout={onLogout} compact={showMenuButton} />
             </div>
         </header>
     );
