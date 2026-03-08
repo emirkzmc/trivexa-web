@@ -20,6 +20,7 @@ import { InvoicesPage } from './features/finance/components/InvoicesPage';
 import { InvoiceDetailPage } from './features/finance/components/InvoiceDetailPage';
 import { FinanceModulePage } from './features/finance/components/FinanceModulePage';
 import { CollectionTrackingPage } from './features/finance/components/CollectionTrackingPage';
+import { ExpenseManagementPage } from './features/finance/components/ExpenseManagementPage';
 
 function App() {
   return (
@@ -73,12 +74,7 @@ function App() {
         />
         <Route
           path="gider-yonetimi"
-          element={(
-            <FinanceModulePage
-              title="Gider Yönetimi"
-              subtitle="Departman bazli gider giriş, onay ve kontrol süreçleri."
-            />
-          )}
+          element={<ExpenseManagementPage />}
         />
         <Route
           path="banka-mutabakat"
@@ -120,3 +116,4 @@ function App() {
 }
 
 export default App;
+

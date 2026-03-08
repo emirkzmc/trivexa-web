@@ -121,6 +121,7 @@ export function AppLayout() {
     const socketRef = useRef<Socket | null>(null);
     const presenceSocketRef = useRef<Socket | null>(null);
     const audioContextRef = useRef<AudioContext | null>(null);
+    const audioUnlockedRef = useRef(false);
     const noticeTimerRef = useRef<number | null>(null);
     const roleAccent = useMemo(() => {
         if (!user?.role) return '#DC2626';
@@ -187,6 +188,10 @@ export function AppLayout() {
 
     function playNotificationTone() {
         try {
+            if (!audioUnlockedRef.current) {
+                return;
+            }
+
             const audioContextCtor =
                 window.AudioContext
                 || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -197,8 +202,8 @@ export function AppLayout() {
             }
 
             const ctx = audioContextRef.current;
-            if (ctx.state === 'suspended') {
-                void ctx.resume();
+            if (ctx.state !== 'running') {
+                return;
             }
 
             const osc = ctx.createOscillator();
@@ -222,6 +227,7 @@ export function AppLayout() {
     useEffect(() => {
         const unlockAudio = () => {
             try {
+                audioUnlockedRef.current = true;
                 const audioContextCtor =
                     window.AudioContext
                     || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
