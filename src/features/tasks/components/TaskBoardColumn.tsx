@@ -1,14 +1,22 @@
 import { CalendarDays, UserRound } from 'lucide-react';
+import type { DragEvent as ReactDragEvent } from 'react';
 import { formatDate } from '../../../shared/utils/formatDate';
 import type { TaskItem } from '../api/tasks.api';
 import { nextStatusOptions, taskPriorityBadgeClass, taskPriorityLabel, taskStatusBadgeClass, taskStatusLabel, toTaskStatus } from './tasks.utils';
 
 interface TaskBoardColumnProps {
     title: string;
+    columnStatus: string;
     tasks: TaskItem[];
     pendingTaskId: string | null;
+    draggingTaskId: string | null;
+    isDropTarget: boolean;
     onOpenTask: (taskId: string) => void;
     onStatusChange: (taskId: string, currentStatus: string, nextStatus: string) => void;
+    onTaskDragStart: (taskId: string, currentStatus: string) => void;
+    onColumnDragOver: (status: string) => void;
+    onColumnDrop: (status: string) => void;
+    onTaskDragEnd: () => void;
 }
 
 function assigneeName(task: TaskItem): string {
@@ -29,13 +37,39 @@ function assigneeName(task: TaskItem): string {
 
 export function TaskBoardColumn({
     title,
+    columnStatus,
     tasks,
     pendingTaskId,
+    draggingTaskId,
+    isDropTarget,
     onOpenTask,
     onStatusChange,
+    onTaskDragStart,
+    onColumnDragOver,
+    onColumnDrop,
+    onTaskDragEnd,
 }: TaskBoardColumnProps) {
+    function handleColumnDragOver(event: ReactDragEvent<HTMLElement>) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        onColumnDragOver(columnStatus);
+    }
+
+    function handleColumnDrop(event: ReactDragEvent<HTMLElement>) {
+        event.preventDefault();
+        onColumnDrop(columnStatus);
+    }
+
     return (
-        <section className="rounded-xl border border-gray-200 bg-white p-3">
+        <section
+            className={`rounded-xl border bg-white p-3 transition ${
+                isDropTarget
+                    ? 'border-red-300 ring-2 ring-red-100'
+                    : 'border-gray-200'
+            }`}
+            onDragOver={handleColumnDragOver}
+            onDrop={handleColumnDrop}
+        >
             <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
                 <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600">{tasks.length}</span>
@@ -55,8 +89,20 @@ export function TaskBoardColumn({
                         return (
                             <article
                                 key={task.id}
-                                className="cursor-pointer rounded-lg border border-gray-200 bg-gray-50 p-3 transition hover:border-gray-300 hover:bg-white"
+                                draggable={!isPending}
+                                className={`cursor-pointer rounded-lg border border-gray-200 bg-gray-50 p-3 transition hover:border-gray-300 hover:bg-white ${
+                                    draggingTaskId === task.id
+                                        ? 'opacity-60'
+                                        : ''
+                                }`}
                                 onClick={() => onOpenTask(task.id)}
+                                onDragStart={(event) => {
+                                    event.stopPropagation();
+                                    event.dataTransfer.effectAllowed = 'move';
+                                    event.dataTransfer.setData('text/plain', task.id);
+                                    onTaskDragStart(task.id, normalizedStatus);
+                                }}
+                                onDragEnd={onTaskDragEnd}
                             >
                                 <div className="mb-2 flex items-start justify-between gap-2">
                                     <p className="line-clamp-2 text-sm font-semibold text-gray-900">{task.title}</p>
