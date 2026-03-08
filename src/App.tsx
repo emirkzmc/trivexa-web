@@ -23,6 +23,7 @@ import { CollectionTrackingPage } from './features/finance/components/Collection
 import { ExpenseManagementPage } from './features/finance/components/ExpenseManagementPage';
 import { CashflowDashboardPage } from './features/finance/components/CashflowDashboardPage';
 import { SupportRequestsPage } from './features/tickets/components/SupportRequestsPage';
+import { CustomerStatementPage } from './features/finance/components/CustomerStatementPage';
 
 function App() {
   return (
@@ -82,12 +83,7 @@ function App() {
         />
         <Route
           path="musteri-ekstresi"
-          element={(
-            <FinanceModulePage
-              title="Müşteri Hesap Ekstresi"
-              subtitle="Fatura, ödeme ve iade hareketlerinin tek hesap dokumu."
-            />
-          )}
+          element={<CustomerStatementPage />}
         />
         <Route
           path="vergi-beyan"
