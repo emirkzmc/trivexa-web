@@ -238,7 +238,16 @@ function normalizeProjectMember(member: BackendProjectMember | null | undefined)
 export async function getProjects(
     params?: ProjectListParams,
 ): Promise<PaginatedProjectResponse> {
-    const { data } = await api.get<{ data?: ProjectsPayload } | ProjectsPayload>('/projects', { params });
+    const safeParams: ProjectListParams | undefined = params
+        ? {
+            ...params,
+            limit: typeof params.limit === 'number'
+                ? Math.min(Math.max(params.limit, 1), 100)
+                : params.limit,
+        }
+        : params;
+
+    const { data } = await api.get<{ data?: ProjectsPayload } | ProjectsPayload>('/projects', { params: safeParams });
     const payload = toProjectsPayload(data);
 
     const rows = Array.isArray(payload.data)

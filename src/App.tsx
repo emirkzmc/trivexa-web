@@ -25,6 +25,7 @@ import { SupportRequestsPage } from './features/tickets/components/SupportReques
 import { CustomerStatementPage } from './features/finance/components/CustomerStatementPage';
 import { BankReconciliationPage } from './features/finance/components/BankReconciliationPage';
 import { TaxDeclarationPrepPage } from './features/finance/components/TaxDeclarationPrepPage';
+import { FilesManagementPage } from './features/files/components/FilesManagementPage';
 
 function App() {
   return (
@@ -77,6 +78,8 @@ function App() {
           path="vergi-beyan"
           element={<TaxDeclarationPrepPage />}
         />
+        <Route path="dosyalar" element={<FilesManagementPage />} />
+        <Route path="dosyalarim" element={<FilesManagementPage />} />
         <Route path="time-tracker" element={<TimeTrackerPage />} />
         <Route path="roller" element={<RolesPermissionsPage />} />
         <Route path="audit-log" element={<AuditLogPage />} />
