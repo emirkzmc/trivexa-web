@@ -1,5 +1,15 @@
 import api from '../../../shared/lib/axios';
 
+export const MEETING_AUDIENCE_TYPES = {
+    PERSONAL: 'PERSONAL',
+    PROJECT: 'PROJECT',
+    DEPARTMENT: 'DEPARTMENT',
+    ALL_PERSONNEL: 'ALL_PERSONNEL',
+    MANAGERS: 'MANAGERS',
+} as const;
+
+export type MeetingAudienceType = (typeof MEETING_AUDIENCE_TYPES)[keyof typeof MEETING_AUDIENCE_TYPES];
+
 type MaybeWrapped<T> = { data?: T } | T;
 
 export interface MeetingItem {
@@ -9,6 +19,8 @@ export interface MeetingItem {
     durationMinutes: number;
     clientId?: string;
     projectId?: string;
+    audienceType: MeetingAudienceType;
+    department?: string;
     link?: string;
     notes?: string;
     summary?: string;
@@ -28,6 +40,8 @@ export interface MeetingCreatePayload {
     durationMinutes?: number;
     clientId?: string;
     projectId?: string;
+    audienceType?: MeetingAudienceType;
+    department?: string;
     link?: string;
     notes?: string;
 }
@@ -90,6 +104,13 @@ function extractRows(payload: unknown): unknown[] {
     return [];
 }
 
+function normalizeAudienceType(value: unknown): MeetingAudienceType {
+    const candidate = toStringValue(value).toUpperCase();
+    return (Object.values(MEETING_AUDIENCE_TYPES).includes(candidate as MeetingAudienceType)
+        ? candidate
+        : MEETING_AUDIENCE_TYPES.PERSONAL) as MeetingAudienceType;
+}
+
 function normalizeMeeting(raw: unknown): MeetingItem {
     const row = toRecord(raw);
 
@@ -100,6 +121,8 @@ function normalizeMeeting(raw: unknown): MeetingItem {
         durationMinutes: toNumberValue(row.durationMinutes ?? row.duration_minutes) || 30,
         clientId: toStringValue(row.clientId ?? row.client_id) || undefined,
         projectId: toStringValue(row.projectId ?? row.project_id) || undefined,
+        audienceType: normalizeAudienceType(row.audienceType ?? row.audience_type),
+        department: toStringValue(row.department) || undefined,
         link: toStringValue(row.link) || undefined,
         notes: toStringValue(row.notes) || undefined,
         summary: toStringValue(row.summary) || undefined,

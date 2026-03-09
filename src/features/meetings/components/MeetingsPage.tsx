@@ -4,9 +4,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarDays, Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageHeader } from '../../../shared/components/PageHeader';
+import { useAuthStore } from '../../auth/store/authStore';
 import { getClients, type ClientItem } from '../../clients/api/clients.api';
 import { createMeeting, getMeetings, type MeetingCreatePayload } from '../api/meetings.api';
 import { getProjects, type ProjectItem } from '../../projects/api/projects.api';
+import { ROLES } from '../../../shared/constants/roles';
 import {
     approveSupportRequest,
     getSupportRequests,
@@ -126,8 +128,19 @@ function sortByLabel<T extends { name?: string; companyName?: string }>(rows: T[
     });
 }
 
+function isMeetingManagerRole(role?: string): boolean {
+    const normalized = String(role ?? '').toUpperCase();
+    return normalized === ROLES.ADMIN
+        || normalized === ROLES.CEO
+        || normalized === ROLES.MANAGER
+        || normalized === ROLES.ACCOUNT_MANAGER
+        || normalized === ROLES.HR;
+}
+
 export function MeetingsPage() {
     const queryClient = useQueryClient();
+    const user = useAuthStore((state) => state.user);
+    const canManageMeetings = isMeetingManagerRole(user?.role);
     const [filterClientId, setFilterClientId] = useState('');
     const [filterProjectId, setFilterProjectId] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -180,11 +193,17 @@ export function MeetingsPage() {
             limit: 100,
             approvalStatus: 'PENDING',
         }),
+        enabled: canManageMeetings,
         staleTime: 30_000,
     });
 
     const createMeetingMutation = useMutation({
-        mutationFn: (payload: MeetingCreatePayload) => createMeeting(payload),
+        mutationFn: (payload: MeetingCreatePayload) => {
+            if (!canManageMeetings) {
+                throw new Error('Toplanti olusturma yetkiniz yok.');
+            }
+            return createMeeting(payload);
+        },
         onSuccess: async () => {
             toast.success('Gorusme olusturuldu.');
             await queryClient.invalidateQueries({ queryKey: ['meetings'] });
@@ -203,7 +222,12 @@ export function MeetingsPage() {
     });
 
     const approveMeetingRequestMutation = useMutation({
-        mutationFn: (requestId: string) => approveSupportRequest(requestId),
+        mutationFn: (requestId: string) => {
+            if (!canManageMeetings) {
+                throw new Error('Gorusme talebi onaylama yetkiniz yok.');
+            }
+            return approveSupportRequest(requestId);
+        },
         onSuccess: async () => {
             toast.success('Gorusme talebi onaylandi ve gorusmeye donusturuldu.');
             await Promise.all([
@@ -414,16 +438,18 @@ export function MeetingsPage() {
                 subtitle="Backend /meetings endpointi uzerinden toplantilari yonetin."
             />
 
-            <div className="mb-4 flex justify-end">
-                <button
-                    type="button"
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="inline-flex h-9 items-center gap-1 rounded-lg bg-[color:var(--role-accent-600)] px-3 text-xs font-semibold text-white transition hover:bg-[color:var(--role-accent-700)]"
-                >
-                    <Plus size={13} />
-                    Yeni Gorusme Olustur
-                </button>
-            </div>
+            {canManageMeetings && (
+                <div className="mb-4 flex justify-end">
+                    <button
+                        type="button"
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="inline-flex h-9 items-center gap-1 rounded-lg bg-[color:var(--role-accent-600)] px-3 text-xs font-semibold text-white transition hover:bg-[color:var(--role-accent-700)]"
+                    >
+                        <Plus size={13} />
+                        Yeni Gorusme Olustur
+                    </button>
+                </div>
+            )}
 
             <section className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
                 <article className="rounded-xl border border-gray-200 bg-white p-4">
@@ -465,80 +491,82 @@ export function MeetingsPage() {
                 </div>
             </section>
 
-            <section className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
-                <h3 className="mb-3 text-base font-semibold text-gray-900">Onay Bekleyen Gorusme Talepleri</h3>
+            {canManageMeetings && (
+                <section className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
+                    <h3 className="mb-3 text-base font-semibold text-gray-900">Onay Bekleyen Gorusme Talepleri</h3>
 
-                {pendingMeetingRequestsQuery.isLoading && (
-                    <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">
-                        Gorusme talepleri yukleniyor...
-                    </div>
-                )}
-
-                {pendingMeetingRequestsQuery.isError && (
-                    <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-                        Gorusme talepleri getirilirken bir hata olustu.
-                    </div>
-                )}
-
-                {!pendingMeetingRequestsQuery.isLoading
-                    && !pendingMeetingRequestsQuery.isError
-                    && pendingMeetingRequests.length === 0 && (
+                    {pendingMeetingRequestsQuery.isLoading && (
                         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">
-                            Onay bekleyen gorusme talebi yok.
+                            Gorusme talepleri yukleniyor...
                         </div>
                     )}
 
-                {!pendingMeetingRequestsQuery.isLoading
-                    && !pendingMeetingRequestsQuery.isError
-                    && pendingMeetingRequests.length > 0 && (
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead>
-                                    <tr className="text-left text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">
-                                        <th className="px-2 py-3">Talep</th>
-                                        <th className="px-2 py-3">Musteri</th>
-                                        <th className="px-2 py-3">Proje</th>
-                                        <th className="px-2 py-3">Tercih Tarih</th>
-                                        <th className="px-2 py-3">Sure</th>
-                                        <th className="px-2 py-3">Aksiyon</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
-                                    {pendingMeetingRequests.map((request) => (
-                                        <tr key={request.id}>
-                                            <td className="px-2 py-3">
-                                                <p className="m-0 font-semibold text-gray-900">{request.subject || '-'}</p>
-                                                <p className="m-0 mt-1 max-w-[420px] truncate text-xs text-gray-500">
-                                                    {request.description || '-'}
-                                                </p>
-                                            </td>
-                                            <td className="px-2 py-3">
-                                                <p className="m-0 text-sm font-medium text-gray-800">{request.clientCompanyName || '-'}</p>
-                                                <p className="m-0 mt-1 text-xs text-gray-500">{request.requesterEmail || '-'}</p>
-                                            </td>
-                                            <td className="px-2 py-3">
-                                                <p className="m-0 text-sm text-gray-800">{request.projectName || '-'}</p>
-                                                <p className="m-0 mt-1 text-xs text-gray-500">{request.projectId || '-'}</p>
-                                            </td>
-                                            <td className="px-2 py-3 text-xs text-gray-600">{extractRequestedDate(request.description)}</td>
-                                            <td className="px-2 py-3 text-xs text-gray-600">{extractRequestedDuration(request.description)}</td>
-                                            <td className="px-2 py-3">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => approveMeetingRequestMutation.mutate(request.id)}
-                                                    disabled={approveMeetingRequestMutation.isPending}
-                                                    className="h-8 rounded-md bg-emerald-600 px-3 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
-                                                >
-                                                    Onayla ve Gorusmeye Ekle
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                    {pendingMeetingRequestsQuery.isError && (
+                        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                            Gorusme talepleri getirilirken bir hata olustu.
                         </div>
                     )}
-            </section>
+
+                    {!pendingMeetingRequestsQuery.isLoading
+                        && !pendingMeetingRequestsQuery.isError
+                        && pendingMeetingRequests.length === 0 && (
+                            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">
+                                Onay bekleyen gorusme talebi yok.
+                            </div>
+                        )}
+
+                    {!pendingMeetingRequestsQuery.isLoading
+                        && !pendingMeetingRequestsQuery.isError
+                        && pendingMeetingRequests.length > 0 && (
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead>
+                                        <tr className="text-left text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">
+                                            <th className="px-2 py-3">Talep</th>
+                                            <th className="px-2 py-3">Musteri</th>
+                                            <th className="px-2 py-3">Proje</th>
+                                            <th className="px-2 py-3">Tercih Tarih</th>
+                                            <th className="px-2 py-3">Sure</th>
+                                            <th className="px-2 py-3">Aksiyon</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
+                                        {pendingMeetingRequests.map((request) => (
+                                            <tr key={request.id}>
+                                                <td className="px-2 py-3">
+                                                    <p className="m-0 font-semibold text-gray-900">{request.subject || '-'}</p>
+                                                    <p className="m-0 mt-1 max-w-[420px] truncate text-xs text-gray-500">
+                                                        {request.description || '-'}
+                                                    </p>
+                                                </td>
+                                                <td className="px-2 py-3">
+                                                    <p className="m-0 text-sm font-medium text-gray-800">{request.clientCompanyName || '-'}</p>
+                                                    <p className="m-0 mt-1 text-xs text-gray-500">{request.requesterEmail || '-'}</p>
+                                                </td>
+                                                <td className="px-2 py-3">
+                                                    <p className="m-0 text-sm text-gray-800">{request.projectName || '-'}</p>
+                                                    <p className="m-0 mt-1 text-xs text-gray-500">{request.projectId || '-'}</p>
+                                                </td>
+                                                <td className="px-2 py-3 text-xs text-gray-600">{extractRequestedDate(request.description)}</td>
+                                                <td className="px-2 py-3 text-xs text-gray-600">{extractRequestedDuration(request.description)}</td>
+                                                <td className="px-2 py-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => approveMeetingRequestMutation.mutate(request.id)}
+                                                        disabled={approveMeetingRequestMutation.isPending}
+                                                        className="h-8 rounded-md bg-emerald-600 px-3 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+                                                    >
+                                                        Onayla ve Gorusmeye Ekle
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                </section>
+            )}
             <section className="rounded-xl border border-gray-200 bg-white p-4">
                 <h3 className="mb-3 text-base font-semibold text-gray-900">Onaylanan Gorusmeler</h3>
 
@@ -596,7 +624,7 @@ export function MeetingsPage() {
                     </div>
                 )}
             </section>
-            {isCreateModalOpen && (
+            {canManageMeetings && isCreateModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <button type="button" aria-label="Modali kapat" className="absolute inset-0 bg-black/40" onClick={closeCreateModal} />
 

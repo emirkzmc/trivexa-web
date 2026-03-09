@@ -78,6 +78,15 @@ const FINANCE_PATH_SET = new Set<string>([
     '/app/sozlesmeler',
 ]);
 
+const PERSONNEL_MEETING_MENU_ITEMS: NavItem[] = [
+    { label: 'Personel Toplanti Plani', path: '/app/personel-toplantilari', icon: 'CalendarDays' },
+];
+
+const PERSONNEL_MEETING_PATH_SET = new Set<string>([
+    ...PERSONNEL_MEETING_MENU_ITEMS.map((item) => item.path),
+    '/app/toplanti-takvimi',
+]);
+
 function withFinanceSidebar(config: RoleNavConfig): RoleNavConfig {
     const normalizedGroups: NavGroup[] = [];
     const financeGroup: NavGroup = {
@@ -117,6 +126,49 @@ function withFinanceSidebar(config: RoleNavConfig): RoleNavConfig {
         ? managementIndex + 1
         : Math.min(1, normalizedGroups.length);
     normalizedGroups.splice(insertIndex, 0, financeGroup);
+
+    return {
+        ...config,
+        groups: normalizedGroups,
+    };
+}
+
+function withPersonnelMeetingsSidebar(config: RoleNavConfig): RoleNavConfig {
+    const normalizedGroups: NavGroup[] = [];
+    const meetingsGroup: NavGroup = {
+        group: 'TOPLANTI',
+        items: [...PERSONNEL_MEETING_MENU_ITEMS],
+    };
+
+    const normalizeLabel = (value: string) =>
+        value
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toUpperCase();
+
+    config.groups.forEach((group) => {
+        const groupName = typeof group.group === 'string' ? normalizeLabel(group.group) : '';
+        const isMeetingsGroup = groupName.includes('TOPLANTI') || groupName.includes('GORUSME');
+        if (isMeetingsGroup) return;
+
+        const cleanedItems = group.items.filter((item) => !PERSONNEL_MEETING_PATH_SET.has(item.path));
+        if (cleanedItems.length > 0) {
+            normalizedGroups.push({
+                ...group,
+                items: cleanedItems,
+            });
+        }
+    });
+
+    const managementIndex = normalizedGroups.findIndex((group) => {
+        if (typeof group.group !== 'string') return false;
+        return normalizeLabel(group.group).includes('YONET');
+    });
+
+    const insertIndex = managementIndex >= 0
+        ? managementIndex + 1
+        : Math.min(1, normalizedGroups.length);
+    normalizedGroups.splice(insertIndex, 0, meetingsGroup);
 
     return {
         ...config,
@@ -511,18 +563,18 @@ const CLIENT_NAV: RoleNavConfig = {
 // ─── ANA CONFIG ──────────────────────────────────────────────────────────────
 
 export const NAV_CONFIG: Record<string, RoleNavConfig> = {
-    [ROLES.ADMIN]: withFinanceSidebar(ADMIN_NAV),
-    [ROLES.CEO]: withFinanceSidebar(CEO_NAV),
-    [ROLES.MANAGER]: withFinanceSidebar(MANAGER_NAV),
-    [ROLES.ACCOUNTING]: withFinanceSidebar(ACCOUNTING_NAV),
-    [ROLES.ACCOUNT_MANAGER]: ACCOUNT_MANAGER_NAV,
-    [ROLES.DEVELOPER]: DEVELOPER_NAV,
-    [ROLES.SOCIAL_MEDIA]: withFinanceSidebar(SOCIAL_MEDIA_NAV),
-    [ROLES.CREATIVE]: CREATIVE_NAV,
-    [ROLES.MARKETING]: MARKETING_NAV,
-    [ROLES.PRODUCTION]: PRODUCTION_NAV,
-    [ROLES.HR]: HR_NAV,
+    [ROLES.ADMIN]: withPersonnelMeetingsSidebar(withFinanceSidebar(ADMIN_NAV)),
+    [ROLES.CEO]: withPersonnelMeetingsSidebar(withFinanceSidebar(CEO_NAV)),
+    [ROLES.MANAGER]: withPersonnelMeetingsSidebar(withFinanceSidebar(MANAGER_NAV)),
+    [ROLES.ACCOUNTING]: withPersonnelMeetingsSidebar(withFinanceSidebar(ACCOUNTING_NAV)),
+    [ROLES.ACCOUNT_MANAGER]: withPersonnelMeetingsSidebar(ACCOUNT_MANAGER_NAV),
+    [ROLES.DEVELOPER]: withPersonnelMeetingsSidebar(DEVELOPER_NAV),
+    [ROLES.SOCIAL_MEDIA]: withPersonnelMeetingsSidebar(withFinanceSidebar(SOCIAL_MEDIA_NAV)),
+    [ROLES.CREATIVE]: withPersonnelMeetingsSidebar(CREATIVE_NAV),
+    [ROLES.MARKETING]: withPersonnelMeetingsSidebar(MARKETING_NAV),
+    [ROLES.PRODUCTION]: withPersonnelMeetingsSidebar(PRODUCTION_NAV),
+    [ROLES.HR]: withPersonnelMeetingsSidebar(HR_NAV),
     [ROLES.CLIENT]: CLIENT_NAV,
-    SEO: withFinanceSidebar(SOCIAL_MEDIA_NAV),
-    MUHASEBE: withFinanceSidebar(ACCOUNTING_NAV),
+    SEO: withPersonnelMeetingsSidebar(withFinanceSidebar(SOCIAL_MEDIA_NAV)),
+    MUHASEBE: withPersonnelMeetingsSidebar(withFinanceSidebar(ACCOUNTING_NAV)),
 };

@@ -52,6 +52,8 @@ const PAGE_NAMES: Record<string, string> = {
     '/app/briefler': 'Brief Yönetimi',
     '/app/on-onay': 'Ön Onay Paneli',
     '/app/gorusmeler': 'Görüşme Yönetimi',
+    '/app/personel-toplantilari': 'Personel Toplanti Plani',
+    '/app/toplanti-takvimi': 'Personel Toplanti Plani',
     '/app/gorevlerim': 'Görevlerim',
     '/app/projelerim': 'Projelerim',
     '/app/kod': 'Kod Süreçleri',

@@ -27,6 +27,11 @@ import { BankReconciliationPage } from './features/finance/components/BankReconc
 import { TaxDeclarationPrepPage } from './features/finance/components/TaxDeclarationPrepPage';
 import { MeetingsPage } from './features/meetings/components/MeetingsPage';
 import { FilesManagementPage } from './features/files/components/FilesManagementPage';
+import { MeetingsCalendarPage } from './features/meetings/components/MeetingsCalendarPage';
+import { CustomerPanelLayout } from './features/customer-panel/components/CustomerPanelLayout';
+import { CustomerPanelDashboardPage } from './features/customer-panel/components/CustomerPanelDashboardPage';
+import { CustomerPanelPlaceholderPage } from './features/customer-panel/components/CustomerPanelPlaceholderPage';
+import { CustomerPanelContractsPage } from './features/customer-panel/components/CustomerPanelContractsPage';
 
 function App() {
   return (
@@ -37,6 +42,40 @@ function App() {
       {/* Auth */}
       <Route path="/login" element={<LoginForm />} />
       <Route path="/app/first-login" element={<FirstLoginPage />} />
+
+      <Route path="/customer-panel" element={<CustomerPanelLayout />}>
+        <Route index element={<Navigate to="/customer-panel/dashboard" replace />} />
+        <Route path="dashboard" element={<CustomerPanelDashboardPage />} />
+        <Route
+          path="projeler"
+          element={(
+            <CustomerPanelPlaceholderPage
+              title="Projelerim"
+              description="Musteri paneli proje listesi yakinda bu alana entegre edilecek."
+            />
+          )}
+        />
+        <Route path="kontratlarim" element={<CustomerPanelContractsPage />} />
+        <Route
+          path="talepler"
+          element={(
+            <CustomerPanelPlaceholderPage
+              title="Taleplerim"
+              description="Musteri talepleri listesi ve yeni talep olusturma adimi bu alanda devam edecek."
+            />
+          )}
+        />
+        <Route
+          path="onaylar"
+          element={(
+            <CustomerPanelPlaceholderPage
+              title="Onaylar"
+              description="Musteriden onay bekleyen kayitlarin yonetimi bu alana eklenecek."
+            />
+          )}
+        />
+        <Route path="*" element={<Navigate to="/customer-panel/dashboard" replace />} />
+      </Route>
 
       {/* Panel â€” AppLayout ile sarmalanmÄ±ÅŸ tÃ¼m /app/* sayfalarÄ± */}
       <Route path="/app" element={<AppLayout />}>
@@ -51,6 +90,7 @@ function App() {
         <Route path="gorevlerim" element={<Navigate to="/app/gorevler" replace />} />
         <Route path="gorevler/:taskId" element={<TaskDetailPage />} />
         <Route path="talepler" element={<SupportRequestsPage />} />
+        <Route path="personel-toplantilari" element={<MeetingsCalendarPage />} />
         <Route path="gorusmeler" element={<MeetingsPage />} />
         <Route path="departmanlar" element={<DepartmentsPage />} />
         <Route path="musteriler" element={<ClientsPage />} />
@@ -80,6 +120,7 @@ function App() {
           path="vergi-beyan"
           element={<TaxDeclarationPrepPage />}
         />
+        <Route path="toplanti-takvimi" element={<MeetingsCalendarPage />} />
         <Route path="dosyalar" element={<FilesManagementPage />} />
         <Route path="dosyalarim" element={<FilesManagementPage />} />
         <Route path="time-tracker" element={<TimeTrackerPage />} />

@@ -21,6 +21,15 @@ export interface FileUploadMetadata {
     isPublic?: boolean;
 }
 
+export interface FilesListParams {
+    page?: number;
+    limit?: number;
+    entityType?: string;
+    entityId?: string;
+    uploadedBy?: string;
+    search?: string;
+}
+
 type RawFileMetadata = Partial<{
     id: unknown;
     fileName: unknown;
@@ -118,6 +127,38 @@ function normalizeFileMetadata(raw: unknown): FileMetadata {
         uploadedBy: toStringValue(row.uploadedBy ?? row.uploaded_by),
         createdAt: toStringValue(row.createdAt ?? row.created_at),
     };
+}
+
+function extractRows(payload: unknown): unknown[] {
+    const first = unwrapData<unknown>(payload);
+
+    if (Array.isArray(first)) {
+        return first;
+    }
+
+    if (
+        typeof first === 'object'
+        && first !== null
+    ) {
+        const record = first as Record<string, unknown>;
+        if (Array.isArray(record.items)) {
+            return record.items;
+        }
+        if (Array.isArray(record.rows)) {
+            return record.rows;
+        }
+        if (Array.isArray(record.data)) {
+            return record.data;
+        }
+    }
+
+    return [];
+}
+
+export async function getFiles(params?: FilesListParams): Promise<FileMetadata[]> {
+    const { data } = await api.get<MaybeWrapped<unknown>>('/files', { params });
+    const rows = extractRows(data);
+    return rows.map((row) => normalizeFileMetadata(row));
 }
 
 export async function uploadFile(
