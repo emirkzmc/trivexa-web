@@ -62,6 +62,32 @@ function priorityTone(priority: string): string {
     return 'bg-slate-100 text-slate-700';
 }
 
+function normalizeForMeetingMatch(value: string): string {
+    return (value || '')
+        .toLowerCase()
+        .replace(/\u011f/g, 'g')
+        .replace(/\u00fc/g, 'u')
+        .replace(/\u015f/g, 's')
+        .replace(/\u0131/g, 'i')
+        .replace(/\u00f6/g, 'o')
+        .replace(/\u00e7/g, 'c')
+        .replace(/ğ/g, 'g')
+        .replace(/ü/g, 'u')
+        .replace(/ş/g, 's')
+        .replace(/ı/g, 'i')
+        .replace(/ö/g, 'o')
+        .replace(/ç/g, 'c')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function isMeetingRequest(subject: string, type: string): boolean {
+    if ((type || '').toUpperCase() !== 'OTHER') return false;
+    return normalizeForMeetingMatch(subject).startsWith('gorusme talebi');
+}
+
 export function SupportRequestsPage() {
     const queryClient = useQueryClient();
     const [page, setPage] = useState(1);
@@ -124,8 +150,9 @@ export function SupportRequestsPage() {
         },
     });
 
-    const rows = requestsQuery.data?.data ?? [];
-    const total = requestsQuery.data?.total ?? 0;
+    const allRows = requestsQuery.data?.data ?? [];
+    const rows = allRows.filter((item) => !isMeetingRequest(item.subject, item.type));
+    const total = rows.length;
     const totalPages = requestsQuery.data?.totalPages ?? 1;
 
     const stats = useMemo(() => {
@@ -148,6 +175,10 @@ export function SupportRequestsPage() {
                 title="Destek Talepleri"
                 subtitle="Musteri portalindan gelen talepleri takip edin."
             />
+
+            <p className="mb-4 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-700">
+                Gorusme talepleri bu listeden ayrildi. Onaylanan gorusmeleri <strong>Gorusmeler</strong> ekranindan takip edin.
+            </p>
 
             <section className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
                 <article className="rounded-xl border border-gray-200 bg-white p-4">
@@ -388,3 +419,5 @@ export function SupportRequestsPage() {
         </div>
     );
 }
+
+

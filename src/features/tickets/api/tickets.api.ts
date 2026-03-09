@@ -25,6 +25,8 @@ export interface SupportRequestItem {
     id: string;
     clientId: string;
     clientUserId: string;
+    projectId?: string;
+    projectName?: string;
     clientCompanyName: string;
     requesterEmail: string;
     subject: string;
@@ -58,6 +60,7 @@ export interface SupportRequestListParams {
     type?: string;
     stage?: string;
     clientId?: string;
+    projectId?: string;
 }
 
 export interface PaginatedTicketResponse {
@@ -174,6 +177,8 @@ function normalizeSupportRequest(raw: unknown): SupportRequestItem {
         id: toStringValue(row.id),
         clientId: toStringValue(row.clientId ?? row.client_id),
         clientUserId: toStringValue(row.clientUserId ?? row.client_user_id),
+        projectId: toStringValue(row.projectId ?? row.project_id) || undefined,
+        projectName: toStringValue(row.projectName ?? row.project_name) || undefined,
         clientCompanyName: toStringValue(row.clientCompanyName ?? row.client_company_name),
         requesterEmail: toStringValue(row.requesterEmail ?? row.requester_email),
         subject: toStringValue(row.subject),

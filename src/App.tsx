@@ -25,6 +25,7 @@ import { SupportRequestsPage } from './features/tickets/components/SupportReques
 import { CustomerStatementPage } from './features/finance/components/CustomerStatementPage';
 import { BankReconciliationPage } from './features/finance/components/BankReconciliationPage';
 import { TaxDeclarationPrepPage } from './features/finance/components/TaxDeclarationPrepPage';
+import { MeetingsPage } from './features/meetings/components/MeetingsPage';
 import { FilesManagementPage } from './features/files/components/FilesManagementPage';
 
 function App() {
@@ -50,6 +51,7 @@ function App() {
         <Route path="gorevlerim" element={<Navigate to="/app/gorevler" replace />} />
         <Route path="gorevler/:taskId" element={<TaskDetailPage />} />
         <Route path="talepler" element={<SupportRequestsPage />} />
+        <Route path="gorusmeler" element={<MeetingsPage />} />
         <Route path="departmanlar" element={<DepartmentsPage />} />
         <Route path="musteriler" element={<ClientsPage />} />
         <Route path="musteriler/:clientId" element={<ClientDetailPage />} />
