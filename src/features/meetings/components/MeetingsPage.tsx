@@ -590,8 +590,8 @@ export function MeetingsPage() {
                                     <th className="px-2 py-3">Onaylanan Gorusme</th>
                                     <th className="px-2 py-3">Tarih</th>
                                     <th className="px-2 py-3">Sure</th>
-                                    <th className="px-2 py-3">Client ID</th>
-                                    <th className="px-2 py-3">Project ID</th>
+                                    <th className="px-2 py-3">Musteri</th>
+                                    <th className="px-2 py-3">Proje</th>
                                     <th className="px-2 py-3">Notlar</th>
                                 </tr>
                             </thead>
@@ -603,8 +603,8 @@ export function MeetingsPage() {
                                             <td className="px-2 py-3 font-semibold text-gray-900">{meeting.title || '-'}</td>
                                             <td className="px-2 py-3 text-xs text-gray-600">{formatDateTime(meeting.date)}</td>
                                             <td className="px-2 py-3 text-xs text-gray-600">{formatDuration(meeting.durationMinutes)}</td>
-                                            <td className="px-2 py-3 text-xs text-gray-600">{meeting.clientId || '-'}</td>
-                                            <td className="px-2 py-3 text-xs text-gray-600">{meeting.projectId || '-'}</td>
+                                            <td className="px-2 py-3 text-xs text-gray-600">{meeting.clientName || meeting.clientId || '-'}</td>
+                                            <td className="px-2 py-3 text-xs text-gray-600">{meeting.projectName || meeting.projectId || '-'}</td>
                                             <td className="px-2 py-3">
                                                 <p className="m-0 max-w-[420px] truncate text-xs text-gray-600">{meeting.notes || '-'}</p>
                                                 {requestDetails.hasRequestMeta && (
