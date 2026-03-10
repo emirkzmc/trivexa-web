@@ -18,7 +18,7 @@ export interface MeetingItem {
     date: string;
     durationMinutes: number;
     clientId?: string;
-    clientName?: string;
+        clientName?: string;
     projectId?: string;
     projectName?: string;
     audienceType: MeetingAudienceType;
@@ -139,19 +139,19 @@ function normalizeMeeting(raw: unknown): MeetingItem {
 }
 
 export async function getMeetings(params?: MeetingListParams): Promise<MeetingItem[]> {
-    const { data } = await api.get<MaybeWrapped<unknown>>('/meetings', { params });
+    const {data} = await api.get<MaybeWrapped<unknown>>('/meetings', {params});
     const rows = extractRows(data);
     return rows.map((row) => normalizeMeeting(row));
 }
 
 export async function getMeetingById(id: string): Promise<MeetingItem> {
-    const { data } = await api.get<MaybeWrapped<unknown>>(`/meetings/${id}`);
+    const {data} = await api.get<MaybeWrapped<unknown>>(`/meetings/${id}`);
     const payload = unwrapData(data);
     return normalizeMeeting(payload);
 }
 
 export async function createMeeting(payload: MeetingCreatePayload): Promise<MeetingItem> {
-    const { data } = await api.post<MaybeWrapped<unknown>>('/meetings', payload);
+    const {data} = await api.post<MaybeWrapped<unknown>>('/meetings', payload);
     const responsePayload = unwrapData(data);
     return normalizeMeeting(responsePayload);
 }
@@ -160,7 +160,7 @@ export async function updateMeeting(
     id: string,
     payload: MeetingUpdatePayload,
 ): Promise<MeetingItem> {
-    const { data } = await api.put<MaybeWrapped<unknown>>(`/meetings/${id}`, payload);
+    const {data} = await api.put<MaybeWrapped<unknown>>(`/meetings/${id}`, payload);
     const responsePayload = unwrapData(data);
     return normalizeMeeting(responsePayload);
 }

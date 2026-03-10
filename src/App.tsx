@@ -41,6 +41,8 @@ import { ContentPlanPage } from './features/content-plan/components/ContentPlanP
 import { CampaignsPage } from './features/campaigns/components/CampaignsPage';
 import { DesignProcessesPage } from './features/design-processes/components/DesignProcessesPage';
 import { ProductionProcessesPage } from './features/production-processes/components/ProductionProcessesPage';
+import { WorkingHoursPage } from './features/working-hours/components/WorkingHoursPage';
+import { PerformancePage } from './features/performance/components/PerformancePage';
 
 function App() {
   return (
@@ -102,6 +104,8 @@ function App() {
         <Route path="departmanlar" element={<DepartmentsPage />} />
         <Route path="departman-atamalari" element={<DepartmentAssignmentsPage />} />
         <Route path="izin-yonetimi" element={<LeaveManagementPage />} />
+        <Route path="calisma-suresi" element={<WorkingHoursPage />} />
+        <Route path="performans" element={<PerformancePage />} />
         <Route path="musteriler" element={<ClientsPage />} />
         <Route path="musteriler/:clientId" element={<ClientDetailPage />} />
         <Route path="musterilerim" element={<Navigate to="/app/musteriler" replace />} />

@@ -28,10 +28,27 @@ export interface LeaveListParams {
     search?: string;
 }
 
+export interface LeaveCreatePayload {
+    userId?: string;
+    type: LeaveType;
+    startDate: string;
+    endDate: string;
+    durationDays: number;
+    reason?: string;
+    department?: string;
+}
+
 export async function getLeaveRequests(params?: LeaveListParams): Promise<LeaveRequestItem[]> {
     const { data } = await api.get<{ data?: LeaveRequestItem[] } | LeaveRequestItem[]>('/leaves', { params });
     if (Array.isArray(data)) return data;
     return data.data ?? [];
+}
+
+export async function createLeaveRequest(
+    payload: LeaveCreatePayload,
+): Promise<LeaveRequestItem> {
+    const { data } = await api.post<{ data: LeaveRequestItem }>('/leaves', payload);
+    return data.data;
 }
 
 export async function updateLeaveStatus(
