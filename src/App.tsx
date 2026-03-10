@@ -48,6 +48,7 @@ import { ProductionProcessesPage } from './features/production-processes/compone
 import { WorkingHoursPage } from './features/working-hours/components/WorkingHoursPage';
 import { PerformancePage } from './features/performance/components/PerformancePage';
 import { ContractsPage } from './features/contracts/components/ContractsPage';
+import { PayrollAttendancePage } from './features/finance/components/PayrollAttendancePage';
 
 function App() {
   return (
@@ -142,6 +143,7 @@ function App() {
           path="vergi-beyan"
           element={<TaxDeclarationPrepPage />}
         />
+        <Route path="puantaj" element={<PayrollAttendancePage />} />
         <Route path="toplanti-takvimi" element={<MeetingsCalendarPage />} />
         <Route path="dosyalar" element={<FilesManagementPage />} />
         <Route path="dosyalarim" element={<FilesManagementPage />} />

@@ -34,6 +34,7 @@ export const NAV_PERMISSION_MAP: Record<string, string[] | string> = {
     '/app/banka-mutabakat': PAYMENT_PERMS,
     '/app/musteri-ekstresi': PAYMENT_PERMS,
     '/app/vergi-beyan': EXPENSE_PERMS,
+    '/app/puantaj': [...TIME_PERMS, ...USER_PERMS],
     '/app/sozlesmeler': CONTRACT_PERMS,
     '/app/dosyalar': FILE_PERMS,
     '/app/dosyalarim': FILE_PERMS,

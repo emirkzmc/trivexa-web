@@ -66,6 +66,7 @@ const THEMES: Record<string, SidebarTheme> = {
 const FINANCE_MENU_ITEMS: NavItem[] = [
     {label: 'Finans Dashboard', path: '/app/finans', icon: 'BarChart3'},
     {label: 'Sozlesmeler', path: '/app/sozlesmeler', icon: 'FileText'},
+    {label: 'Puantaj ve Bordro', path: '/app/puantaj', icon: 'ClipboardList'},
     {label: 'Fatura Yönetimi', path: '/app/faturalar', icon: 'Receipt'},
     {label: 'Tahsilat Takibi', path: '/app/tahsilat-takibi', icon: 'CalendarCheck'},
     {label: 'Gider Yönetimi', path: '/app/gider-yonetimi', icon: 'Clock'},
@@ -210,6 +211,7 @@ const ADMIN_NAV: RoleNavConfig = {
                 {label: 'Banka POS Mutabakat', path: '/app/banka-mutabakat', icon: 'ShieldCheck'},
                 {label: 'Müşteri Hesap Ekstresi', path: '/app/musteri-ekstresi', icon: 'FileText'},
                 {label: 'Vergi Beyan Hazırlık', path: '/app/vergi-beyan', icon: 'ClipboardList'},
+                {label: 'Puantaj ve Bordro', path: '/app/puantaj', icon: 'ClipboardList'},
                 {label: 'Sözleşmeler', path: '/app/sozlesmeler', icon: 'FileText'},
             ],
         },
@@ -369,6 +371,7 @@ const ACCOUNTING_NAV: RoleNavConfig = {
             items: [
                 {label: 'Finansal Raporlar', path: '/app/finans', icon: 'BarChart3'},
                 {label: 'Fatura Yönetimi', path: '/app/faturalar', icon: 'Receipt'},
+                {label: 'Puantaj ve Bordro', path: '/app/puantaj', icon: 'ClipboardList'},
                 {label: 'Sözleşmeler', path: '/app/sozlesmeler', icon: 'FileText'},
             ],
         },
