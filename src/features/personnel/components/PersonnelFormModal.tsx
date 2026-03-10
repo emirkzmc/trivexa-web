@@ -96,10 +96,8 @@ export function PersonnelFormModal({
             errs.email = 'Gecerli bir e-posta girin';
         }
 
-        if (!isEdit) {
-            if (!password) {
-                errs.password = 'Sifre zorunludur';
-            } else if (password.length < 8) {
+        if (isEdit && password) {
+            if (password.length < 8) {
                 errs.password = 'Minimum 8 karakter';
             } else if (!/[A-Z]/.test(password)) {
                 errs.password = 'En az 1 buyuk harf olmali';
@@ -138,7 +136,6 @@ export function PersonnelFormModal({
             firstName: firstName.trim(),
             lastName: lastName.trim(),
             email: email.trim(),
-            password,
             role,
             department: department || undefined,
             subDepartmentId: subDepartmentId || undefined,
@@ -189,19 +186,21 @@ export function PersonnelFormModal({
                     {errors.email && <p style={{ color: 'var(--role-accent-600)', fontSize: 11, margin: '4px 0 0' }}>{errors.email}</p>}
                 </div>
 
-                <div style={{ marginBottom: 14 }}>
-                    <label style={labelStyle}>
-                        Sifre {isEdit ? '(bos birakilirsa degismez)' : '*'}
-                    </label>
-                    <input
-                        type="password"
-                        style={{ ...inputStyle, borderColor: errors.password ? 'var(--role-accent-600)' : '#D1D5DB' }}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Min 8 karakter, 1 buyuk harf, 1 rakam"
-                    />
-                    {errors.password && <p style={{ color: 'var(--role-accent-600)', fontSize: 11, margin: '4px 0 0' }}>{errors.password}</p>}
-                </div>
+                {isEdit && (
+                    <div style={{ marginBottom: 14 }}>
+                        <label style={labelStyle}>
+                            Sifre (bos birakilirsa degismez)
+                        </label>
+                        <input
+                            type="password"
+                            style={{ ...inputStyle, borderColor: errors.password ? 'var(--role-accent-600)' : '#D1D5DB' }}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="Min 8 karakter, 1 buyuk harf, 1 rakam"
+                        />
+                        {errors.password && <p style={{ color: 'var(--role-accent-600)', fontSize: 11, margin: '4px 0 0' }}>{errors.password}</p>}
+                    </div>
+                )}
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 20 }}>
                     <div>

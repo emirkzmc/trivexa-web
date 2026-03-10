@@ -4,7 +4,10 @@ import {
     createClient,
     updateClient,
     deleteClient,
+    deactivateClient,
+    activateClient,
     generatePortalAccess,
+    resetClientPortalAccess,
     approveLandingContactRequest,
     rejectLandingContactRequest,
 } from '../api/clients.api';
@@ -56,11 +59,57 @@ export function useDeleteClient() {
     });
 }
 
+export function useDeactivateClient() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id: string) => deactivateClient(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['clients'] });
+            toast.success('Musteri pasif hale getirildi.', { duration: 3_000 });
+        },
+        onError: (error: any) => {
+            const message = error?.response?.data?.message
+                || error?.message
+                || 'Musteri pasife alinamadi.';
+            toast.error(message, { duration: 3_000 });
+        },
+    });
+}
+
+export function useActivateClient() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id: string) => activateClient(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['clients'] });
+            toast.success('Musteri aktif hale getirildi.', { duration: 3_000 });
+        },
+        onError: (error: any) => {
+            const message = error?.response?.data?.message
+                || error?.message
+                || 'Musteri aktif edilemedi.';
+            toast.error(message, { duration: 3_000 });
+        },
+    });
+}
+
 export function useGeneratePortalAccess() {
     return useMutation({
         mutationFn: (payload: { email?: string; clientId?: string }) => generatePortalAccess(payload),
         onError: () => {
             toast.error('Portal erisim linki olusturulurken bir hata olustu', { duration: 3_000 });
+        },
+    });
+}
+
+export function useResetClientPortalAccess() {
+    return useMutation({
+        mutationFn: (clientId: string) => resetClientPortalAccess(clientId),
+        onSuccess: () => {
+            toast.success('Portal sifresi sifirlandi ve e-posta gonderildi.', { duration: 3_000 });
+        },
+        onError: () => {
+            toast.error('Portal sifresi sifirlanirken bir hata olustu.', { duration: 3_000 });
         },
     });
 }

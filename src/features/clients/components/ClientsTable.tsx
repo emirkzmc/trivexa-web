@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, ArrowUpDown, Edit2, KeyRound } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, Edit2, KeyRound, Ban, CheckCircle2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { StatusBadge } from '../../../shared/components/StatusBadge';
 import type { ClientItem } from '../api/clients.api';
@@ -9,9 +9,12 @@ interface ClientsTableProps {
     isError: boolean;
     hasFilters: boolean;
     isGeneratingAccess: boolean;
+    isUpdatingStatus: boolean;
     onOpenDetail: (item: ClientItem) => void;
     onEdit: (item: ClientItem) => void;
     onGenerateAccess: (item: ClientItem) => void;
+    onDeactivate: (item: ClientItem) => void;
+    onActivate: (item: ClientItem) => void;
 }
 
 type SortField = 'companyName' | 'contactPerson' | 'email' | 'createdAt' | 'isActive';
@@ -58,9 +61,12 @@ export function ClientsTable({
     isError,
     hasFilters,
     isGeneratingAccess,
+    isUpdatingStatus,
     onOpenDetail,
     onEdit,
     onGenerateAccess,
+    onDeactivate,
+    onActivate,
 }: ClientsTableProps) {
     const [sortField, setSortField] = useState<SortField>('createdAt');
     const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -221,6 +227,35 @@ export function ClientsTable({
                                             <KeyRound size={13} />
                                             <span className="hidden min-[1200px]:inline">Portal Link</span>
                                         </button>
+                                        {item.isActive ? (
+                                            <button
+                                                type="button"
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    onDeactivate(item);
+                                                }}
+                                                title="Pasife al"
+                                                disabled={isUpdatingStatus}
+                                                className="inline-flex h-8 items-center gap-1 rounded-md border border-rose-200 bg-rose-50 px-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-default disabled:opacity-60"
+                                            >
+                                                <Ban size={13} />
+                                                <span className="hidden min-[1200px]:inline">Pasife Al</span>
+                                            </button>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    onActivate(item);
+                                                }}
+                                                title="Aktif et"
+                                                disabled={isUpdatingStatus}
+                                                className="inline-flex h-8 items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-default disabled:opacity-60"
+                                            >
+                                                <CheckCircle2 size={13} />
+                                                <span className="hidden min-[1200px]:inline">Aktif Et</span>
+                                            </button>
+                                        )}
                                     </div>
                                 </td>
                             </tr>

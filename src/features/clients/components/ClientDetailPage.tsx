@@ -24,6 +24,8 @@ import {
     getClientWorkspace,
     type ClientWorkspaceResponse,
 } from '../api/clients.api';
+import { useResetClientPortalAccess } from '../hooks/useClientMutations';
+import { showConfirmDialogWithCheckbox } from '../../../shared/lib/sweetAlert';
 
 type DetailTab = 'overview' | 'projects' | 'feedbacks' | 'tickets' | 'finance' | 'contracts';
 
@@ -199,6 +201,7 @@ export function ClientDetailPage() {
         status: 'DRAFT',
     });
     const userRole = useAuthStore((state) => state.user?.role);
+    const resetPortalAccessMutation = useResetClientPortalAccess();
 
     const canReadClients = userRole === ROLES.ADMIN
         || userRole === ROLES.MANAGER
@@ -206,6 +209,9 @@ export function ClientDetailPage() {
         || userRole === ROLES.ACCOUNTING;
     const canManageInvoices = userRole === ROLES.ADMIN || userRole === ROLES.MANAGER;
     const canManageContracts = userRole === ROLES.ADMIN || userRole === ROLES.MANAGER;
+    const canResetPortalAccess = userRole === ROLES.ADMIN
+        || userRole === ROLES.MANAGER
+        || userRole === ROLES.ACCOUNT_MANAGER;
 
     const workspaceQuery = useQuery({
         queryKey: ['client-workspace', clientId],
@@ -359,6 +365,30 @@ export function ClientDetailPage() {
         await createContractMutation.mutateAsync();
     }
 
+    async function handleResetPortalAccess() {
+        if (!clientId) return;
+        const confirmed = await showConfirmDialogWithCheckbox({
+            title: 'Portal sifresi sifirlansin mi?',
+            text: 'Bu islem yeni sifre olusturur ve musteriye e-posta gonderir.',
+            confirmText: 'Sifreyi Sifirla',
+            cancelText: 'Vazgec',
+            checkboxLabel: 'Sifre sifirlama islemini onayliyorum.',
+            icon: 'warning',
+        });
+        if (!confirmed) return;
+
+        const response = await resetPortalAccessMutation.mutateAsync(clientId);
+        const link = response?.portalUrl || response?.magicLink;
+        if (link && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            try {
+                await navigator.clipboard.writeText(link);
+                toast.success('Portal linki panoya kopyalandi.', { duration: 3_000 });
+            } catch {
+                // ignore clipboard errors
+            }
+        }
+    }
+
     if (!canReadClients) {
         return (
             <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
@@ -387,14 +417,27 @@ export function ClientDetailPage() {
                     ? `${workspace.summary.totalProjects} proje, ${workspace.summary.totalTickets} ticket, ${workspace.summary.totalFeedbacks} geri bildirim`
                     : 'Müşteri verileri yükleniyor'}
                 actions={(
-                    <button
-                        type="button"
-                        onClick={() => navigate('/app/musteriler')}
-                        className="inline-flex h-9 items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
-                    >
-                        <ArrowLeft size={14} />
-                        Musterilere Don
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {canResetPortalAccess && (
+                            <button
+                                type="button"
+                                onClick={handleResetPortalAccess}
+                                disabled={resetPortalAccessMutation.isPending}
+                                className="inline-flex h-9 items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                <ShieldCheck size={14} />
+                                Sifreyi Sifirla
+                            </button>
+                        )}
+                        <button
+                            type="button"
+                            onClick={() => navigate('/app/musteriler')}
+                            className="inline-flex h-9 items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                        >
+                            <ArrowLeft size={14} />
+                            Musterilere Don
+                        </button>
+                    </div>
                 )}
             />
 
@@ -927,3 +970,5 @@ export function ClientDetailPage() {
         </div>
     );
 }
+
+

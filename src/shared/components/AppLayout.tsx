@@ -108,6 +108,7 @@ function resolveNotificationsSocketUrl(): string {
 export function AppLayout() {
     const user = useAuthStore((s) => s.user);
     const token = useAuthStore((s) => s.token);
+    const isFirstLogin = useAuthStore((s) => s.isFirstLogin);
     const logout = useAuthStore((s) => s.logout);
     const navigate = useNavigate();
     const location = useLocation();
@@ -404,7 +405,13 @@ export function AppLayout() {
         }
     }, []);
 
-    if (!user) return null;
+    useEffect(() => {
+        if (user && isFirstLogin) {
+            navigate('/login', { replace: true });
+        }
+    }, [user, isFirstLogin, navigate]);
+
+    if (!user || isFirstLogin) return null;
 
     const pageName = resolvePageName(location.pathname);
 

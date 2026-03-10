@@ -485,6 +485,14 @@ export async function deleteClient(id: string): Promise<void> {
     await api.delete(`/clients/${id}`);
 }
 
+export async function deactivateClient(id: string): Promise<void> {
+    await api.patch(`/clients/${id}/deactivate`);
+}
+
+export async function activateClient(id: string): Promise<void> {
+    await api.patch(`/clients/${id}/activate`);
+}
+
 export async function generatePortalAccess(
     payload: { email?: string; clientId?: string },
 ): Promise<ClientPortalAccessResponse> {
@@ -498,6 +506,13 @@ export async function generatePortalAccess(
         return { ...response, portalUrl: response.magicLink };
     }
     return response;
+}
+
+export async function resetClientPortalAccess(clientId: string): Promise<ClientPortalAccessResponse> {
+    const { data } = await api.post<MaybeWrapped<ClientPortalAccessResponse>>(
+        `/clients/${clientId}/portal/reset-access`,
+    );
+    return unwrapData<ClientPortalAccessResponse>(data);
 }
 
 export async function getClientWorkspace(id: string): Promise<ClientWorkspaceResponse> {

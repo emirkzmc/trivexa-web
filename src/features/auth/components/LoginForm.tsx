@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -9,6 +10,9 @@ import { Input } from './ui/Input';
 import { Button } from './ui/Button';
 import { Icon } from './ui/Icon';
 import Loading from './ui/Loading.tsx';
+import { Modal } from '../../../shared/components/Modal';
+import { useAuthStore } from '../store/authStore';
+import { FirstLoginForm } from './FirstLoginForm';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Geçerli bir e-posta girin' }),
@@ -18,6 +22,11 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
+  const user = useAuthStore((s) => s.user);
+  const isFirstLogin = useAuthStore((s) => s.isFirstLogin);
+  const logout = useAuthStore((s) => s.logout);
+  const [showFirstLoginModal, setShowFirstLoginModal] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -30,11 +39,24 @@ export function LoginForm() {
     },
   });
 
-  const { mutate, isPending } = useLogin();
+  const { mutate, isPending } = useLogin({
+    onFirstLogin: () => setShowFirstLoginModal(true),
+  });
+
+  useEffect(() => {
+    if (user && isFirstLogin) {
+      setShowFirstLoginModal(true);
+    }
+  }, [user, isFirstLogin]);
 
   const onSubmit: SubmitHandler<LoginFormValues> = (values) => {
     mutate(values);
   };
+
+  function handleFirstLoginCancel() {
+    logout();
+    setShowFirstLoginModal(false);
+  }
 
   return (
     <AuthLayout>
@@ -92,6 +114,11 @@ export function LoginForm() {
             </div>
           </form>
         </AuthCard>
+      )}
+      {showFirstLoginModal && (
+        <Modal title="Sifre Yenileme" onClose={handleFirstLoginCancel} width={520}>
+          <FirstLoginForm onCancel={handleFirstLoginCancel} showHeader={false} />
+        </Modal>
       )}
     </AuthLayout>
   );

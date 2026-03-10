@@ -6,7 +6,11 @@ import type { LoginCredentials, LoginResponse } from "../api/auth.api";
 import { useAuthStore } from '../store/authStore';
 import { ROLE_DASHBOARD_MAP } from '../../../shared/constants/roleDashboardMap';
 
-export function useLogin() {
+interface UseLoginOptions {
+  onFirstLogin?: () => void;
+}
+
+export function useLogin(options?: UseLoginOptions) {
   const navigate = useNavigate();
   const setAuth = useAuthStore((s) => s.setAuth);
 
@@ -29,7 +33,7 @@ export function useLogin() {
       setAuth(accessToken, refreshToken, authUser, isFirstLogin);
 
       if (isFirstLogin) {
-        navigate("/app/first-login", { replace: true });
+        options?.onFirstLogin?.();
         return;
       }
 

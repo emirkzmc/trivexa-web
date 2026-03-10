@@ -43,7 +43,7 @@ export interface PersonnelCreatePayload {
     firstName: string;
     lastName: string;
     email: string;
-    password: string;
+    password?: string;
     role: string;
     department?: string;
     subDepartmentId?: string;

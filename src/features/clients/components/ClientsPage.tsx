@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../../shared/components/PageHeader';
 import { Pagination } from '../../../shared/components/Pagination';
 import { ROLES } from '../../../shared/constants/roles';
+import { showConfirmDialog } from '../../../shared/lib/sweetAlert';
 import { useAuthStore } from '../../auth/store/authStore';
 import {
     getLandingContactRequests,
@@ -16,6 +17,8 @@ import {
 } from '../api/clients.api';
 import {
     useApproveLandingContactRequest,
+    useActivateClient,
+    useDeactivateClient,
     useCreateClient,
     useGeneratePortalAccess,
     useRejectLandingContactRequest,
@@ -43,6 +46,8 @@ export function ClientsPage() {
     const createMutation = useCreateClient();
     const updateMutation = useUpdateClient();
     const portalAccessMutation = useGeneratePortalAccess();
+    const deactivateClientMutation = useDeactivateClient();
+    const activateClientMutation = useActivateClient();
     const approveLandingContactMutation = useApproveLandingContactRequest();
     const rejectLandingContactMutation = useRejectLandingContactRequest();
 
@@ -121,6 +126,32 @@ export function ClientsPage() {
         } catch {
             // Error toast is handled in mutation hook.
         }
+    }
+
+    async function handleDeactivateClient(item: ClientItem) {
+        const confirmed = await showConfirmDialog({
+            title: 'Musteri pasife alinsin mi?',
+            text: `${item.companyName} pasif duruma gecirilecek.`,
+            confirmText: 'Pasife Al',
+            cancelText: 'Vazgec',
+            icon: 'warning',
+        });
+        if (!confirmed) return;
+
+        await deactivateClientMutation.mutateAsync(item.id);
+    }
+
+    async function handleActivateClient(item: ClientItem) {
+        const confirmed = await showConfirmDialog({
+            title: 'Musteri aktif edilsin mi?',
+            text: `${item.companyName} aktif duruma alinacak.`,
+            confirmText: 'Aktif Et',
+            cancelText: 'Vazgec',
+            icon: 'question',
+        });
+        if (!confirmed) return;
+
+        await activateClientMutation.mutateAsync(item.id);
     }
 
     async function handleApproveContactRequest(item: LandingContactRequestItem) {
@@ -243,9 +274,12 @@ export function ClientsPage() {
                 isError={isError}
                 hasFilters={hasFilters}
                 isGeneratingAccess={portalAccessMutation.isPending}
+                isUpdatingStatus={deactivateClientMutation.isPending || activateClientMutation.isPending}
                 onOpenDetail={(item) => navigate(`/app/musteriler/${item.id}`)}
                 onEdit={openEditModal}
                 onGenerateAccess={handleGenerateAccess}
+                onDeactivate={handleDeactivateClient}
+                onActivate={handleActivateClient}
             />
 
             <Pagination
