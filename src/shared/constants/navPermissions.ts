@@ -31,8 +31,6 @@ export const NAV_PERMISSION_MAP: Record<string, string[] | string> = {
     '/app/portal-talepleri': TICKET_PERMS,
     '/app/gorusme-talepleri': MEETING_PERMS,
     '/app/gorusmeler': MEETING_PERMS,
-    '/app/personel-toplantilari': MEETING_PERMS,
-    '/app/toplanti-takvimi': MEETING_PERMS,
     '/app/finans': [...PAYMENT_PERMS, ...INVOICE_PERMS, ...EXPENSE_PERMS],
     '/app/finans-dashboard': [...PAYMENT_PERMS, ...INVOICE_PERMS, ...EXPENSE_PERMS],
     '/app/faturalar': INVOICE_PERMS,
