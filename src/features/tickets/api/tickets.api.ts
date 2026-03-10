@@ -223,6 +223,12 @@ export async function getSupportRequests(
     };
 }
 
+export async function getSupportRequestById(id: string): Promise<SupportRequestItem> {
+    const { data } = await api.get<MaybeWrapped<unknown>>(`/clients/portal-requests/${id}`);
+    const payload = unwrapData(data);
+    return normalizeSupportRequest(payload);
+}
+
 export async function approveSupportRequest(id: string): Promise<void> {
     await api.patch(`/clients/portal-requests/${id}/approve`);
 }

@@ -5,12 +5,12 @@ import {
     BriefcaseBusiness,
     Building2,
     CircleDollarSign,
+    ClipboardList,
     CreditCard,
     FileText,
-    MessageSquareMore,
+    MessageSquare,
     ReceiptText,
     ShieldCheck,
-    Ticket,
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -27,13 +27,13 @@ import {
 import { useResetClientPortalAccess } from '../hooks/useClientMutations';
 import { showConfirmDialogWithCheckbox } from '../../../shared/lib/sweetAlert';
 
-type DetailTab = 'overview' | 'projects' | 'feedbacks' | 'tickets' | 'finance' | 'contracts';
+type DetailTab = 'overview' | 'projects' | 'requests' | 'meetings' | 'finance' | 'contracts';
 
 const TAB_ITEMS: Array<{ key: DetailTab; label: string; icon: ReactNode }> = [
     { key: 'overview', label: 'Genel', icon: <Building2 size={14} /> },
     { key: 'projects', label: 'Projeler', icon: <BriefcaseBusiness size={14} /> },
-    { key: 'feedbacks', label: 'Geri Bildirimler', icon: <MessageSquareMore size={14} /> },
-    { key: 'tickets', label: 'Ticketlar', icon: <Ticket size={14} /> },
+    { key: 'requests', label: 'Istek Talepleri', icon: <ClipboardList size={14} /> },
+    { key: 'meetings', label: 'Musteri Gorusmeleri', icon: <MessageSquare size={14} /> },
     { key: 'finance', label: 'Finans', icon: <CircleDollarSign size={14} /> },
     { key: 'contracts', label: 'Sozlesmeler', icon: <ShieldCheck size={14} /> },
 ];
@@ -235,9 +235,13 @@ export function ClientDetailPage() {
                 throw new Error('Baslangic tarihi zorunludur.');
             }
 
-            const value = contractForm.value ? Number(contractForm.value) : undefined;
-            if (contractForm.value && (!Number.isFinite(value) || value < 0)) {
-                throw new Error('Sozlesme degeri gecersiz.');
+            let value: number | undefined;
+            if (contractForm.value) {
+                const parsedValue = Number(contractForm.value);
+                if (!Number.isFinite(parsedValue) || parsedValue < 0) {
+                    throw new Error('Sozlesme degeri gecersiz.');
+                }
+                value = parsedValue;
             }
 
             return createContract({
@@ -414,7 +418,7 @@ export function ClientDetailPage() {
                 icon={<Building2 size={20} color="#DC2626" />}
                 title={workspace?.client.companyName || 'Müşteri Detayi'}
                 subtitle={workspace
-                    ? `${workspace.summary.totalProjects} proje, ${workspace.summary.totalTickets} ticket, ${workspace.summary.totalFeedbacks} geri bildirim`
+                    ? `${workspace.summary.totalProjects} proje, ${workspace.summary.totalTickets} istek, ${workspace.summary.totalFeedbacks} gorusme`
                     : 'Müşteri verileri yükleniyor'}
                 actions={(
                     <div className="flex items-center gap-2">
@@ -454,14 +458,14 @@ export function ClientDetailPage() {
                             subtitle={`${workspace.summary.activeProjects} aktif proje`}
                         />
                         <StatCard
-                            title="Geri Bildirim"
+                            title="Musteri Gorusmeleri"
                             value={String(workspace.summary.totalFeedbacks)}
-                            subtitle="Toplanti notlari ve ozetler"
+                            subtitle="Paylasilan notlar ve ozetler"
                         />
                         <StatCard
-                            title="Ticket"
+                            title="Istek Talepleri"
                             value={String(workspace.summary.totalTickets)}
-                            subtitle="Müşteriyle ilişkili kayıtlar"
+                            subtitle="Musteri talepleri ve kayitlar"
                         />
                         <StatCard
                             title="Kalan Ödeme"
@@ -567,18 +571,30 @@ export function ClientDetailPage() {
                         </section>
                     )}
 
-                    {activeTab === 'feedbacks' && (
+                    {activeTab === 'meetings' && (
                         <section className="space-y-3">
-                            {workspace.feedbacks.length === 0 && <EmptyState label="Geri bildirim veya toplanti kaydı bulunmuyor." />}
+                            {workspace.feedbacks.length === 0 && <EmptyState label="Musteri gorusmesi kaydi bulunmuyor." />}
                             {workspace.feedbacks.map((feedback) => {
                                 const projectLabel = feedback.projectId
                                     ? workspace.projects.find((project) => project.id === feedback.projectId)?.name ?? feedback.projectId
                                     : '-';
 
                                 return (
-                                    <article key={feedback.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                                    <article
+                                        key={feedback.id}
+                                        role="button"
+                                        tabIndex={0}
+                                        onClick={() => navigate(`/app/gorusmeler/${feedback.id}`)}
+                                        onKeyDown={(event) => {
+                                            if (event.key === 'Enter' || event.key === ' ') {
+                                                event.preventDefault();
+                                                navigate(`/app/gorusmeler/${feedback.id}`);
+                                            }
+                                        }}
+                                        className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:border-gray-300 hover:shadow-md"
+                                    >
                                         <div className="mb-2 flex flex-wrap items-center gap-2">
-                                            <h3 className="text-sm font-semibold text-gray-900">{feedback.title || 'Basliksiz geri bildirim'}</h3>
+                                            <h3 className="text-sm font-semibold text-gray-900">{feedback.title || 'Basliksiz gorusme'}</h3>
                                             <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-700">
                                                 Proje: {projectLabel}
                                             </span>
@@ -596,13 +612,25 @@ export function ClientDetailPage() {
                         </section>
                     )}
 
-                    {activeTab === 'tickets' && (
+                    {activeTab === 'requests' && (
                         <section className="space-y-3">
-                            {workspace.tickets.length === 0 && <EmptyState label="Müşteriyle ilişkili ticket kaydı bulunmuyor." />}
+                            {workspace.tickets.length === 0 && <EmptyState label="Musteriyle iliskili istek talebi bulunmuyor." />}
                             {workspace.tickets.map((ticket) => (
-                                <article key={ticket.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                                <article
+                                    key={ticket.id}
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => navigate(`/app/talepler/${ticket.id}`)}
+                                    onKeyDown={(event) => {
+                                        if (event.key === 'Enter' || event.key === ' ') {
+                                            event.preventDefault();
+                                            navigate(`/app/talepler/${ticket.id}`);
+                                        }
+                                    }}
+                                    className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:border-gray-300 hover:shadow-md"
+                                >
                                     <div className="mb-2 flex flex-wrap items-center gap-2">
-                                        <h3 className="text-sm font-semibold text-gray-900">{ticket.subject || 'Basliksiz ticket'}</h3>
+                                        <h3 className="text-sm font-semibold text-gray-900">{ticket.subject || 'Basliksiz istek'}</h3>
                                         <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${statusBadgeClass(ticket.status)}`}>
                                             {ticket.status || 'UNKNOWN'}
                                         </span>
@@ -970,5 +998,8 @@ export function ClientDetailPage() {
         </div>
     );
 }
+
+
+
 
 

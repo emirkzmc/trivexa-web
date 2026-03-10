@@ -51,9 +51,6 @@ const PAGE_NAMES: Record<string, string> = {
     '/app/hesabim': 'Hesap Ayarlari',
     '/app/faturalar': 'Fatura Yönetimi',
     '/app/musterilerim': 'Müşterilerim',
-    '/app/iletisim-talepleri': 'Iletisim Talepleri',
-    '/app/portal-talepleri': 'Portal Talepleri',
-    '/app/gorusme-talepleri': 'Gorusme Talepleri',
     '/app/gorusmeler': 'Görüşme Yönetimi',
     '/app/personel-toplantilari': 'Personel Toplanti Plani',
     '/app/toplanti-takvimi': 'Personel Toplanti Plani',
@@ -83,6 +80,12 @@ function resolvePageName(pathname: string): string {
     }
     if (pathname.startsWith('/app/faturalar/')) {
         return 'Fatura Detayı';
+    }
+    if (pathname.startsWith('/app/talepler/')) {
+        return 'Talep Detayi';
+    }
+    if (pathname.startsWith('/app/gorusmeler/')) {
+        return 'Gorusme Detayi';
     }
     return PAGE_NAMES[pathname] ?? 'Dashboard';
 }
@@ -527,3 +530,5 @@ export function AppLayout() {
         </div>
     );
 }
+
+

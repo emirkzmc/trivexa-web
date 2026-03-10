@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ClipboardList, CheckCircle2, AlertCircle } from 'lucide-react';
 import { PageHeader } from '../../../shared/components/PageHeader';
@@ -67,6 +67,23 @@ function buildStorageKey(monthKey: string) {
     return `payroll-confirmations:${monthKey}`;
 }
 
+function loadPaidMap(monthKey: string): Record<string, PaidState> {
+    const storageKey = buildStorageKey(monthKey);
+    const raw = window.localStorage.getItem(storageKey);
+    if (!raw) return {};
+    try {
+        const parsed = JSON.parse(raw) as Record<string, PaidState>;
+        return parsed || {};
+    } catch {
+        return {};
+    }
+}
+
+function persistPaidMap(monthKey: string, map: Record<string, PaidState>) {
+    const storageKey = buildStorageKey(monthKey);
+    window.localStorage.setItem(storageKey, JSON.stringify(map));
+}
+
 function normalizeName(person: PersonnelItem) {
     const full = `${person.firstName || ''} ${person.lastName || ''}`.trim();
     return full || person.email || '-';
@@ -74,7 +91,7 @@ function normalizeName(person: PersonnelItem) {
 
 export function PayrollAttendancePage() {
     const [monthKey, setMonthKey] = useState(() => getMonthKey(new Date()));
-    const [paidMap, setPaidMap] = useState<Record<string, PaidState>>({});
+    const [paidMap, setPaidMap] = useState<Record<string, PaidState>>(() => loadPaidMap(getMonthKey(new Date())));
 
     const { start, end, year, monthIndex } = useMemo(() => getMonthRange(monthKey), [monthKey]);
     const workingDays = useMemo(() => countWeekdays(year, monthIndex), [year, monthIndex]);
@@ -111,25 +128,10 @@ export function PayrollAttendancePage() {
         },
     });
 
-    useEffect(() => {
-        const storageKey = buildStorageKey(monthKey);
-        const raw = window.localStorage.getItem(storageKey);
-        if (!raw) {
-            setPaidMap({});
-            return;
-        }
-        try {
-            const parsed = JSON.parse(raw) as Record<string, PaidState>;
-            setPaidMap(parsed || {});
-        } catch {
-            setPaidMap({});
-        }
-    }, [monthKey]);
-
-    useEffect(() => {
-        const storageKey = buildStorageKey(monthKey);
-        window.localStorage.setItem(storageKey, JSON.stringify(paidMap));
-    }, [monthKey, paidMap]);
+    function handleMonthChange(nextKey: string) {
+        setMonthKey(nextKey);
+        setPaidMap(loadPaidMap(nextKey));
+    }
 
     const timeEntriesByUser = useMemo(() => {
         const map = new Map<string, TimerEntry[]>();
@@ -173,22 +175,30 @@ export function PayrollAttendancePage() {
     const totalPayable = rows.reduce((acc, row) => acc + (row.payable ?? 0), 0);
 
     function handleApprove(userId: string) {
-        setPaidMap((prev) => ({
-            ...prev,
-            [userId]: {
-                paid: true,
-                approvedAt: new Date().toISOString(),
-            },
-        }));
+        setPaidMap((prev) => {
+            const next = {
+                ...prev,
+                [userId]: {
+                    paid: true,
+                    approvedAt: new Date().toISOString(),
+                },
+            };
+            persistPaidMap(monthKey, next);
+            return next;
+        });
     }
 
     function handleRevoke(userId: string) {
-        setPaidMap((prev) => ({
-            ...prev,
-            [userId]: {
-                paid: false,
-            },
-        }));
+        setPaidMap((prev) => {
+            const next = {
+                ...prev,
+                [userId]: {
+                    paid: false,
+                },
+            };
+            persistPaidMap(monthKey, next);
+            return next;
+        });
     }
 
     return (
@@ -206,7 +216,7 @@ export function PayrollAttendancePage() {
                         <input
                             type="month"
                             value={monthKey}
-                            onChange={(event) => setMonthKey(event.target.value)}
+                            onChange={(event) => handleMonthChange(event.target.value)}
                             className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                         />
                     </div>

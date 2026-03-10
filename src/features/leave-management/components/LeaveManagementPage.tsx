@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarCheck, Filter, Plus, Search, UserCheck, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -175,10 +175,11 @@ export function LeaveManagementPage() {
             .sort((a, b) => a.fullName.localeCompare(b.fullName, 'tr'));
     }, [personnelRows]);
 
+    const resolvedCreateUserId = createUserId || user?.id || personnelOptions[0]?.id || '';
     const selectedPersonnel = useMemo(() => {
-        if (!createUserId) return null;
-        return personnelOptions.find((item) => item.id === createUserId) ?? null;
-    }, [createUserId, personnelOptions]);
+        if (!resolvedCreateUserId) return null;
+        return personnelOptions.find((item) => item.id === resolvedCreateUserId) ?? null;
+    }, [personnelOptions, resolvedCreateUserId]);
 
     const resolvedDepartment = selectedPersonnel?.department ?? user?.department ?? null;
     const computedDurationDays = useMemo(
@@ -242,26 +243,6 @@ export function LeaveManagementPage() {
         );
     }
 
-    useEffect(() => {
-        if (!isCreateOpen) return;
-        if (createUserId) return;
-        if (user?.id) {
-            setCreateUserId(user.id);
-            return;
-        }
-        if (personnelOptions.length > 0) {
-            setCreateUserId(personnelOptions[0].id);
-        }
-    }, [createUserId, isCreateOpen, personnelOptions, user?.id]);
-
-    useEffect(() => {
-        if (!isCreateOpen) return;
-        if (!createEndDate || !createStartDate) return;
-        const duration = calcDurationDays(createStartDate, createEndDate);
-        if (duration <= 0) return;
-        setFormError(null);
-    }, [createStartDate, createEndDate, isCreateOpen]);
-
     async function handleCreateLeave(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
         setFormError(null);
@@ -282,7 +263,7 @@ export function LeaveManagementPage() {
         }
 
         const payload: LeaveCreatePayload = {
-            userId: createUserId || undefined,
+            userId: resolvedCreateUserId || undefined,
             type: createType,
             startDate: createStartDate,
             endDate: createEndDate,
@@ -520,7 +501,7 @@ export function LeaveManagementPage() {
                         <form className="space-y-3" onSubmit={handleCreateLeave}>
                             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                                 <select
-                                    value={createUserId}
+                                    value={resolvedCreateUserId}
                                     onChange={(event) => setCreateUserId(event.target.value)}
                                     className="h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
                                 >

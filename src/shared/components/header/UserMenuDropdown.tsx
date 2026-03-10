@@ -46,7 +46,7 @@ export function UserMenuDropdown({ user, onLogout, compact = false }: UserMenuDr
         },
         {
             key: 'settings',
-            label: 'Ayarlar',
+            label: 'Kullanıcı Ayarları',
             description: 'Hesap ve panel ayarlari',
             icon: <Settings size={14} />,
             path: '/app/hesabim',

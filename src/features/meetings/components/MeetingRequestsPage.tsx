@@ -111,21 +111,6 @@ export function MeetingRequestsPage() {
         },
     });
 
-    if (!canManageMeetings) {
-        return (
-            <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
-                <PageHeader
-                    icon={<CalendarCheck size={20} color="#DC2626" />}
-                    title="Gorusme Talepleri"
-                    subtitle="Yetki kontrolu"
-                />
-                <section className="rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-10 text-center text-sm font-medium text-yellow-800">
-                    Bu ekrana sadece ADMIN, CEO, MANAGER ve ACCOUNT MANAGER rolleri erisebilir.
-                </section>
-            </div>
-        );
-    }
-
     const rows = requestsQuery.data?.data ?? [];
     const meetingRows = rows.filter((item) => isMeetingRequest(item.subject, item.type));
     const total = requestsQuery.data?.total ?? meetingRows.length;
@@ -141,6 +126,21 @@ export function MeetingRequestsPage() {
             uniqueProjects: uniqueProjects.size,
         };
     }, [meetingRows]);
+
+    if (!canManageMeetings) {
+        return (
+            <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
+                <PageHeader
+                    icon={<CalendarCheck size={20} color="#DC2626" />}
+                    title="Gorusme Talepleri"
+                    subtitle="Yetki kontrolu"
+                />
+                <section className="rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-10 text-center text-sm font-medium text-yellow-800">
+                    Bu ekrana sadece ADMIN, CEO, MANAGER ve ACCOUNT MANAGER rolleri erisebilir.
+                </section>
+            </div>
+        );
+    }
 
     return (
         <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">

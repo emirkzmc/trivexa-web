@@ -216,20 +216,10 @@ const ADMIN_NAV: RoleNavConfig = {
             ],
         },
         {
-            group: 'İK',
-            items: [
-                {label: 'İzin Yönetimi', path: '/app/izin-yonetimi', icon: 'CalendarCheck'},
-                {label: 'Çalışma Süresi', path: '/app/calisma-suresi', icon: 'Clock'},
-                {label: 'Performans', path: '/app/performans', icon: 'TrendingUp'},
-            ],
-        },
-        {
             group: 'MÜŞTERİ & ONAY',
             items: [
-                {label: 'Iletisim Talepleri', path: '/app/iletisim-talepleri', icon: 'MessageSquarePlus'},
-                {label: 'Portal Talepleri', path: '/app/portal-talepleri', icon: 'Inbox', badge: 'unread'},
-                {label: 'Gorusme Talepleri', path: '/app/gorusme-talepleri', icon: 'CalendarCheck'},
-                {label: 'Görüşmeler', path: '/app/gorusmeler', icon: 'MessageSquare'},
+                {label: 'Müsteri Görüşmeler', path: '/app/gorusmeler', icon: 'MessageSquare'},
+                {label: 'Destek Talepleri', path: '/app/talepler', icon: 'Inbox'},
             ],
         },
         {
@@ -263,7 +253,6 @@ const ADMIN_NAV: RoleNavConfig = {
             items: [
                 {label: 'Time Tracker', path: '/app/time-tracker', icon: 'Timer'},
                 {label: 'Dosya Yönetimi', path: '/app/dosyalar', icon: 'FolderOpen'},
-                {label: 'Destek Talepleri', path: '/app/talepler', icon: 'Inbox'},
             ],
         },
         {
@@ -394,9 +383,6 @@ const ACCOUNT_MANAGER_NAV: RoleNavConfig = {
             group: 'MÜŞTERİ',
             items: [
                 {label: 'Müşterilerim', path: '/app/musterilerim', icon: 'Building2'},
-                {label: 'Iletisim Talepleri', path: '/app/iletisim-talepleri', icon: 'MessageSquarePlus'},
-                {label: 'Portal Talepleri', path: '/app/portal-talepleri', icon: 'Inbox', badge: 'unread'},
-                {label: 'Gorusme Talepleri', path: '/app/gorusme-talepleri', icon: 'CalendarCheck'},
             ],
         },
         {
@@ -630,3 +616,9 @@ export const NAV_CONFIG: Record<string, RoleNavConfig> = {
     SEO: withPersonnelMeetingsSidebar(withFinanceSidebar(SOCIAL_MEDIA_NAV)),
     MUHASEBE: withPersonnelMeetingsSidebar(withFinanceSidebar(ACCOUNTING_NAV)),
 };
+
+
+
+
+
+

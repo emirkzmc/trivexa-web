@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState, type CSSProperties } from 'react';
 
 interface UserAvatarProps {
     initials: string;
@@ -34,16 +34,13 @@ export function UserAvatar({
     avatarFit,
     avatarPosition,
 }: UserAvatarProps) {
-    const [loadError, setLoadError] = useState(false);
+    const [failedSrc, setFailedSrc] = useState<string | null>(null);
     const avatarSrc = useMemo(() => resolveAvatarSrc(avatarUrl), [avatarUrl]);
-    const fit = avatarFit || 'cover';
-    const position = avatarPosition || 'center';
+    const fit = (avatarFit || 'cover') as CSSProperties['objectFit'];
+    const position = (avatarPosition || 'center') as CSSProperties['objectPosition'];
+    const hasError = failedSrc === avatarSrc;
 
-    useEffect(() => {
-        setLoadError(false);
-    }, [avatarSrc]);
-
-    if (!avatarSrc || loadError) {
+    if (!avatarSrc || hasError) {
         return (
             <div
                 style={{
@@ -84,7 +81,12 @@ export function UserAvatar({
                 src={avatarSrc}
                 alt="Profil fotografi"
                 style={{ width: '100%', height: '100%', objectFit: fit, objectPosition: position }}
-                onError={() => setLoadError(true)}
+                onError={() => setFailedSrc(avatarSrc)}
+                onLoad={() => {
+                    if (failedSrc) {
+                        setFailedSrc(null);
+                    }
+                }}
             />
         </div>
     );

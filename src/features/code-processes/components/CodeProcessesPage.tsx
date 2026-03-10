@@ -1,4 +1,4 @@
-﻿import {useEffect, useMemo, useState, type CSSProperties} from 'react';
+import {useMemo, useState, type CSSProperties} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {
 
@@ -213,34 +213,24 @@ export function CodeProcessesPage() {
     });
 
     const projects = projectsQuery.data?.data ?? [];
-
-    useEffect(() => {
-        if (!selectedProjectId && projects.length > 0) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setSelectedProjectId(projects[0].id);
-        }
-    }, [projects, selectedProjectId]);
-    
-    useEffect(() => {
-        setSelectedBranch('');
-    }, [selectedProjectId]);
+    const resolvedProjectId = selectedProjectId || projects[0]?.id || '';
 
     const selectedProject = useMemo<ProjectItem | null>(
-        () => projects.find((project) => project.id === selectedProjectId) ?? null,
-        [projects, selectedProjectId],
+        () => projects.find((project) => project.id === resolvedProjectId) ?? null,
+        [projects, resolvedProjectId],
     );
 
     const codeProcessQuery = useQuery({
-        queryKey: ['code-processes', selectedProjectId, selectedBranch],
+        queryKey: ['code-processes', resolvedProjectId, selectedBranch],
         queryFn: () => getProjectCodeProcesses(
-            selectedProjectId,
+            resolvedProjectId,
             {
                 branch: selectedBranch || undefined,
                 commitsPerPage: 6,
                 recentTaskLimit: 18,
             },
         ),
-        enabled: !!selectedProjectId,
+        enabled: !!resolvedProjectId,
         staleTime: 30_000,
     });
 
@@ -248,6 +238,7 @@ export function CodeProcessesPage() {
     const overview = codeProcess?.github.overview;
     const branches = overview?.branches ?? [];
     const defaultBranch = overview?.repository?.defaultBranch ?? branches[0]?.name ?? '';
+    const resolvedBranch = selectedBranch || defaultBranch;
     const commits = codeProcess?.github.commits.commits ?? [];
     const tasksSnapshot = codeProcess?.tasks;
     const recentTasks = tasksSnapshot?.recentTasks ?? [];
@@ -288,19 +279,16 @@ export function CodeProcessesPage() {
 
     const releaseWindows = useMemo(() => buildReleaseWindows(new Date()), []);
 
-    useEffect(() => {
-        if (!selectedBranch && defaultBranch) {
-            setSelectedBranch(defaultBranch);
-        }
-    }, [defaultBranch, selectedBranch]);
-
     const headerActions = (
         <div className="flex flex-wrap items-center gap-2">
             <div className="flex min-w-[240px] items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-1">
                 <FolderKanban size={14} className="text-gray-500"/>
                 <select
-                    value={selectedProjectId}
-                    onChange={(event) => setSelectedProjectId(event.target.value)}
+                    value={resolvedProjectId}
+                    onChange={(event) => {
+                        setSelectedProjectId(event.target.value);
+                        setSelectedBranch('');
+                    }}
                     disabled={projectsQuery.isLoading || projects.length === 0}
                     className="h-8 w-full border-0 bg-transparent text-sm text-gray-700 outline-none"
                 >
@@ -313,7 +301,7 @@ export function CodeProcessesPage() {
             <div className="flex min-w-[200px] items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-1">
                 <GitBranch size={14} className="text-gray-500"/>
                 <select
-                    value={selectedBranch}
+                    value={resolvedBranch}
                     onChange={(event) => setSelectedBranch(event.target.value)}
                     disabled={!overview?.connected || branches.length === 0}
                     className="h-8 w-full border-0 bg-transparent text-sm text-gray-700 outline-none"
@@ -520,7 +508,7 @@ export function CodeProcessesPage() {
                                                     </span>
                                                 </div>
                                                 <p className="mt-1 text-xs text-gray-500">
-                                                    {commit.authorName} • {toReadableDate(commit.committedAt)}
+                                                    {commit.authorName} � {toReadableDate(commit.committedAt)}
                                                 </p>
                                             </li>
                                         ))}
@@ -623,4 +611,11 @@ export function CodeProcessesPage() {
         </div>
     );
 }
+
+
+
+
+
+
+
 

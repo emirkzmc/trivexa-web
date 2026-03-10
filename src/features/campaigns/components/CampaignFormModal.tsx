@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { CalendarDays, Plus, X } from 'lucide-react';
 import type { CampaignCreatePayload, CampaignObjective, CampaignPlatform, CampaignStatus } from '../api/campaigns.api';
 import type { ProjectItem } from '../../projects/api/projects.api';
@@ -55,15 +55,10 @@ export function CampaignFormModal({
     onClose,
     onSubmit,
 }: CampaignFormModalProps) {
-    const [form, setForm] = useState<CampaignCreatePayload>(INITIAL_STATE);
-
-    useEffect(() => {
-        if (!isOpen) return;
-        setForm({
-            ...INITIAL_STATE,
-            ...initialData,
-        });
-    }, [initialData, isOpen]);
+    const [form, setForm] = useState<CampaignCreatePayload>(() => ({
+        ...INITIAL_STATE,
+        ...initialData,
+    }));
 
     if (!isOpen) return null;
 

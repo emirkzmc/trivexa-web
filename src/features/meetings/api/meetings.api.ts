@@ -18,7 +18,7 @@ export interface MeetingItem {
     date: string;
     durationMinutes: number;
     clientId?: string;
-        clientName?: string;
+    clientName?: string;
     projectId?: string;
     projectName?: string;
     audienceType: MeetingAudienceType;
@@ -27,8 +27,6 @@ export interface MeetingItem {
     notes?: string;
     summary?: string;
     organizerId?: string;
-    clientName?: string;
-    projectName?: string;
     createdAt: string;
     updatedAt: string;
 }

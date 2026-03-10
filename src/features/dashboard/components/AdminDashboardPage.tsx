@@ -19,7 +19,6 @@ import { useAuthStore } from '../../auth/store/authStore';
 import { usePermission } from '../../../shared/hooks/usePermission';
 import {
   CLIENT_PERMS,
-  CONTRACT_PERMS,
   EXPENSE_PERMS,
   INVOICE_PERMS,
   PAYMENT_PERMS,
@@ -430,11 +429,11 @@ export function AdminDashboardPage() {
             {canViewTickets && (
               <button
                 type="button"
-                onClick={() => navigate('/app/portal-talepleri')}
+                onClick={() => navigate('/app/talepler')}
                 className="inline-flex h-9 items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-3 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
               >
                 <Inbox size={14} />
-                Portal Talepleri
+                Talepler
               </button>
             )}
             {canViewFinance && (
@@ -677,12 +676,12 @@ export function AdminDashboardPage() {
             <article className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
-              <h3 className="text-sm font-semibold text-gray-900">Portal Talep Onay Dagilimi</h3>
+              <h3 className="text-sm font-semibold text-gray-900">Talep Onay Dagilimi</h3>
               <p className="text-xs text-gray-500">Son 100 talep uzerinden onay durumu</p>
             </div>
             <button
               type="button"
-              onClick={() => navigate('/app/portal-talepleri')}
+              onClick={() => navigate('/app/talepler')}
               className="inline-flex h-8 items-center gap-1 rounded-lg border border-gray-300 bg-white px-2 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50"
             >
               Detaylar
@@ -844,12 +843,12 @@ export function AdminDashboardPage() {
             <article className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
-              <h3 className="text-sm font-semibold text-gray-900">Son Portal Talepleri</h3>
+              <h3 className="text-sm font-semibold text-gray-900">Son Talepler</h3>
               <p className="text-xs text-gray-500">En yeni 6 talep</p>
             </div>
             <button
               type="button"
-              onClick={() => navigate('/app/portal-talepleri')}
+              onClick={() => navigate('/app/talepler')}
               className="inline-flex h-8 items-center gap-1 rounded-lg border border-gray-300 bg-white px-2 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50"
             >
               Taleplere Git
@@ -905,7 +904,7 @@ export function AdminDashboardPage() {
             {canViewTickets && (
               <button
                 type="button"
-                onClick={() => navigate('/app/portal-talepleri')}
+                onClick={() => navigate('/app/talepler')}
                 className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-left transition hover:bg-gray-50"
               >
                 <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-600">
@@ -965,3 +964,4 @@ export function AdminDashboardPage() {
     </div>
   );
 }
+

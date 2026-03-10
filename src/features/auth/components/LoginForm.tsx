@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -43,11 +43,7 @@ export function LoginForm() {
     onFirstLogin: () => setShowFirstLoginModal(true),
   });
 
-  useEffect(() => {
-    if (user && isFirstLogin) {
-      setShowFirstLoginModal(true);
-    }
-  }, [user, isFirstLogin]);
+  const isFirstLoginModalOpen = showFirstLoginModal || (!!user && isFirstLogin);
 
   const onSubmit: SubmitHandler<LoginFormValues> = (values) => {
     mutate(values);
@@ -115,7 +111,7 @@ export function LoginForm() {
           </form>
         </AuthCard>
       )}
-      {showFirstLoginModal && (
+      {isFirstLoginModalOpen && (
         <Modal title="Sifre Yenileme" onClose={handleFirstLoginCancel} width={520}>
           <FirstLoginForm onCancel={handleFirstLoginCancel} showHeader={false} />
         </Modal>

@@ -14,7 +14,7 @@ import {formatDate} from '../../../shared/utils/formatDate';
 import {useAuthStore} from '../../auth/store/authStore';
 import {getProjects, type ProjectItem} from '../../projects/api/projects.api';
 import {getProjectTasks, type TaskItem} from '../../tasks/api/tasks.api';
-import {getFiles, downloadFile, type FileMetadata} from '../../files/api/files.api';
+import {getFiles, downloadFile} from '../../files/api/files.api';
 import {ROLES} from '../../../shared/constants/roles';
 import {TASK_STATUS_ORDER, type TaskStatus} from '../../tasks/components/tasks.constants';
 

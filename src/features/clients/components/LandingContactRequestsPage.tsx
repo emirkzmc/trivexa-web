@@ -9,9 +9,10 @@ import {
     getLandingContactRequests,
     rejectLandingContactRequest,
     type LandingContactRequestItem,
+    type LandingContactRequestStatus,
 } from '../api/clients.api';
 
-const STATUS_OPTIONS = [
+const STATUS_OPTIONS: Array<{ label: string; value: LandingContactRequestStatus | '' }> = [
     { label: 'Tum Durumlar', value: '' },
     { label: 'PENDING', value: 'PENDING' },
     { label: 'APPROVED', value: 'APPROVED' },
@@ -43,10 +44,12 @@ export function LandingContactRequestsPage() {
     const queryClient = useQueryClient();
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
-    const [status, setStatus] = useState('');
+    const [status, setStatus] = useState<LandingContactRequestStatus | ''>('');
     const [search, setSearch] = useState('');
 
     const normalizedSearch = search.trim();
+
+    const statusFilter: LandingContactRequestStatus | undefined = status === '' ? undefined : status;
 
     const requestsQuery = useQuery({
         queryKey: ['landing-contact-requests', page, limit, status, normalizedSearch],
@@ -54,7 +57,7 @@ export function LandingContactRequestsPage() {
             getLandingContactRequests({
                 page,
                 limit,
-                status: status || undefined,
+                status: statusFilter,
                 search: normalizedSearch || undefined,
             }),
         staleTime: 30_000,
@@ -143,7 +146,7 @@ export function LandingContactRequestsPage() {
                     <select
                         value={status}
                         onChange={(event) => {
-                            setStatus(event.target.value);
+                            setStatus(event.target.value as LandingContactRequestStatus | '');
                             setPage(1);
                         }}
                         className="h-9 min-w-[180px] rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none focus:border-[color:var(--role-accent-500)] focus:ring-1 focus:ring-[color:var(--role-accent-500)]"

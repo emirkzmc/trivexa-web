@@ -16,6 +16,16 @@ import type {
     ClientUpdatePayload,
 } from '../api/clients.api';
 
+function resolveErrorMessage(error: unknown, fallback: string): string {
+    if (error && typeof error === 'object') {
+        const response = (error as { response?: { data?: { message?: string } } }).response;
+        if (response?.data?.message) return response.data.message;
+        const message = (error as { message?: string }).message;
+        if (message) return message;
+    }
+    return fallback;
+}
+
 export function useCreateClient() {
     const queryClient = useQueryClient();
     return useMutation({
@@ -67,11 +77,8 @@ export function useDeactivateClient() {
             queryClient.invalidateQueries({ queryKey: ['clients'] });
             toast.success('Musteri pasif hale getirildi.', { duration: 3_000 });
         },
-        onError: (error: any) => {
-            const message = error?.response?.data?.message
-                || error?.message
-                || 'Musteri pasife alinamadi.';
-            toast.error(message, { duration: 3_000 });
+        onError: (error: unknown) => {
+            toast.error(resolveErrorMessage(error, 'Musteri pasife alinamadi.'), { duration: 3_000 });
         },
     });
 }
@@ -84,11 +91,8 @@ export function useActivateClient() {
             queryClient.invalidateQueries({ queryKey: ['clients'] });
             toast.success('Musteri aktif hale getirildi.', { duration: 3_000 });
         },
-        onError: (error: any) => {
-            const message = error?.response?.data?.message
-                || error?.message
-                || 'Musteri aktif edilemedi.';
-            toast.error(message, { duration: 3_000 });
+        onError: (error: unknown) => {
+            toast.error(resolveErrorMessage(error, 'Musteri aktif edilemedi.'), { duration: 3_000 });
         },
     });
 }

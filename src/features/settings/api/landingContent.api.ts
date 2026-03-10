@@ -294,7 +294,8 @@ export async function getLandingContent(): Promise<LandingContent> {
 }
 
 export async function updateLandingContent(payload: LandingContent): Promise<LandingContent> {
-  const { meta, ...safePayload } = payload;
+  const safePayload = { ...payload };
+  delete safePayload.meta;
   const data = await requestWithFallback<MaybeWrapped<unknown>>({
     method: 'POST',
     url: '/landing/content',

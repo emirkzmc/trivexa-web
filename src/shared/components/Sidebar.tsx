@@ -350,8 +350,9 @@ export function Sidebar({
 
                         <ul role="list" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
                             {grp.items.map((item) => {
+                                const badge = 'badge' in item ? item.badge : undefined;
                                 const IconComponent = item.icon ? ICON_MAP[item.icon] : null;
-                                const badgeNum = item.badge === 'unread' ? unreadCount : 0;
+                                const badgeNum = badge === 'unread' ? unreadCount : 0;
 
                                 return (
                                     <li key={item.path}>
@@ -402,7 +403,7 @@ export function Sidebar({
                                                 </span>
                                             )}
 
-                                            {!collapsedState && item.badge === 'unread' && badgeNum > 0 && (
+                                            {!collapsedState && badge === 'unread' && badgeNum > 0 && (
                                                 <span
                                                     style={{
                                                         display: 'inline-flex',
@@ -422,7 +423,7 @@ export function Sidebar({
                                                 </span>
                                             )}
 
-                                            {!collapsedState && item.badge !== 'unread' && (
+                                            {!collapsedState && badge !== 'unread' && (
                                                 <ChevronRight
                                                     size={13}
                                                     style={{ color: theme.muted, flexShrink: 0 }}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarDays, Filter, Plus, Search } from 'lucide-react';
 import { toast } from 'sonner';
@@ -108,18 +108,10 @@ export function CampaignsPage() {
         });
     }, [rows, search]);
 
-    useEffect(() => {
-        if (!selectedCampaign && filteredRows.length > 0) {
-            setSelectedCampaign(filteredRows[0]);
-            return;
-        }
-
-        if (selectedCampaign) {
-            const exists = filteredRows.some((row) => row.id === selectedCampaign.id);
-            if (!exists) {
-                setSelectedCampaign(filteredRows[0] ?? null);
-            }
-        }
+    const resolvedSelectedCampaign = useMemo(() => {
+        if (filteredRows.length === 0) return null;
+        if (!selectedCampaign) return filteredRows[0];
+        return filteredRows.find((row) => row.id === selectedCampaign.id) ?? filteredRows[0];
     }, [filteredRows, selectedCampaign]);
 
     const stats = useMemo(() => {
@@ -311,46 +303,46 @@ export function CampaignsPage() {
                     <div className="rounded-xl border border-gray-200 bg-white p-4">
                         <h3 className="mb-3 text-base font-semibold text-gray-900">Kampanya Detayi</h3>
 
-                        {!selectedCampaign && (
+                        {!resolvedSelectedCampaign && (
                             <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">
                                 Detay gormek icin bir kampanya secin.
                             </div>
                         )}
 
-                        {selectedCampaign && (
+                        {resolvedSelectedCampaign && (
                             <div className="space-y-3 text-sm text-gray-700">
                                 <div>
                                     <p className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Baslik</p>
-                                    <p className="text-base font-semibold text-gray-900">{selectedCampaign.title}</p>
-                                    <p className="text-xs text-gray-500">{selectedCampaign.projectName || '-'}</p>
+                                    <p className="text-base font-semibold text-gray-900">{resolvedSelectedCampaign.title}</p>
+                                    <p className="text-xs text-gray-500">{resolvedSelectedCampaign.projectName || '-'}</p>
                                 </div>
                                 <div className="grid gap-2 sm:grid-cols-2">
                                     <div>
                                         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Platform</p>
-                                        <p className="text-sm text-gray-700">{labelForOption(PLATFORM_OPTIONS, selectedCampaign.platform)}</p>
+                                        <p className="text-sm text-gray-700">{labelForOption(PLATFORM_OPTIONS, resolvedSelectedCampaign.platform)}</p>
                                     </div>
                                     <div>
                                         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Hedef</p>
-                                        <p className="text-sm text-gray-700">{labelForOption(OBJECTIVE_OPTIONS, selectedCampaign.objective)}</p>
+                                        <p className="text-sm text-gray-700">{labelForOption(OBJECTIVE_OPTIONS, resolvedSelectedCampaign.objective)}</p>
                                     </div>
                                     <div>
                                         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Butce</p>
-                                        <p className="text-sm text-gray-700">{formatCurrency(selectedCampaign.budget)}</p>
+                                        <p className="text-sm text-gray-700">{formatCurrency(resolvedSelectedCampaign.budget)}</p>
                                     </div>
                                     <div>
                                         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Sorumlu</p>
-                                        <p className="text-sm text-gray-700">{selectedCampaign.owner || '-'}</p>
+                                        <p className="text-sm text-gray-700">{resolvedSelectedCampaign.owner || '-'}</p>
                                     </div>
                                 </div>
                                 <div>
                                     <p className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Tarih</p>
                                     <p className="text-sm text-gray-700">
-                                        {formatDate(selectedCampaign.startDate)} - {formatDate(selectedCampaign.endDate)}
+                                        {formatDate(resolvedSelectedCampaign.startDate)} - {formatDate(resolvedSelectedCampaign.endDate)}
                                     </p>
                                 </div>
                                 <div>
                                     <p className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Aciklama</p>
-                                    <p className="text-sm text-gray-600">{selectedCampaign.description || '-'}</p>
+                                    <p className="text-sm text-gray-600">{resolvedSelectedCampaign.description || '-'}</p>
                                 </div>
                             </div>
                         )}
@@ -373,6 +365,7 @@ export function CampaignsPage() {
             </section>
 
             <CampaignFormModal
+                key={`campaign-modal-${createModalOpen ? 'open' : 'closed'}-${currentUser?.id ?? 'anon'}`}
                 isOpen={createModalOpen}
                 isPending={createCampaignMutation.isPending}
                 projects={projectsQuery.data?.data ?? []}

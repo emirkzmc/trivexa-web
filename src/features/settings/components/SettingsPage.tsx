@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Save, Settings, UploadCloud, XCircle, PlusCircle } from 'lucide-react';
 import { toast } from 'sonner';
@@ -47,15 +47,12 @@ export function SettingsPage() {
   const landingQuery = useQuery({
     queryKey: ['landing-content'],
     queryFn: getLandingContent,
+    onSuccess: (data) => {
+      setForm(data);
+    },
   });
 
   const [form, setForm] = useState<LandingContent>(DEFAULT_LANDING_CONTENT);
-
-  useEffect(() => {
-    if (landingQuery.data) {
-      setForm(landingQuery.data);
-    }
-  }, [landingQuery.data]);
 
   const updateMutation = useMutation({
     mutationFn: () => updateLandingContent(form),

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ImageUp, Lock, Mail, Save, Settings, Trash2, User } from 'lucide-react';
 import { toast } from 'sonner';
@@ -175,8 +175,8 @@ export function UserSettingsPage() {
     toast.success('Profil fotografi kaldirildi.');
   }
 
-  const avatarFit = profileForm.avatarFit || 'cover';
-  const avatarPosition = profileForm.avatarPosition || 'center';
+  const avatarFit = (profileForm.avatarFit || 'cover') as CSSProperties['objectFit'];
+  const avatarPosition = (profileForm.avatarPosition || 'center') as CSSProperties['objectPosition'];
 
   const avatarFitOptions = [
     { value: 'cover', label: 'Kapla' },
