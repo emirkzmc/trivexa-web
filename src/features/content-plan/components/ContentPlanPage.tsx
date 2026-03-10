@@ -526,7 +526,9 @@ export function ContentPlanPage() {
                 members={sortedMembers}
                 isPending={createTaskMutation.isPending}
                 onClose={() => setCreateModalOpen(false)}
-                onCreate={(payload) => createTaskMutation.mutateAsync(payload)}
+                onCreate={async (payload) => {
+                    await createTaskMutation.mutateAsync(payload);
+                }}
             />
         </div>
     );

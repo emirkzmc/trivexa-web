@@ -18,7 +18,9 @@ export interface MeetingItem {
     date: string;
     durationMinutes: number;
     clientId?: string;
+    clientName?: string;
     projectId?: string;
+    projectName?: string;
     audienceType: MeetingAudienceType;
     department?: string;
     link?: string;
@@ -120,7 +122,9 @@ function normalizeMeeting(raw: unknown): MeetingItem {
         date: toStringValue(row.date),
         durationMinutes: toNumberValue(row.durationMinutes ?? row.duration_minutes) || 30,
         clientId: toStringValue(row.clientId ?? row.client_id) || undefined,
+        clientName: toStringValue(row.clientName ?? row.client_name) || undefined,
         projectId: toStringValue(row.projectId ?? row.project_id) || undefined,
+        projectName: toStringValue(row.projectName ?? row.project_name) || undefined,
         audienceType: normalizeAudienceType(row.audienceType ?? row.audience_type),
         department: toStringValue(row.department) || undefined,
         link: toStringValue(row.link) || undefined,

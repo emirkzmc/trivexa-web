@@ -252,6 +252,7 @@ const ADMIN_NAV: RoleNavConfig = {
                 { label: 'Dosya Yönetimi', path: '/app/dosyalar', icon: 'FolderOpen' },
                 { label: 'Kod Süreçleri', path: '/app/kod', icon: 'Code2' },
                 { label: 'İçerik Planları', path: '/app/icerik-plani', icon: 'CalendarDays' },
+                { label: 'Kampanya Yönetimi', path: '/app/kampanyalar', icon: 'Megaphone' },
                 { label: 'Görüşmeler', path: '/app/gorusmeler', icon: 'MessageSquare' },
                 { label: 'Destek Talepleri', path: '/app/talepler', icon: 'Inbox' },
             ],
