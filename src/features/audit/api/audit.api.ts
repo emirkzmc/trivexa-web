@@ -33,24 +33,32 @@ export interface PaginatedAuditResponse {
 export async function getAuditLogs(
     params: AuditLogParams,
 ): Promise<PaginatedAuditResponse> {
-    const { data } = await api.get<any>('/audit', { params });
+    const { data } = await api.get<unknown>('/audit', { params });
+
+    interface AuditApiResponse {
+        data?: {
+            data?: unknown[];
+            meta?: { itemCount?: number; page?: number; take?: number };
+        } | unknown[];
+    }
     
     // global response wrapper: { success: true, data: { data: [], meta: { itemCount, page, take } } }
     // OR raw pageDto depending on interceptor
-    const pageDto = data?.data && typeof data.data === 'object' && 'data' in data.data 
-        ? data.data 
-        : data?.data ?? data;
+    const responseData = (data as AuditApiResponse)?.data;
+    const pageDto = responseData && typeof responseData === 'object' && 'data' in (responseData as object)
+        ? (responseData as { data?: unknown[]; meta?: { itemCount?: number; page?: number; take?: number } })
+        : { data: Array.isArray(responseData) ? responseData : [], meta: {} };
 
-    const rawItems = Array.isArray(pageDto?.data) ? pageDto.data : [];
-    const items = rawItems.map((item: any) => ({
-        id: item.id,
-        action: item.action || '',
-        entity: item.entityName || '',
-        entityId: item.entityId || '',
-        userId: item.userId || '',
-        userName: item.userName || '',
-        metadata: item.details,
-        createdAt: item.timestamp || new Date().toISOString(),
+    const rawItems = Array.isArray(pageDto?.data) ? (pageDto.data as Record<string, unknown>[]) : [];
+    const items = rawItems.map((item) => ({
+        id: String(item.id ?? ''),
+        action: String(item.action ?? ''),
+        entity: String(item.entityName ?? ''),
+        entityId: String(item.entityId ?? ''),
+        userId: String(item.userId ?? ''),
+        userName: String(item.userName ?? ''),
+        metadata: item.details as Record<string, unknown> | undefined,
+        createdAt: String(item.timestamp ?? new Date().toISOString()),
     }));
     const meta = pageDto?.meta || {};
 

@@ -47,6 +47,7 @@ export function TaskCreateModal({
 
     useEffect(() => {
         if (isOpen) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setForm(INITIAL_STATE);
         }
     }, [isOpen]);

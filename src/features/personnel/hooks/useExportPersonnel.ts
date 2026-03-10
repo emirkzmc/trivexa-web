@@ -51,6 +51,7 @@ function getExportRows(items: PersonnelItem[]): ExportRow[] {
 }
 
 async function fetchAllPersonnel(filters: PersonnelListParams): Promise<PersonnelItem[]> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { page: _page, limit: _limit, ...filterOnly } = filters;
     const all: PersonnelItem[] = [];
     let page = 1;

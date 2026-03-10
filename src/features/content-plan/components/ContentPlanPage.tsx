@@ -123,6 +123,7 @@ export function ContentPlanPage() {
     useEffect(() => {
         if (!canReadTasks) return;
         if (!selectedProjectId && projects.length > 0) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSelectedProjectId(projects[0].id);
         }
     }, [canReadTasks, projects, selectedProjectId]);

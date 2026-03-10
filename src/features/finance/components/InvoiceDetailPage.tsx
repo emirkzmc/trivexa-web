@@ -429,17 +429,13 @@ export function InvoiceDetailPage() {
         [invoice, collectedAmount],
     );
     const paymentTimeline = useMemo(() => {
-        let runningCollected = 0;
         const ascending = [...sortedPayments].reverse();
-        return ascending.map((payment) => {
+        return ascending.reduce<Array<(typeof sortedPayments)[0] & { type: string; runningCollected: number }>>((acc, payment) => {
             const amount = Number(payment.amount || 0);
-            runningCollected += amount;
-            return {
-                ...payment,
-                type: amount < 0 ? 'REFUND' : 'PAYMENT',
-                runningCollected,
-            };
-        }).reverse();
+            const prevRunning = acc.length > 0 ? acc[acc.length - 1].runningCollected : 0;
+            acc.push({ ...payment, type: amount < 0 ? 'REFUND' : 'PAYMENT', runningCollected: prevRunning + amount });
+            return acc;
+        }, []).reverse();
     }, [sortedPayments]);
     const paymentAuditRows = paymentAuditQuery.data?.data ?? [];
     const paymentAuditTotal = paymentAuditQuery.data?.total ?? 0;

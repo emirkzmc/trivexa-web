@@ -1,13 +1,13 @@
-import { useMemo, useState, type FormEvent } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Network, Search, Users } from 'lucide-react';
-import { toast } from 'sonner';
-import { PageHeader } from '../../../shared/components/PageHeader';
-import { Modal } from '../../../shared/components/Modal';
-import { Pagination } from '../../../shared/components/Pagination';
-import { DEPARTMENT_LABELS } from '../../../shared/constants/departments';
-import { getPersonnel, updatePersonnel, type PersonnelItem } from '../../personnel/api/personnel.api';
-import { getDepartments } from '../api/departments.api';
+import {useMemo, useState, type FormEvent} from 'react';
+import {useMutation, useQuery, useQueryClient, keepPreviousData} from '@tanstack/react-query';
+import {Network, Search, Users} from 'lucide-react';
+import {toast} from 'sonner';
+import {PageHeader} from '../../../shared/components/PageHeader';
+import {Modal} from '../../../shared/components/Modal';
+import {Pagination} from '../../../shared/components/Pagination';
+import {DEPARTMENT_LABELS} from '../../../shared/constants/departments';
+import {getPersonnel, updatePersonnel, type PersonnelItem} from '../../personnel/api/personnel.api';
+import {getDepartments} from '../api/departments.api';
 
 const DEFAULT_LIMIT = 20;
 
@@ -48,15 +48,15 @@ export function DepartmentAssignmentsPage() {
             subDepartmentId: moduleFilter || undefined,
             isActive: activeFilter || undefined,
         }),
-        keepPreviousData: true,
+        placeholderData: keepPreviousData,
     });
 
     const updateMutation = useMutation({
-        mutationFn: ({ id, payload }: { id: string; payload: { department?: string; subDepartmentId?: string } }) =>
+        mutationFn: ({id, payload}: { id: string; payload: { department?: string; subDepartmentId?: string } }) =>
             updatePersonnel(id, payload),
         onSuccess: async () => {
             toast.success('Departman atamasi guncellendi.');
-            await queryClient.invalidateQueries({ queryKey: ['personnel', 'department-assignments'] });
+            await queryClient.invalidateQueries({queryKey: ['personnel', 'department-assignments']});
             handleCloseModal();
         },
     });
@@ -151,7 +151,7 @@ export function DepartmentAssignmentsPage() {
             id: selectedUser.id,
             payload: {
                 department: form.department,
-                subDepartmentId: form.subDepartmentId ? form.subDepartmentId : null,
+                subDepartmentId: form.subDepartmentId ? form.subDepartmentId : undefined,
             },
         });
     }
@@ -159,7 +159,7 @@ export function DepartmentAssignmentsPage() {
     function handleDepartmentChange(value: string) {
         setForm((prev) => {
             const normalized = value ?? '';
-            const next = { ...prev, department: normalized };
+            const next = {...prev, department: normalized};
             if (!normalized) {
                 next.subDepartmentId = '';
                 return next;
@@ -174,13 +174,13 @@ export function DepartmentAssignmentsPage() {
     }
 
     function handleModuleChange(value: string) {
-        setForm((prev) => ({ ...prev, subDepartmentId: value }));
+        setForm((prev) => ({...prev, subDepartmentId: value}));
     }
 
     return (
         <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
             <PageHeader
-                icon={<Network size={20} color="#DC2626" />}
+                icon={<Network size={20} color="#DC2626"/>}
                 title="Departman Atamalari"
                 subtitle="Personellerin departman ve alt modul atamalarini yonetin."
             />
@@ -210,7 +210,7 @@ export function DepartmentAssignmentsPage() {
                 <div className="flex flex-wrap items-center gap-3">
                     <label className="relative min-w-[240px] flex-1">
                         <span className="absolute inset-y-0 left-0 flex items-center pl-2.5 text-gray-400">
-                            <Search size={14} />
+                            <Search size={14}/>
                         </span>
                         <input
                             value={search}
@@ -271,75 +271,75 @@ export function DepartmentAssignmentsPage() {
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[920px] text-left text-sm">
                         <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
-                            <tr>
-                                <th className="px-4 py-3 font-semibold">Personel</th>
-                                <th className="px-4 py-3 font-semibold">Rol</th>
-                                <th className="px-4 py-3 font-semibold">Departman</th>
-                                <th className="px-4 py-3 font-semibold">Alt Modul</th>
-                                <th className="px-4 py-3 font-semibold">Durum</th>
-                                <th className="px-4 py-3 font-semibold">Islem</th>
-                            </tr>
+                        <tr>
+                            <th className="px-4 py-3 font-semibold">Personel</th>
+                            <th className="px-4 py-3 font-semibold">Rol</th>
+                            <th className="px-4 py-3 font-semibold">Departman</th>
+                            <th className="px-4 py-3 font-semibold">Alt Modul</th>
+                            <th className="px-4 py-3 font-semibold">Durum</th>
+                            <th className="px-4 py-3 font-semibold">Islem</th>
+                        </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {personnelQuery.isLoading ? (
-                                <tr>
-                                    <td colSpan={6} className="px-4 py-10 text-center text-gray-500">
-                                        Personel listesi yukleniyor...
-                                    </td>
-                                </tr>
-                            ) : personnelQuery.isError ? (
-                                <tr>
-                                    <td colSpan={6} className="px-4 py-10 text-center text-red-600">
-                                        Personel listesi yuklenemedi.
-                                    </td>
-                                </tr>
-                            ) : personnel.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} className="px-4 py-10 text-center text-gray-500">
-                                        Gosterilecek personel bulunamadi.
-                                    </td>
-                                </tr>
-                            ) : (
-                                personnel.map((person) => (
-                                    <tr key={person.id} className="hover:bg-gray-50">
-                                        <td className="px-4 py-3">
-                                            <div className="flex flex-col">
+                        {personnelQuery.isLoading ? (
+                            <tr>
+                                <td colSpan={6} className="px-4 py-10 text-center text-gray-500">
+                                    Personel listesi yukleniyor...
+                                </td>
+                            </tr>
+                        ) : personnelQuery.isError ? (
+                            <tr>
+                                <td colSpan={6} className="px-4 py-10 text-center text-red-600">
+                                    Personel listesi yuklenemedi.
+                                </td>
+                            </tr>
+                        ) : personnel.length === 0 ? (
+                            <tr>
+                                <td colSpan={6} className="px-4 py-10 text-center text-gray-500">
+                                    Gosterilecek personel bulunamadi.
+                                </td>
+                            </tr>
+                        ) : (
+                            personnel.map((person) => (
+                                <tr key={person.id} className="hover:bg-gray-50">
+                                    <td className="px-4 py-3">
+                                        <div className="flex flex-col">
                                                 <span className="font-semibold text-gray-900">
                                                     {person.firstName} {person.lastName}
                                                 </span>
-                                                <span className="text-xs text-gray-500">{person.email}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-3 text-gray-600">{person.role}</td>
-                                        <td className="px-4 py-3 text-gray-600">
-                                            {DEPARTMENT_LABELS[person.department] ?? person.department ?? '-'}
-                                        </td>
-                                        <td className="px-4 py-3 text-gray-600">
-                                            {person.subDepartmentName
-                                                ?? (person.subDepartmentId ? moduleNameById[person.subDepartmentId] : null)
-                                                ?? '-'}
-                                        </td>
-                                        <td className="px-4 py-3">
+                                            <span className="text-xs text-gray-500">{person.email}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-3 text-gray-600">{person.role}</td>
+                                    <td className="px-4 py-3 text-gray-600">
+                                        {DEPARTMENT_LABELS[person.department] ?? person.department ?? '-'}
+                                    </td>
+                                    <td className="px-4 py-3 text-gray-600">
+                                        {person.subDepartmentName
+                                            ?? (person.subDepartmentId ? moduleNameById[person.subDepartmentId] : null)
+                                            ?? '-'}
+                                    </td>
+                                    <td className="px-4 py-3">
                                             <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
                                                 person.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
                                             }`}
                                             >
                                                 {person.isActive ? 'Aktif' : 'Pasif'}
                                             </span>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <button
-                                                type="button"
-                                                onClick={() => handleOpenModal(person)}
-                                                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-100"
-                                            >
-                                                <Users size={12} />
-                                                Atama
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleOpenModal(person)}
+                                            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-100"
+                                        >
+                                            <Users size={12}/>
+                                            Atama
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                         </tbody>
                     </table>
                 </div>

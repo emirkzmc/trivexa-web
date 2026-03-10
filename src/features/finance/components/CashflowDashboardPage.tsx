@@ -129,21 +129,6 @@ export function CashflowDashboardPage() {
     [overviewQuery.data?.chart],
   );
 
-  if (!canRead) {
-    return (
-      <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
-        <PageHeader
-          icon={<BarChart3 size={20} color="#DC2626" />}
-          title="Nakit Akisi Dashboard"
-          subtitle="Yetki kontrolu"
-        />
-        <section className="rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-10 text-center text-sm font-medium text-yellow-800">
-          Bu ekrana sadece finans erisimi olan roller girebilir.
-        </section>
-      </div>
-    );
-  }
-
   const isLoading = overviewQuery.isLoading;
   const isError = overviewQuery.isError;
 
@@ -184,6 +169,21 @@ export function CashflowDashboardPage() {
     }),
     [normalizedClientFilter, upcomingReceivables],
   );
+
+  if (!canRead) {
+    return (
+      <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
+        <PageHeader
+          icon={<BarChart3 size={20} color="#DC2626" />}
+          title="Nakit Akisi Dashboard"
+          subtitle="Yetki kontrolu"
+        />
+        <section className="rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-10 text-center text-sm font-medium text-yellow-800">
+          Bu ekrana sadece finans erisimi olan roller girebilir.
+        </section>
+      </div>
+    );
+  }
 
   async function handleExport() {
     try {

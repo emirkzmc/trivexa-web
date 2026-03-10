@@ -182,6 +182,7 @@ export function useProjectCreate() {
         }
 
         if (!createForm.clientId && clients.length > 0) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setCreateForm((prev) => ({ ...prev, clientId: clients[0].id }));
         }
     }, [createPanelOpen, clients, createForm.clientId]);
@@ -192,6 +193,7 @@ export function useProjectCreate() {
         }
 
         if (!createForm.departmentId && departmentOptions.length > 0) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setCreateForm((prev) => ({ ...prev, departmentId: departmentOptions[0].id }));
         }
     }, [createPanelOpen, departmentOptions, createForm.departmentId]);
@@ -203,6 +205,7 @@ export function useProjectCreate() {
 
         const exists = departmentPersonnel.some((person) => person.id === createForm.teamLeadId);
         if (!exists) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setCreateForm((prev) => ({ ...prev, teamLeadId: '' }));
         }
     }, [departmentPersonnel, createForm.teamLeadId]);

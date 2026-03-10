@@ -27,6 +27,8 @@ export interface MeetingItem {
     notes?: string;
     summary?: string;
     organizerId?: string;
+    clientName?: string;
+    projectName?: string;
     createdAt: string;
     updatedAt: string;
 }

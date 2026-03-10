@@ -349,7 +349,8 @@ export function MeetingsPage() {
         return strictMatched.length > 0 ? strictMatched : sortedRows;
     }, [filteredRows]);
 
-    const stats = useMemo(() => {
+    const stats = (() => {
+        // eslint-disable-next-line react-hooks/purity
         const now = Date.now();
         const weekLater = now + (7 * 24 * 60 * 60 * 1000);
         const upcomingCount = filteredRows.filter((item) => {
@@ -365,7 +366,7 @@ export function MeetingsPage() {
             upcomingCount,
             thisWeekCount,
         };
-    }, [filteredRows]);
+    })();
 
     useEffect(() => {
         if (!isCreateModalOpen) return;

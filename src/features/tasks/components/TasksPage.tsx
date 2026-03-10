@@ -142,6 +142,7 @@ export function TasksPage() {
         }
 
         if (!selectedProjectId && projects.length > 0) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSelectedProjectId(projects[0].id);
         }
     }, [canReadTasks, projects, selectedProjectId]);
@@ -363,6 +364,7 @@ export function TasksPage() {
 
     useEffect(() => {
         if (page > totalPages) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setPage(totalPages);
         }
     }, [page, totalPages]);

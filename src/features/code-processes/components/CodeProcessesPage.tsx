@@ -1,9 +1,7 @@
-﻿import { useEffect, useMemo, useState, type CSSProperties } from 'react';
-import { useQuery } from '@tanstack/react-query';
+﻿import {useEffect, useMemo, useState, type CSSProperties} from 'react';
+import {useQuery} from '@tanstack/react-query';
 import {
-    AlertTriangle,
-    CheckCircle2,
-    Clock3,
+
     Code2,
     FolderKanban,
     GitBranch,
@@ -12,15 +10,15 @@ import {
     Rocket,
     ShieldCheck,
 } from 'lucide-react';
-import { PageHeader } from '../../../shared/components/PageHeader';
-import { useAuthStore } from '../../auth/store/authStore';
+import {PageHeader} from '../../../shared/components/PageHeader';
+import {useAuthStore} from '../../auth/store/authStore';
 import {
     getProjectCodeProcesses,
     getProjects,
     type ProjectGithubCommit,
     type ProjectItem,
 } from '../../projects/api/projects.api';
-import { ROLES } from '../../../shared/constants/roles';
+import {ROLES} from '../../../shared/constants/roles';
 
 type StageStatus = 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'BLOCKED' | 'DONE';
 type CheckTone = 'ok' | 'warn' | 'alert';
@@ -209,7 +207,7 @@ export function CodeProcessesPage() {
 
     const projectsQuery = useQuery({
         queryKey: ['code-processes', 'projects', role, scopedProjects],
-        queryFn: () => getProjects({ page: 1, limit: 100, myProjectsOnly: scopedProjects || undefined }),
+        queryFn: () => getProjects({page: 1, limit: 100, myProjectsOnly: scopedProjects || undefined}),
         staleTime: 60_000,
     });
 
@@ -217,6 +215,7 @@ export function CodeProcessesPage() {
 
     useEffect(() => {
         if (!selectedProjectId && projects.length > 0) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSelectedProjectId(projects[0].id);
         }
     }, [projects, selectedProjectId]);
@@ -228,7 +227,7 @@ export function CodeProcessesPage() {
 
     const codeProcessQuery = useQuery({
         queryKey: ['code-processes', selectedProjectId],
-        queryFn: () => getProjectCodeProcesses(selectedProjectId, { commitsPerPage: 6, recentTaskLimit: 18 }),
+        queryFn: () => getProjectCodeProcesses(selectedProjectId, {commitsPerPage: 6, recentTaskLimit: 18}),
         enabled: !!selectedProjectId,
         staleTime: 30_000,
     });
@@ -277,7 +276,7 @@ export function CodeProcessesPage() {
 
     const headerActions = (
         <div className="flex min-w-[240px] items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-1">
-            <FolderKanban size={14} className="text-gray-500" />
+            <FolderKanban size={14} className="text-gray-500"/>
             <select
                 value={selectedProjectId}
                 onChange={(event) => setSelectedProjectId(event.target.value)}
@@ -294,11 +293,11 @@ export function CodeProcessesPage() {
 
     return (
         <div
-            style={{ ...PAGE_THEME, fontFamily: "'Space Grotesk', 'Manrope', 'Segoe UI', sans-serif" }}
+            style={{...PAGE_THEME, fontFamily: "'Space Grotesk', 'Manrope', 'Segoe UI', sans-serif"}}
             className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4"
         >
             <PageHeader
-                icon={<Code2 size={20} color="#22D3EE" />}
+                icon={<Code2 size={20} color="#22D3EE"/>}
                 title="Kod Surecleri"
                 subtitle="Gelistirme akisi, review kuyrugu ve release plani"
                 actions={headerActions}
@@ -311,33 +310,39 @@ export function CodeProcessesPage() {
                     background: 'linear-gradient(130deg, var(--code-bg) 0%, #091224 45%, #112a3d 100%)',
                 }}
             >
-                <div className="pointer-events-none absolute -right-16 -top-14 h-44 w-44 rounded-full opacity-40 blur-3xl" style={{ backgroundColor: 'var(--code-accent)' }} />
-                <div className="pointer-events-none absolute -left-10 bottom-0 h-36 w-36 rounded-full opacity-30 blur-2xl" style={{ backgroundColor: 'var(--code-accent-2)' }} />
+                <div
+                    className="pointer-events-none absolute -right-16 -top-14 h-44 w-44 rounded-full opacity-40 blur-3xl"
+                    style={{backgroundColor: 'var(--code-accent)'}}/>
+                <div
+                    className="pointer-events-none absolute -left-10 bottom-0 h-36 w-36 rounded-full opacity-30 blur-2xl"
+                    style={{backgroundColor: 'var(--code-accent-2)'}}/>
 
                 <div className="relative z-10 grid gap-4 lg:grid-cols-[2fr_1fr]">
                     <div>
-                        <p className="text-xs uppercase tracking-[0.16em]" style={{ color: 'var(--code-muted)' }}>
+                        <p className="text-xs uppercase tracking-[0.16em]" style={{color: 'var(--code-muted)'}}>
                             Engineering Flow
                         </p>
-                        <h2 className="mt-2 text-2xl font-bold" style={{ color: 'var(--code-text)' }}>
+                        <h2 className="mt-2 text-2xl font-bold" style={{color: 'var(--code-text)'}}>
                             {selectedProject?.name ?? 'Kod sureci panosu'}
                         </h2>
-                        <p className="mt-2 max-w-2xl text-sm" style={{ color: 'var(--code-muted)' }}>
+                        <p className="mt-2 max-w-2xl text-sm" style={{color: 'var(--code-muted)'}}>
                             Bu alan proje bazli kod surecini tek ekranda toplar: backlog yogunlugu, review kuyrugu,
                             commit akis hizi ve release pencereleri.
                         </p>
                     </div>
 
                     <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
-                        <article className="rounded-xl border p-3" style={{ borderColor: 'var(--code-border)', backgroundColor: 'rgba(22, 36, 61, 0.76)' }}>
-                            <p className="text-xs" style={{ color: 'var(--code-muted)' }}>Aktif Implementasyon</p>
-                            <p className="mt-1 text-xl font-bold" style={{ color: 'var(--code-text)' }}>
+                        <article className="rounded-xl border p-3"
+                                 style={{borderColor: 'var(--code-border)', backgroundColor: 'rgba(22, 36, 61, 0.76)'}}>
+                            <p className="text-xs" style={{color: 'var(--code-muted)'}}>Aktif Implementasyon</p>
+                            <p className="mt-1 text-xl font-bold" style={{color: 'var(--code-text)'}}>
                                 {metrics.inProgressCount}
                             </p>
                         </article>
-                        <article className="rounded-xl border p-3" style={{ borderColor: 'var(--code-border)', backgroundColor: 'rgba(22, 36, 61, 0.76)' }}>
-                            <p className="text-xs" style={{ color: 'var(--code-muted)' }}>Son 7 Gun Cikis</p>
-                            <p className="mt-1 text-xl font-bold" style={{ color: 'var(--code-text)' }}>
+                        <article className="rounded-xl border p-3"
+                                 style={{borderColor: 'var(--code-border)', backgroundColor: 'rgba(22, 36, 61, 0.76)'}}>
+                            <p className="text-xs" style={{color: 'var(--code-muted)'}}>Son 7 Gun Cikis</p>
+                            <p className="mt-1 text-xl font-bold" style={{color: 'var(--code-text)'}}>
                                 {metrics.doneThisWeek}
                             </p>
                         </article>
@@ -346,7 +351,8 @@ export function CodeProcessesPage() {
             </section>
 
             {!selectedProjectId && !projectsQuery.isLoading && (
-                <section className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-12 text-center text-sm text-gray-500">
+                <section
+                    className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-12 text-center text-sm text-gray-500">
                     Kod sureclerini gorebilmek icin once bir proje secilmelidir.
                 </section>
             )}
@@ -381,7 +387,7 @@ export function CodeProcessesPage() {
                             <article className="rounded-2xl border border-gray-200 bg-white p-4">
                                 <div className="mb-3 flex items-center justify-between">
                                     <h3 className="inline-flex items-center gap-2 text-sm font-semibold text-gray-900">
-                                        <GitPullRequest size={15} className="text-cyan-600" />
+                                        <GitPullRequest size={15} className="text-cyan-600"/>
                                         Akis Panosu
                                     </h3>
                                     <span className="text-xs text-gray-500">Task durumuna gore canli dagilim</span>
@@ -389,21 +395,25 @@ export function CodeProcessesPage() {
 
                                 {codeProcessQuery.isLoading ? (
                                     <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-                                        {Array.from({ length: 6 }).map((_, index) => (
-                                            <div key={index} className="h-24 animate-pulse rounded-lg border border-gray-200 bg-gray-50" />
+                                        {Array.from({length: 6}).map((_, index) => (
+                                            <div key={index}
+                                                 className="h-24 animate-pulse rounded-lg border border-gray-200 bg-gray-50"/>
                                         ))}
                                     </div>
                                 ) : codeProcessQuery.isError ? (
-                                    <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-8 text-sm text-rose-700">
+                                    <div
+                                        className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-8 text-sm text-rose-700">
                                         Task verileri alinamadi.
                                     </div>
                                 ) : (
                                     <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
                                         {stageCards.map((stage) => (
-                                            <div key={stage.key} className={`rounded-xl border p-3 ${stage.borderClass}`}>
+                                            <div key={stage.key}
+                                                 className={`rounded-xl border p-3 ${stage.borderClass}`}>
                                                 <div className="mb-2 flex items-center justify-between">
                                                     <p className="text-sm font-semibold text-gray-900">{stage.label}</p>
-                                                    <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${stage.toneClass}`}>
+                                                    <span
+                                                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${stage.toneClass}`}>
                                                         {stage.count}
                                                     </span>
                                                 </div>
@@ -415,7 +425,8 @@ export function CodeProcessesPage() {
                                                         </p>
                                                     )}
                                                     {stage.items.map((task) => (
-                                                        <p key={task.id} className="truncate rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-700">
+                                                        <p key={task.id}
+                                                           className="truncate rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-700">
                                                             {task.title}
                                                         </p>
                                                     ))}
@@ -429,7 +440,7 @@ export function CodeProcessesPage() {
                             <article className="rounded-2xl border border-gray-200 bg-white p-4">
                                 <div className="mb-3 flex items-center justify-between">
                                     <h3 className="inline-flex items-center gap-2 text-sm font-semibold text-gray-900">
-                                        <GitCommitHorizontal size={15} className="text-amber-600" />
+                                        <GitCommitHorizontal size={15} className="text-amber-600"/>
                                         Commit AkiSi
                                     </h3>
                                     <span className="text-xs text-gray-500">Son commit hareketleri</span>
@@ -437,29 +448,35 @@ export function CodeProcessesPage() {
 
                                 {codeProcessQuery.isLoading ? (
                                     <div className="space-y-2">
-                                        {Array.from({ length: 4 }).map((_, index) => (
-                                            <div key={index} className="h-14 animate-pulse rounded-lg border border-gray-200 bg-gray-50" />
+                                        {Array.from({length: 4}).map((_, index) => (
+                                            <div key={index}
+                                                 className="h-14 animate-pulse rounded-lg border border-gray-200 bg-gray-50"/>
                                         ))}
                                     </div>
                                 ) : codeProcessQuery.isError ? (
-                                    <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-8 text-sm text-rose-700">
+                                    <div
+                                        className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-8 text-sm text-rose-700">
                                         Commit listesi alinamadi.
                                     </div>
                                 ) : githubErrors?.commits ? (
-                                    <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-8 text-sm text-rose-700">
+                                    <div
+                                        className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-8 text-sm text-rose-700">
                                         {githubErrors.commits}
                                     </div>
                                 ) : commits.length === 0 ? (
-                                    <div className="rounded-lg border border-dashed border-gray-200 px-3 py-8 text-sm text-gray-500">
+                                    <div
+                                        className="rounded-lg border border-dashed border-gray-200 px-3 py-8 text-sm text-gray-500">
                                         Bu proje icin commit verisi bulunamadi.
                                     </div>
                                 ) : (
                                     <ul className="space-y-2">
                                         {commits.map((commit: ProjectGithubCommit) => (
-                                            <li key={commit.sha} className="rounded-xl border border-gray-200 bg-gray-50 p-3">
+                                            <li key={commit.sha}
+                                                className="rounded-xl border border-gray-200 bg-gray-50 p-3">
                                                 <div className="flex items-start justify-between gap-2">
                                                     <p className="text-sm font-semibold text-gray-900">{shortMessage(commit.message)}</p>
-                                                    <span className="rounded-md bg-slate-900 px-2 py-0.5 font-mono text-[11px] text-slate-100">
+                                                    <span
+                                                        className="rounded-md bg-slate-900 px-2 py-0.5 font-mono text-[11px] text-slate-100">
                                                         {shortSha(commit.shortSha ?? commit.sha)}
                                                     </span>
                                                 </div>
@@ -476,14 +493,14 @@ export function CodeProcessesPage() {
                         <div className="space-y-4">
                             <article className="rounded-2xl border border-gray-200 bg-white p-4">
                                 <h3 className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-gray-900">
-                                    <GitBranch size={15} className="text-cyan-600" />
+                                    <GitBranch size={15} className="text-cyan-600"/>
                                     Repo Durumu
                                 </h3>
 
                                 {codeProcessQuery.isLoading ? (
                                     <div className="space-y-2">
-                                        {Array.from({ length: 3 }).map((_, index) => (
-                                            <div key={index} className="h-10 animate-pulse rounded-md bg-gray-100" />
+                                        {Array.from({length: 3}).map((_, index) => (
+                                            <div key={index} className="h-10 animate-pulse rounded-md bg-gray-100"/>
                                         ))}
                                     </div>
                                 ) : codeProcessQuery.isError ? (
@@ -528,12 +545,13 @@ export function CodeProcessesPage() {
 
                             <article className="rounded-2xl border border-gray-200 bg-white p-4">
                                 <h3 className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-gray-900">
-                                    <Rocket size={15} className="text-amber-600" />
+                                    <Rocket size={15} className="text-amber-600"/>
                                     Release Takvimi
                                 </h3>
                                 <ul className="space-y-2">
                                     {releaseWindows.map((window) => (
-                                        <li key={window.title} className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                                        <li key={window.title}
+                                            className="rounded-lg border border-gray-200 bg-gray-50 p-3">
                                             <p className="text-sm font-semibold text-gray-900">{window.title}</p>
                                             <p className="text-xs text-gray-500">{window.date}</p>
                                             <p className="mt-1 text-xs font-medium text-gray-700">{window.focus}</p>
@@ -544,12 +562,13 @@ export function CodeProcessesPage() {
 
                             <article className="rounded-2xl border border-gray-200 bg-white p-4">
                                 <h3 className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-gray-900">
-                                    <ShieldCheck size={15} className="text-emerald-600" />
+                                    <ShieldCheck size={15} className="text-emerald-600"/>
                                     Kalite Kontrol
                                 </h3>
                                 <ul className="space-y-2">
                                     {qualityChecks.map((check) => (
-                                        <li key={check.key} className={`rounded-lg border px-3 py-2 ${getToneClasses(check.tone)}`}>
+                                        <li key={check.key}
+                                            className={`rounded-lg border px-3 py-2 ${getToneClasses(check.tone)}`}>
                                             <p className="text-sm font-semibold">{check.label}</p>
                                             <p className="text-xs">{check.description}</p>
                                         </li>
@@ -559,7 +578,7 @@ export function CodeProcessesPage() {
                         </div>
                     </section>
 
-                    <section className="mt-4" />
+                    <section className="mt-4"/>
                 </>
             )}
         </div>

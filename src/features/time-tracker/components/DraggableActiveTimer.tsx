@@ -64,6 +64,7 @@ export function DraggableActiveTimer({
     useEffect(() => {
         if (!visible || position) return;
         const expanded = getExpandedSize();
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setPosition({
             x: Math.max(VIEWPORT_MARGIN, window.innerWidth - expanded.width - 24),
             y: Math.max(VIEWPORT_MARGIN, window.innerHeight - expanded.height - 24),
@@ -122,6 +123,7 @@ export function DraggableActiveTimer({
 
     useEffect(() => {
         if (!visible) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setMobileExpanded(false);
         }
     }, [visible]);

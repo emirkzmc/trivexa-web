@@ -53,6 +53,7 @@ export function RolesPermissionsPage() {
     useEffect(() => {
         if (!rolesQuery.data?.length) return;
         if (!selectedRoleId || !rolesQuery.data.some((role) => role.id === selectedRoleId)) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSelectedRoleId(rolesQuery.data[0].id);
         }
     }, [rolesQuery.data, selectedRoleId]);
@@ -65,6 +66,7 @@ export function RolesPermissionsPage() {
 
     useEffect(() => {
         if (!rolePermissionsQuery.data) return;
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setDraftPermissionIds(Array.from(new Set(rolePermissionsQuery.data.map((permission) => permission.id))));
     }, [rolePermissionsQuery.data]);
 

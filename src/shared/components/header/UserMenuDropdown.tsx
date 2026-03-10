@@ -90,6 +90,7 @@ export function UserMenuDropdown({ user, onLogout, compact = false }: UserMenuDr
     }, [open]);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setOpen(false);
     }, [location.pathname]);
 

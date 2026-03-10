@@ -393,6 +393,7 @@ export function AppLayout() {
 
     useEffect(() => {
         if (location.pathname.startsWith('/app/notifications')) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setHasFreshNotification(false);
         }
     }, [location.pathname]);

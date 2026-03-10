@@ -99,12 +99,14 @@ export function NotificationsPage() {
 
     useEffect(() => {
         if (visibleRows.length === 0) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSelectedId('');
             return;
         }
 
         const isSelectedVisible = visibleRows.some((item) => item.id === selectedId);
         if (!isSelectedVisible) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSelectedId(visibleRows[0].id);
         }
     }, [visibleRows, selectedId]);

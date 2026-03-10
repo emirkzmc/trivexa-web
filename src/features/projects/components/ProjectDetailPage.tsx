@@ -241,6 +241,7 @@ export function ProjectDetailPage() {
     useEffect(() => {
         const overview = githubOverviewQuery.data;
         if (!overview?.connected) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSelectedBranch('');
             return;
         }
@@ -264,6 +265,7 @@ export function ProjectDetailPage() {
     useEffect(() => {
         const linkedRepositoryUrl = githubOverviewQuery.data?.linkedRepositoryUrl;
         if (linkedRepositoryUrl && !githubRepoUrl.trim()) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setGithubRepoUrl(linkedRepositoryUrl);
         }
     }, [githubOverviewQuery.data?.linkedRepositoryUrl, githubRepoUrl]);

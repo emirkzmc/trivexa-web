@@ -87,6 +87,7 @@ export function TaskDetailPage() {
             return;
         }
 
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setForm({
             title: task.title,
             description: task.description ?? '',

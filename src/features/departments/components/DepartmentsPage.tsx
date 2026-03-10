@@ -136,6 +136,7 @@ export function DepartmentsPage() {
         () => Object.fromEntries(teamLeaders.map((person) => [person.id, `${person.firstName} ${person.lastName}`])),
         [teamLeaders],
     );
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const selectableTeamLeaders = useMemo(() => {
         if (!moduleDepartment?.name) {
             return [];

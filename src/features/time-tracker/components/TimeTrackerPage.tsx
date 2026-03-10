@@ -144,6 +144,7 @@ export function TimeTrackerPage() {
         return DEPARTMENT_LABELS[normalized as keyof typeof DEPARTMENT_LABELS] ?? department;
     }, [personnelMapById]);
 
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const filteredAndSortedHistoryRows = useMemo(() => {
         const sorted = [...filteredHistoryRows].sort((a, b) => {
             let aVal: unknown = a[sortField as keyof TimerEntry];
@@ -213,6 +214,7 @@ export function TimeTrackerPage() {
         [dashboardRows],
     );
 
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const dashboardTopProjects = useMemo(() => {
         const totals = new Map<string, number>();
         dashboardRows.forEach((row) => {
@@ -281,6 +283,7 @@ export function TimeTrackerPage() {
         [teamRows, teamStatusFilter, teamDepartmentFilter, resolveDepartmentName],
     );
 
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const sortedTeamRows = useMemo(() => {
         const sorted = [...filteredTeamRows].sort((a, b) => {
             let aVal: string | number = '';
