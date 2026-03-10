@@ -18,6 +18,7 @@ import { PageHeader } from '../../../shared/components/PageHeader';
 import { ROLES } from '../../../shared/constants/roles';
 import { formatDate } from '../../../shared/utils/formatDate';
 import { useAuthStore } from '../../auth/store/authStore';
+import { createContract } from '../../contracts/api/contracts.api';
 import { createInvoice, updateInvoiceStatus, type InvoiceStatus } from '../../finance/api/invoices.api';
 import {
     getClientWorkspace,
@@ -44,6 +45,15 @@ const INVOICE_STATUS_OPTIONS: InvoiceStatus[] = [
     'OVERDUE',
 ];
 
+const CONTRACT_STATUS_OPTIONS = [
+    'DRAFT',
+    'PENDING_APPROVAL',
+    'APPROVED',
+    'SIGNED',
+    'EXPIRED',
+    'TERMINATED',
+] as const;
+
 interface InvoiceFormState {
     projectId: string;
     description: string;
@@ -52,6 +62,16 @@ interface InvoiceFormState {
     taxRate: string;
     dueDate: string;
     notes: string;
+}
+
+interface ContractFormState {
+    title: string;
+    description: string;
+    projectId: string;
+    startDate: string;
+    endDate: string;
+    value: string;
+    status: (typeof CONTRACT_STATUS_OPTIONS)[number];
 }
 
 function formatMoney(value?: number) {
@@ -169,6 +189,15 @@ export function ClientDetailPage() {
         dueDate: '',
         notes: '',
     });
+    const [contractForm, setContractForm] = useState<ContractFormState>({
+        title: '',
+        description: '',
+        projectId: '',
+        startDate: '',
+        endDate: '',
+        value: '',
+        status: 'DRAFT',
+    });
     const userRole = useAuthStore((state) => state.user?.role);
 
     const canReadClients = userRole === ROLES.ADMIN
@@ -176,6 +205,7 @@ export function ClientDetailPage() {
         || userRole === ROLES.ACCOUNT_MANAGER
         || userRole === ROLES.ACCOUNTING;
     const canManageInvoices = userRole === ROLES.ADMIN || userRole === ROLES.MANAGER;
+    const canManageContracts = userRole === ROLES.ADMIN || userRole === ROLES.MANAGER;
 
     const workspaceQuery = useQuery({
         queryKey: ['client-workspace', clientId],
@@ -184,6 +214,56 @@ export function ClientDetailPage() {
     });
 
     const workspace = workspaceQuery.data;
+
+    const createContractMutation = useMutation({
+        mutationFn: async () => {
+            if (!workspace) {
+                throw new Error('Musteri verisi bulunamadi.');
+            }
+
+            const title = contractForm.title.trim();
+            if (!title) {
+                throw new Error('Sozlesme basligi zorunludur.');
+            }
+            if (!contractForm.startDate) {
+                throw new Error('Baslangic tarihi zorunludur.');
+            }
+
+            const value = contractForm.value ? Number(contractForm.value) : undefined;
+            if (contractForm.value && (!Number.isFinite(value) || value < 0)) {
+                throw new Error('Sozlesme degeri gecersiz.');
+            }
+
+            return createContract({
+                clientId: workspace.client.id,
+                projectId: contractForm.projectId || undefined,
+                title,
+                description: contractForm.description.trim() || undefined,
+                startDate: contractForm.startDate,
+                endDate: contractForm.endDate || undefined,
+                value,
+                status: contractForm.status || undefined,
+            });
+        },
+        onSuccess: async () => {
+            toast.success('Sozlesme olusturuldu.');
+            setContractForm({
+                title: '',
+                description: '',
+                projectId: '',
+                startDate: '',
+                endDate: '',
+                value: '',
+                status: 'DRAFT',
+            });
+            await queryClient.invalidateQueries({ queryKey: ['client-workspace', clientId] });
+            await queryClient.invalidateQueries({ queryKey: ['contracts-list'] });
+        },
+        onError: (error: unknown) => {
+            const message = error instanceof Error ? error.message : 'Sozlesme olusturulamadi.';
+            toast.error(message);
+        },
+    });
 
     const createInvoiceMutation = useMutation({
         mutationFn: async () => {
@@ -272,6 +352,11 @@ export function ClientDetailPage() {
     async function handleCreateInvoice(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
         await createInvoiceMutation.mutateAsync();
+    }
+
+    async function handleCreateContract(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        await createContractMutation.mutateAsync();
     }
 
     if (!canReadClients) {
@@ -709,6 +794,109 @@ export function ClientDetailPage() {
 
                     {activeTab === 'contracts' && (
                         <section className="space-y-3">
+                            {canManageContracts && (
+                                <form
+                                    onSubmit={handleCreateContract}
+                                    className="rounded-xl border border-gray-200 bg-white p-4"
+                                >
+                                    <h3 className="mb-3 text-sm font-semibold text-gray-900">Yeni Sozlesme Olustur</h3>
+                                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                                        <div className="xl:col-span-2">
+                                            <label className="mb-1 block text-xs font-semibold text-gray-600">Sozlesme Basligi</label>
+                                            <input
+                                                value={contractForm.title}
+                                                onChange={(event) => setContractForm((prev) => ({ ...prev, title: event.target.value }))}
+                                                className="h-9 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                                placeholder="Hizmet sozlesmesi"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="mb-1 block text-xs font-semibold text-gray-600">Proje (opsiyonel)</label>
+                                            <select
+                                                value={contractForm.projectId}
+                                                onChange={(event) => setContractForm((prev) => ({ ...prev, projectId: event.target.value }))}
+                                                className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                            >
+                                                <option value="">Proje sec</option>
+                                                {workspace.projects.map((project) => (
+                                                    <option key={project.id} value={project.id}>
+                                                        {project.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="mb-1 block text-xs font-semibold text-gray-600">Durum</label>
+                                            <select
+                                                value={contractForm.status}
+                                                onChange={(event) => setContractForm((prev) => ({
+                                                    ...prev,
+                                                    status: event.target.value as ContractFormState['status'],
+                                                }))}
+                                                className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                            >
+                                                {CONTRACT_STATUS_OPTIONS.map((status) => (
+                                                    <option key={status} value={status}>
+                                                        {status}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="mb-1 block text-xs font-semibold text-gray-600">Baslangic Tarihi</label>
+                                            <input
+                                                type="date"
+                                                value={contractForm.startDate}
+                                                onChange={(event) => setContractForm((prev) => ({ ...prev, startDate: event.target.value }))}
+                                                className="h-9 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="mb-1 block text-xs font-semibold text-gray-600">Bitis Tarihi</label>
+                                            <input
+                                                type="date"
+                                                value={contractForm.endDate}
+                                                onChange={(event) => setContractForm((prev) => ({ ...prev, endDate: event.target.value }))}
+                                                className="h-9 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="mb-1 block text-xs font-semibold text-gray-600">Deger (TRY)</label>
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                step={0.01}
+                                                value={contractForm.value}
+                                                onChange={(event) => setContractForm((prev) => ({ ...prev, value: event.target.value }))}
+                                                className="h-9 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                        <div className="md:col-span-2 xl:col-span-3">
+                                            <label className="mb-1 block text-xs font-semibold text-gray-600">Aciklama</label>
+                                            <textarea
+                                                rows={2}
+                                                value={contractForm.description}
+                                                onChange={(event) => setContractForm((prev) => ({ ...prev, description: event.target.value }))}
+                                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                                placeholder="Opsiyonel sozlesme notu"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 flex justify-end">
+                                        <button
+                                            type="submit"
+                                            disabled={createContractMutation.isPending}
+                                            className="inline-flex h-9 items-center rounded-lg bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-default disabled:opacity-60"
+                                        >
+                                            {createContractMutation.isPending ? 'Olusturuluyor...' : 'Sozlesme Olustur'}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+
                             {workspace.contracts.length === 0 && <EmptyState label="Sozlesme kaydı bulunmuyor." />}
                             {workspace.contracts.map((contract) => (
                                 <article key={contract.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">

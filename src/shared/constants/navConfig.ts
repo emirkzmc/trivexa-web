@@ -65,6 +65,7 @@ const THEMES: Record<string, SidebarTheme> = {
 
 const FINANCE_MENU_ITEMS: NavItem[] = [
     {label: 'Finans Dashboard', path: '/app/finans', icon: 'BarChart3'},
+    {label: 'Sozlesmeler', path: '/app/sozlesmeler', icon: 'FileText'},
     {label: 'Fatura Yönetimi', path: '/app/faturalar', icon: 'Receipt'},
     {label: 'Tahsilat Takibi', path: '/app/tahsilat-takibi', icon: 'CalendarCheck'},
     {label: 'Gider Yönetimi', path: '/app/gider-yonetimi', icon: 'Clock'},

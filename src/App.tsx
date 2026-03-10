@@ -43,6 +43,7 @@ import { DesignProcessesPage } from './features/design-processes/components/Desi
 import { ProductionProcessesPage } from './features/production-processes/components/ProductionProcessesPage';
 import { WorkingHoursPage } from './features/working-hours/components/WorkingHoursPage';
 import { PerformancePage } from './features/performance/components/PerformancePage';
+import { ContractsPage } from './features/contracts/components/ContractsPage';
 
 function App() {
   return (
@@ -111,6 +112,7 @@ function App() {
         <Route path="musterilerim" element={<Navigate to="/app/musteriler" replace />} />
         <Route path="finans" element={<CashflowDashboardPage />} />
         <Route path="finans-dashboard" element={<Navigate to="/app/finans" replace />} />
+        <Route path="sozlesmeler" element={<ContractsPage />} />
         <Route path="faturalar" element={<InvoicesPage />} />
         <Route path="faturalar/:invoiceId" element={<InvoiceDetailPage />} />
         <Route

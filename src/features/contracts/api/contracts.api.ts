@@ -32,8 +32,10 @@ export interface ContractCreatePayload {
     clientId: string;
     projectId?: string;
     startDate: string;
-    endDate: string;
-    totalAmount?: number;
+    endDate?: string;
+    value?: number;
+    description?: string;
+    status?: string;
 }
 
 export interface UpdateContractStatusPayload {
