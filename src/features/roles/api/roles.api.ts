@@ -78,6 +78,11 @@ export async function getRolePermissions(roleId: string): Promise<PermissionItem
     return unwrapApiEnvelope(data);
 }
 
+export async function getMyPermissions(): Promise<PermissionItem[]> {
+    const { data } = await api.get<PermissionItem[] | ApiEnvelope<PermissionItem[]>>('/users/me/permissions');
+    return unwrapApiEnvelope(data);
+}
+
 export async function assignPermissions(payload: AssignPermissionsPayload): Promise<void> {
     await api.post('/roles/assign-permissions', payload);
 }

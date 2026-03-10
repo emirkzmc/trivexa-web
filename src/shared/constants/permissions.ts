@@ -7,51 +7,51 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     CEO: ['*'],
 
     MANAGER: [
-        'users:read', 'users:update',
-        'projects:create', 'projects:read', 'projects:update', 'projects:delete',
-        'tasks:create', 'tasks:read', 'tasks:update', 'tasks:delete',
-        'finance:view_revenue',
+        'USERS_READ', 'USERS_UPDATE',
+        'PROJECTS_CREATE', 'PROJECTS_READ', 'PROJECTS_UPDATE', 'PROJECTS_DELETE',
+        'TASKS_CREATE', 'TASKS_READ', 'TASKS_UPDATE', 'TASKS_DELETE',
+        'PAYMENTS_READ', 'INVOICES_READ',
     ],
 
     ACCOUNTING: [
-        'users:read',
-        'projects:read',
-        'finance:view_revenue', 'finance:create_invoice',
+        'USERS_READ',
+        'PROJECTS_READ',
+        'PAYMENTS_READ', 'INVOICES_READ', 'INVOICES_CREATE',
     ],
 
     DEVELOPER: [
-        'projects:read',
-        'tasks:read', 'tasks:update',
+        'PROJECTS_READ',
+        'TASKS_READ', 'TASKS_UPDATE',
     ],
 
     SOCIAL_MEDIA: [
-        'projects:read',
-        'tasks:read', 'tasks:update',
+        'PROJECTS_READ',
+        'TASKS_READ', 'TASKS_UPDATE',
     ],
 
     CREATIVE: [
-        'projects:read',
-        'tasks:read', 'tasks:update',
+        'PROJECTS_READ',
+        'TASKS_READ', 'TASKS_UPDATE',
     ],
 
     MARKETING: [
-        'projects:read',
-        'tasks:read', 'tasks:update',
+        'PROJECTS_READ',
+        'TASKS_READ', 'TASKS_UPDATE',
     ],
 
     PRODUCTION: [
-        'projects:read',
-        'tasks:read', 'tasks:update',
+        'PROJECTS_READ',
+        'TASKS_READ', 'TASKS_UPDATE',
     ],
 
     ACCOUNT_MANAGER: [
-        'users:read',
-        'projects:read', 'projects:create', 'projects:update',
-        'tasks:create', 'tasks:read', 'tasks:update',
+        'USERS_READ',
+        'PROJECTS_READ', 'PROJECTS_CREATE', 'PROJECTS_UPDATE',
+        'TASKS_CREATE', 'TASKS_READ', 'TASKS_UPDATE',
     ],
 
     HR: [
-        'users:create', 'users:read', 'users:update',
+        'USERS_CREATE', 'USERS_READ', 'USERS_UPDATE',
     ],
 
     CLIENT: [],

@@ -11,6 +11,8 @@ import { useAuthStore } from '../../features/auth/store/authStore';
 import { useUnreadCount } from '../../features/notifications/hooks/useUnreadCount';
 import { NAV_CONFIG, type RoleNavConfig } from '../../shared/constants/navConfig';
 import { ROLES } from '../../shared/constants/roles';
+import { NAV_PERMISSION_MAP } from '../constants/navPermissions';
+import { usePermission } from '../hooks/usePermission';
 
 const ICON_MAP: Record<string, React.ElementType> = {
     LayoutDashboard, Bell, Users, Building2, FolderKanban, CheckSquare,
@@ -40,6 +42,7 @@ export function Sidebar({
     const navigate = useNavigate();
     const [collapsed, setCollapsed] = useState(false);
     const unreadCountQuery = useUnreadCount();
+    const { hasAnyPermission, hasPermission } = usePermission();
 
     if (!user) return null;
 
@@ -62,6 +65,19 @@ export function Sidebar({
     const sidebarWidth = isMobile
         ? MOBILE_SIDEBAR_WIDTH
         : (collapsedState ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH);
+
+    const visibleGroups = groups
+        .map((group) => {
+            const visibleItems = group.items.filter((item) => {
+                const required = NAV_PERMISSION_MAP[item.path];
+                if (!required) return true;
+                return Array.isArray(required)
+                    ? hasAnyPermission(required)
+                    : hasPermission(required);
+            });
+            return { ...group, items: visibleItems };
+        })
+        .filter((group) => group.items.length > 0);
 
     function handleLogout() {
         logoutStore();
@@ -185,7 +201,7 @@ export function Sidebar({
             </div>
 
             <nav style={{ flex: 1, padding: '12px 0' }}>
-                {groups.map((grp, gi) => (
+                {visibleGroups.map((grp, gi) => (
                     <div key={gi} style={{ marginBottom: 8 }}>
                         {grp.group && !collapsedState && (
                             <p
