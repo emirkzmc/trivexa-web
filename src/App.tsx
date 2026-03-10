@@ -33,6 +33,8 @@ import { CustomerPanelDashboardPage } from './features/customer-panel/components
 import { CustomerPanelPlaceholderPage } from './features/customer-panel/components/CustomerPanelPlaceholderPage';
 import { CustomerPanelContractsPage } from './features/customer-panel/components/CustomerPanelContractsPage';
 import { CodeProcessesPage } from './features/code-processes/components/CodeProcessesPage';
+import { DepartmentAssignmentsPage } from './features/departments/components/DepartmentAssignmentsPage';
+import { LeaveManagementPage } from './features/leave-management/components/LeaveManagementPage';
 
 function App() {
   return (
@@ -95,6 +97,8 @@ function App() {
         <Route path="personel-toplantilari" element={<MeetingsCalendarPage />} />
         <Route path="gorusmeler" element={<MeetingsPage />} />
         <Route path="departmanlar" element={<DepartmentsPage />} />
+        <Route path="departman-atamalari" element={<DepartmentAssignmentsPage />} />
+        <Route path="izin-yonetimi" element={<LeaveManagementPage />} />
         <Route path="musteriler" element={<ClientsPage />} />
         <Route path="musteriler/:clientId" element={<ClientDetailPage />} />
         <Route path="musterilerim" element={<Navigate to="/app/musteriler" replace />} />

@@ -49,7 +49,9 @@ export interface PersonnelCreatePayload {
     subDepartmentId?: string;
 }
 
-export type PersonnelUpdatePayload = Partial<PersonnelCreatePayload>;
+export type PersonnelUpdatePayload =
+    Omit<Partial<PersonnelCreatePayload>, 'subDepartmentId'>
+    & { subDepartmentId?: string | null };
 
 // ─── API Functions ───────────────────────────────────────────────────────────
 
