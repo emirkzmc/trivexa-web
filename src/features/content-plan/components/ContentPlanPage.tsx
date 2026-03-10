@@ -33,6 +33,7 @@ const PERSONAL_TASK_SCOPE_ROLES = new Set<string>([
     ROLES.MARKETING,
     ROLES.PRODUCTION,
 ]);
+type CalendarView = 'month' | 'week' | 'day';
 
 function toDayKey(dateLike: string | Date): string {
     const date = typeof dateLike === 'string' ? new Date(dateLike) : dateLike;
@@ -40,6 +41,10 @@ function toDayKey(dateLike: string | Date): string {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+}
+
+function parseDayKey(value: string): Date {
+    return new Date(`${value}T00:00:00`);
 }
 
 function getMonthLabel(date: Date): string {
@@ -57,6 +62,29 @@ function getMonthMatrix(baseDate: Date): Date[] {
         next.setDate(gridStart.getDate() + index);
         return next;
     });
+}
+
+function startOfWeek(date: Date): Date {
+    const next = new Date(date);
+    const weekdayMondayStart = (next.getDay() + 6) % 7;
+    next.setDate(next.getDate() - weekdayMondayStart);
+    next.setHours(0, 0, 0, 0);
+    return next;
+}
+
+function getWeekDays(baseDate: Date): Date[] {
+    const weekStart = startOfWeek(baseDate);
+    return Array.from({ length: 7 }, (_, index) => {
+        const next = new Date(weekStart);
+        next.setDate(weekStart.getDate() + index);
+        return next;
+    });
+}
+
+function addDays(base: Date, amount: number): Date {
+    const next = new Date(base);
+    next.setDate(next.getDate() + amount);
+    return next;
 }
 
 function memberName(member: ProjectMember): string {
@@ -93,6 +121,7 @@ export function ContentPlanPage() {
     const [assigneeFilter, setAssigneeFilter] = useState('');
     const [search, setSearch] = useState('');
     const [createModalOpen, setCreateModalOpen] = useState(false);
+    const [calendarView, setCalendarView] = useState<CalendarView>('month');
     const [monthCursor, setMonthCursor] = useState(() => {
         const now = new Date();
         return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -209,6 +238,8 @@ export function ContentPlanPage() {
     }, [searchedRows]);
 
     const monthDays = useMemo(() => getMonthMatrix(monthCursor), [monthCursor]);
+    const selectedDate = useMemo(() => parseDayKey(selectedDay), [selectedDay]);
+    const weekDays = useMemo(() => getWeekDays(selectedDate), [selectedDate]);
     const selectedDayTasks = tasksByDay.get(selectedDay) ?? [];
     const unscheduledTasks = searchedRows.filter((task) => !task.dueDate);
 
@@ -254,15 +285,26 @@ export function ContentPlanPage() {
         </button>
     ) : null;
 
-    function handleMonthChange(direction: 'prev' | 'next') {
-        setMonthCursor((prev) => {
-            const next = new Date(prev);
-            next.setMonth(prev.getMonth() + (direction === 'next' ? 1 : -1));
-            return new Date(next.getFullYear(), next.getMonth(), 1);
-        });
+    function handleCalendarNavigate(direction: 'prev' | 'next') {
+        if (calendarView === 'month') {
+            setMonthCursor((prev) => {
+                const next = new Date(prev);
+                next.setMonth(prev.getMonth() + (direction === 'next' ? 1 : -1));
+                return new Date(next.getFullYear(), next.getMonth(), 1);
+            });
+            return;
+        }
+
+        const delta = calendarView === 'week' ? 7 : 1;
+        const nextDate = addDays(selectedDate, direction === 'next' ? delta : -delta);
+        setSelectedDay(toDayKey(nextDate));
     }
 
-    const monthLabel = getMonthLabel(monthCursor);
+    const monthLabel = calendarView === 'month'
+        ? getMonthLabel(monthCursor)
+        : calendarView === 'week'
+            ? `${formatDate(toDayKey(weekDays[0]))} - ${formatDate(toDayKey(weekDays[6]))}`
+            : formatDate(selectedDay);
 
     return (
         <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
@@ -369,17 +411,35 @@ export function ContentPlanPage() {
                             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Takvim</p>
                             <h3 className="text-base font-semibold text-gray-900">{monthLabel}</h3>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1 text-xs font-semibold text-gray-600">
+                                {(['month', 'week', 'day'] as CalendarView[]).map((mode) => (
+                                    <button
+                                        key={mode}
+                                        type="button"
+                                        onClick={() => setCalendarView(mode)}
+                                        className={
+                                            `rounded-md px-3 py-1 transition ${
+                                                calendarView === mode
+                                                    ? 'bg-[color:var(--role-accent-600)] text-white'
+                                                    : 'text-gray-600 hover:bg-gray-100'
+                                            }`
+                                        }
+                                    >
+                                        {mode === 'month' ? 'Aylik' : mode === 'week' ? 'Haftalik' : '24 Saat'}
+                                    </button>
+                                ))}
+                            </div>
                             <button
                                 type="button"
-                                onClick={() => handleMonthChange('prev')}
+                                onClick={() => handleCalendarNavigate('prev')}
                                 className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition hover:bg-gray-50"
                             >
                                 <ChevronLeft size={16} />
                             </button>
                             <button
                                 type="button"
-                                onClick={() => handleMonthChange('next')}
+                                onClick={() => handleCalendarNavigate('next')}
                                 className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition hover:bg-gray-50"
                             >
                                 <ChevronRight size={16} />
@@ -387,55 +447,136 @@ export function ContentPlanPage() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-7 gap-1 text-xs font-semibold text-gray-400">
-                        {WEEKDAY_LABELS.map((label) => (
-                            <div key={label} className="px-1 py-1 text-center">{label}</div>
-                        ))}
-                    </div>
+                    {calendarView !== 'day' && (
+                        <div className="grid grid-cols-7 gap-1 text-xs font-semibold text-gray-400">
+                            {WEEKDAY_LABELS.map((label) => (
+                                <div key={label} className="px-1 py-1 text-center">{label}</div>
+                            ))}
+                        </div>
+                    )}
 
-                    <div className="mt-2 grid grid-cols-7 gap-1">
-                        {monthDays.map((day) => {
-                            const dayKey = toDayKey(day);
-                            const dayTasks = tasksByDay.get(dayKey) ?? [];
-                            const isCurrentMonth = day.getMonth() === monthCursor.getMonth();
-                            const isSelected = dayKey === selectedDay;
-                            const isToday = dayKey === toDayKey(new Date());
+                    {calendarView === 'month' && (
+                        <div className="mt-2 grid grid-cols-7 gap-1">
+                            {monthDays.map((day) => {
+                                const dayKey = toDayKey(day);
+                                const dayTasks = tasksByDay.get(dayKey) ?? [];
+                                const isCurrentMonth = day.getMonth() === monthCursor.getMonth();
+                                const isSelected = dayKey === selectedDay;
+                                const isToday = dayKey === toDayKey(new Date());
 
-                            return (
-                                <button
-                                    key={dayKey}
-                                    type="button"
-                                    onClick={() => setSelectedDay(dayKey)}
-                                    className={
-                                        `flex min-h-[100px] flex-col items-start rounded-lg border px-2 py-2 text-left transition `
-                                        + (isSelected ? 'border-[color:var(--role-accent-500)] bg-[color:var(--role-accent-50)]' : 'border-gray-200')
-                                        + (isCurrentMonth ? ' bg-white' : ' bg-gray-50 text-gray-400')
-                                    }
-                                >
-                                    <div className="flex w-full items-center justify-between">
-                                        <span className={`text-xs font-semibold ${isToday ? 'text-[color:var(--role-accent-600)]' : 'text-gray-500'}`}>
-                                            {day.getDate()}
-                                        </span>
-                                        {dayTasks.length > 0 && (
-                                            <span className="rounded-full bg-[color:var(--role-accent-100)] px-2 text-[10px] font-semibold text-[color:var(--role-accent-700)]">
-                                                {dayTasks.length}
+                                return (
+                                    <button
+                                        key={dayKey}
+                                        type="button"
+                                        onClick={() => setSelectedDay(dayKey)}
+                                        className={
+                                            `flex min-h-[100px] flex-col items-start rounded-lg border px-2 py-2 text-left transition `
+                                            + (isSelected ? 'border-[color:var(--role-accent-500)] bg-[color:var(--role-accent-50)]' : 'border-gray-200')
+                                            + (isCurrentMonth ? ' bg-white' : ' bg-gray-50 text-gray-400')
+                                        }
+                                    >
+                                        <div className="flex w-full items-center justify-between">
+                                            <span className={`text-xs font-semibold ${isToday ? 'text-[color:var(--role-accent-600)]' : 'text-gray-500'}`}>
+                                                {day.getDate()}
                                             </span>
-                                        )}
-                                    </div>
-                                    <div className="mt-1 flex w-full flex-col gap-1">
-                                        {dayTasks.slice(0, 3).map((task) => (
-                                            <span key={task.id} className="truncate rounded-md bg-gray-100 px-2 py-0.5 text-[10px] text-gray-700">
-                                                {task.title}
+                                            {dayTasks.length > 0 && (
+                                                <span className="rounded-full bg-[color:var(--role-accent-100)] px-2 text-[10px] font-semibold text-[color:var(--role-accent-700)]">
+                                                    {dayTasks.length}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="mt-1 flex w-full flex-col gap-1">
+                                            {dayTasks.slice(0, 3).map((task) => (
+                                                <span key={task.id} className="truncate rounded-md bg-gray-100 px-2 py-0.5 text-[10px] text-gray-700">
+                                                    {task.title}
+                                                </span>
+                                            ))}
+                                            {dayTasks.length > 3 && (
+                                                <span className="text-[10px] text-gray-400">+{dayTasks.length - 3} daha</span>
+                                            )}
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {calendarView === 'week' && (
+                        <div className="mt-2 grid grid-cols-7 gap-1">
+                            {weekDays.map((day) => {
+                                const dayKey = toDayKey(day);
+                                const dayTasks = tasksByDay.get(dayKey) ?? [];
+                                const isSelected = dayKey === selectedDay;
+                                const isToday = dayKey === toDayKey(new Date());
+
+                                return (
+                                    <button
+                                        key={dayKey}
+                                        type="button"
+                                        onClick={() => setSelectedDay(dayKey)}
+                                        className={
+                                            `flex min-h-[140px] flex-col items-start rounded-lg border px-2 py-2 text-left transition `
+                                            + (isSelected ? 'border-[color:var(--role-accent-500)] bg-[color:var(--role-accent-50)]' : 'border-gray-200')
+                                            + ' bg-white'
+                                        }
+                                    >
+                                        <div className="flex w-full items-center justify-between">
+                                            <span className={`text-xs font-semibold ${isToday ? 'text-[color:var(--role-accent-600)]' : 'text-gray-500'}`}>
+                                                {day.getDate()}
                                             </span>
+                                            {dayTasks.length > 0 && (
+                                                <span className="rounded-full bg-[color:var(--role-accent-100)] px-2 text-[10px] font-semibold text-[color:var(--role-accent-700)]">
+                                                    {dayTasks.length}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="mt-1 flex w-full flex-col gap-1">
+                                            {dayTasks.slice(0, 4).map((task) => (
+                                                <span key={task.id} className="truncate rounded-md bg-gray-100 px-2 py-0.5 text-[10px] text-gray-700">
+                                                    {task.title}
+                                                </span>
+                                            ))}
+                                            {dayTasks.length > 4 && (
+                                                <span className="text-[10px] text-gray-400">+{dayTasks.length - 4} daha</span>
+                                            )}
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {calendarView === 'day' && (
+                        <div className="mt-2 grid gap-3">
+                            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-600">
+                                <span className="font-semibold text-gray-800">Secili Gun:</span> {formatDate(selectedDay)}
+                            </div>
+                            <div className="rounded-lg border border-gray-200 bg-white p-3">
+                                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Planli Icerikler</p>
+                                {selectedDayTasks.length === 0 && (
+                                    <p className="mt-2 text-sm text-gray-500">Bu gunde planli icerik yok.</p>
+                                )}
+                                {selectedDayTasks.length > 0 && (
+                                    <div className="mt-2 space-y-2">
+                                        {selectedDayTasks.map((task) => (
+                                            <div key={task.id} className="rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700">
+                                                <p className="font-semibold text-gray-900">{task.title}</p>
+                                                <p className="text-xs text-gray-500">{task.description || 'Aciklama yok'}</p>
+                                            </div>
                                         ))}
-                                        {dayTasks.length > 3 && (
-                                            <span className="text-[10px] text-gray-400">+{dayTasks.length - 3} daha</span>
-                                        )}
                                     </div>
-                                </button>
-                            );
-                        })}
-                    </div>
+                                )}
+                            </div>
+                            <div className="rounded-lg border border-gray-200 bg-white">
+                                {Array.from({ length: 24 }).map((_, hour) => (
+                                    <div key={hour} className="flex items-center gap-3 border-b border-gray-100 px-3 py-2 text-xs text-gray-500">
+                                        <div className="w-12 font-semibold">{String(hour).padStart(2, '0')}:00</div>
+                                        <div className="h-2 flex-1 rounded-full bg-gray-100" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="space-y-4">
