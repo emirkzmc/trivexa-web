@@ -204,6 +204,7 @@ export function CodeProcessesPage() {
     const scopedProjects = PERSONAL_PROJECT_SCOPE_ROLES.has(role);
 
     const [selectedProjectId, setSelectedProjectId] = useState('');
+    const [selectedBranch, setSelectedBranch] = useState('');
 
     const projectsQuery = useQuery({
         queryKey: ['code-processes', 'projects', role, scopedProjects],
@@ -219,6 +220,10 @@ export function CodeProcessesPage() {
             setSelectedProjectId(projects[0].id);
         }
     }, [projects, selectedProjectId]);
+    
+    useEffect(() => {
+        setSelectedBranch('');
+    }, [selectedProjectId]);
 
     const selectedProject = useMemo<ProjectItem | null>(
         () => projects.find((project) => project.id === selectedProjectId) ?? null,
@@ -226,14 +231,23 @@ export function CodeProcessesPage() {
     );
 
     const codeProcessQuery = useQuery({
-        queryKey: ['code-processes', selectedProjectId],
-        queryFn: () => getProjectCodeProcesses(selectedProjectId, {commitsPerPage: 6, recentTaskLimit: 18}),
+        queryKey: ['code-processes', selectedProjectId, selectedBranch],
+        queryFn: () => getProjectCodeProcesses(
+            selectedProjectId,
+            {
+                branch: selectedBranch || undefined,
+                commitsPerPage: 6,
+                recentTaskLimit: 18,
+            },
+        ),
         enabled: !!selectedProjectId,
         staleTime: 30_000,
     });
 
     const codeProcess = codeProcessQuery.data;
     const overview = codeProcess?.github.overview;
+    const branches = overview?.branches ?? [];
+    const defaultBranch = overview?.repository?.defaultBranch ?? branches[0]?.name ?? '';
     const commits = codeProcess?.github.commits.commits ?? [];
     const tasksSnapshot = codeProcess?.tasks;
     const recentTasks = tasksSnapshot?.recentTasks ?? [];
@@ -274,20 +288,43 @@ export function CodeProcessesPage() {
 
     const releaseWindows = useMemo(() => buildReleaseWindows(new Date()), []);
 
+    useEffect(() => {
+        if (!selectedBranch && defaultBranch) {
+            setSelectedBranch(defaultBranch);
+        }
+    }, [defaultBranch, selectedBranch]);
+
     const headerActions = (
-        <div className="flex min-w-[240px] items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-1">
-            <FolderKanban size={14} className="text-gray-500"/>
-            <select
-                value={selectedProjectId}
-                onChange={(event) => setSelectedProjectId(event.target.value)}
-                disabled={projectsQuery.isLoading || projects.length === 0}
-                className="h-8 w-full border-0 bg-transparent text-sm text-gray-700 outline-none"
-            >
-                {projects.length === 0 && <option value="">Proje bulunamadi</option>}
-                {projects.map((project) => (
-                    <option key={project.id} value={project.id}>{project.name}</option>
-                ))}
-            </select>
+        <div className="flex flex-wrap items-center gap-2">
+            <div className="flex min-w-[240px] items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-1">
+                <FolderKanban size={14} className="text-gray-500"/>
+                <select
+                    value={selectedProjectId}
+                    onChange={(event) => setSelectedProjectId(event.target.value)}
+                    disabled={projectsQuery.isLoading || projects.length === 0}
+                    className="h-8 w-full border-0 bg-transparent text-sm text-gray-700 outline-none"
+                >
+                    {projects.length === 0 && <option value="">Proje bulunamadi</option>}
+                    {projects.map((project) => (
+                        <option key={project.id} value={project.id}>{project.name}</option>
+                    ))}
+                </select>
+            </div>
+            <div className="flex min-w-[200px] items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-1">
+                <GitBranch size={14} className="text-gray-500"/>
+                <select
+                    value={selectedBranch}
+                    onChange={(event) => setSelectedBranch(event.target.value)}
+                    disabled={!overview?.connected || branches.length === 0}
+                    className="h-8 w-full border-0 bg-transparent text-sm text-gray-700 outline-none"
+                >
+                    {!overview?.connected && <option value="">Repo bagli degil</option>}
+                    {overview?.connected && branches.length === 0 && <option value="">Branch yok</option>}
+                    {branches.map((branch) => (
+                        <option key={branch.name} value={branch.name}>{branch.name}</option>
+                    ))}
+                </select>
+            </div>
         </div>
     );
 
@@ -443,7 +480,9 @@ export function CodeProcessesPage() {
                                         <GitCommitHorizontal size={15} className="text-amber-600"/>
                                         Commit AkiSi
                                     </h3>
-                                    <span className="text-xs text-gray-500">Son commit hareketleri</span>
+                                    <span className="text-xs text-gray-500">
+                                        {selectedBranch ? `${selectedBranch} branch` : 'Son commit hareketleri'}
+                                    </span>
                                 </div>
 
                                 {codeProcessQuery.isLoading ? (
