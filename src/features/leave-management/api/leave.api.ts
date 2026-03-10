@@ -38,23 +38,50 @@ export interface LeaveCreatePayload {
     department?: string;
 }
 
+type MaybeWrapped<T> = { data?: T } | T;
+
+function unwrapData<T>(payload: unknown): T {
+    if (
+        typeof payload === 'object'
+        && payload !== null
+        && 'data' in payload
+        && (payload as { data?: unknown }).data !== undefined
+    ) {
+        return (payload as { data: unknown }).data as T;
+    }
+    return payload as T;
+}
+
 export async function getLeaveRequests(params?: LeaveListParams): Promise<LeaveRequestItem[]> {
-    const { data } = await api.get<{ data?: LeaveRequestItem[] } | LeaveRequestItem[]>('/leaves', { params });
-    if (Array.isArray(data)) return data;
-    return data.data ?? [];
+    const { data } = await api.get<MaybeWrapped<unknown>>('/leaves', { params });
+    const payload = unwrapData<unknown>(data);
+
+    if (Array.isArray(payload)) {
+        return payload as LeaveRequestItem[];
+    }
+
+    if (payload && typeof payload === 'object' && 'data' in (payload as Record<string, unknown>)) {
+        const inner = unwrapData<unknown>((payload as { data?: unknown }).data);
+        return Array.isArray(inner) ? (inner as LeaveRequestItem[]) : [];
+    }
+
+    return [];
 }
 
 export async function createLeaveRequest(
     payload: LeaveCreatePayload,
 ): Promise<LeaveRequestItem> {
-    const { data } = await api.post<{ data: LeaveRequestItem }>('/leaves', payload);
-    return data.data;
+    const { data } = await api.post<MaybeWrapped<LeaveRequestItem>>('/leaves', payload);
+    return unwrapData<LeaveRequestItem>(data);
 }
 
 export async function updateLeaveStatus(
     id: string,
     status: LeaveStatus,
 ): Promise<LeaveRequestItem> {
-    const { data } = await api.patch<{ data: LeaveRequestItem }>(`/leaves/${id}/status`, { status });
-    return data.data;
+    const { data } = await api.patch<MaybeWrapped<LeaveRequestItem>>(
+        `/leaves/${id}/status`,
+        { status },
+    );
+    return unwrapData<LeaveRequestItem>(data);
 }

@@ -11,7 +11,7 @@ import { useAuthStore } from '../../features/auth/store/authStore';
 import { useUnreadCount } from '../../features/notifications/hooks/useUnreadCount';
 import { NAV_CONFIG, type RoleNavConfig } from '../../shared/constants/navConfig';
 import { ROLES } from '../../shared/constants/roles';
-import { NAV_PERMISSION_MAP } from '../constants/navPermissions';
+import { NAV_DEPARTMENT_MAP, NAV_PERMISSION_MAP } from '../constants/navPermissions';
 import { usePermission } from '../hooks/usePermission';
 import { normalizeRoleKey } from '../utils/roleUtils';
 
@@ -21,6 +21,45 @@ const ICON_MAP: Record<string, React.ElementType> = {
     Receipt, Code2, CalendarDays, Megaphone, Palette, Film, Network,
     CalendarCheck, Clock, TrendingUp, Inbox, ClipboardList, MessageSquare,
     MessageSquarePlus, StickyNote,
+};
+
+const DEPARTMENT_NAV_ITEMS: Record<
+    string,
+    { group: string; items: Array<{ label: string; path: string; icon?: string }> }
+> = {
+    MARKETING: {
+        group: 'PAZARLAMA',
+        items: [
+            { label: 'Icerik Planlari', path: '/app/icerik-plani', icon: 'CalendarDays' },
+            { label: 'Kampanya Yonetimi', path: '/app/kampanyalar', icon: 'Megaphone' },
+        ],
+    },
+    DESIGN: {
+        group: 'TASARIM',
+        items: [
+            { label: 'Tasarim Surecleri', path: '/app/tasarim', icon: 'Palette' },
+        ],
+    },
+    PRODUCTION: {
+        group: 'PRODUKSIYON',
+        items: [
+            { label: 'Produksiyon Surecleri', path: '/app/produksiyon', icon: 'Film' },
+        ],
+    },
+    DEVELOPMENT: {
+        group: 'TEKNOLOJI',
+        items: [
+            { label: 'Kod Surecleri', path: '/app/kod', icon: 'Code2' },
+        ],
+    },
+    HR: {
+        group: 'IK',
+        items: [
+            { label: 'Izin Yonetimi', path: '/app/izin-yonetimi', icon: 'CalendarCheck' },
+            { label: 'Calisma Suresi', path: '/app/calisma-suresi', icon: 'Clock' },
+            { label: 'Performans', path: '/app/performans', icon: 'TrendingUp' },
+        ],
+    },
 };
 
 const SIDEBAR_EXPANDED_WIDTH = 240;
@@ -67,9 +106,32 @@ export function Sidebar({
         ? MOBILE_SIDEBAR_WIDTH
         : (collapsedState ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH);
 
+    const normalizedDepartment = (() => {
+        const raw = String(user.department ?? '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toUpperCase();
+        if (!raw) return '';
+        if (raw.includes('FINANS') || raw.includes('MUHASEBE') || raw.includes('ACCOUNT')) return 'FINANCE';
+        if (raw.includes('IK') || raw.includes('INSAN') || raw.includes('HR')) return 'HR';
+        if (raw.includes('PAZARLAMA') || raw.includes('MARKETING')) return 'MARKETING';
+        if (raw.includes('TASARIM') || raw.includes('DESIGN')) return 'DESIGN';
+        if (raw.includes('URETIM') || raw.includes('PRODUKSIYON') || raw.includes('PRODUCTION')) return 'PRODUCTION';
+        if (raw.includes('YAZILIM') || raw.includes('GELISTIRME') || raw.includes('DEVELOPMENT')) return 'DEVELOPMENT';
+        return raw;
+    })();
+
     const visibleGroups = groups
         .map((group) => {
             const visibleItems = group.items.filter((item) => {
+                const requiredDepartments = NAV_DEPARTMENT_MAP[item.path];
+                if (requiredDepartments && normalizedRole !== 'ADMIN' && normalizedRole !== 'CEO') {
+                    if (!normalizedDepartment) return false;
+                    const allowed = requiredDepartments.some(
+                        (dept) => dept.toUpperCase() === normalizedDepartment,
+                    );
+                    if (!allowed) return false;
+                }
                 const required = NAV_PERMISSION_MAP[item.path];
                 if (!required) return true;
                 return Array.isArray(required)
@@ -79,8 +141,34 @@ export function Sidebar({
             return { ...group, items: visibleItems };
         })
         .filter((group) => group.items.length > 0);
+
+    const departmentNav = DEPARTMENT_NAV_ITEMS[normalizedDepartment];
+    const groupsWithDepartment = (() => {
+        if (!departmentNav) return visibleGroups;
+
+        const existingPaths = new Set(
+            visibleGroups.flatMap((group) => group.items.map((item) => item.path)),
+        );
+        const candidateItems = departmentNav.items.filter((item) => !existingPaths.has(item.path));
+        if (!candidateItems.length) return visibleGroups;
+
+        const allowedItems = candidateItems.filter((item) => {
+            const required = NAV_PERMISSION_MAP[item.path];
+            if (!required) return true;
+            return Array.isArray(required)
+                ? hasAnyPermission(required)
+                : hasPermission(required);
+        });
+
+        if (!allowedItems.length) return visibleGroups;
+
+        return [
+            ...visibleGroups,
+            { group: departmentNav.group, items: allowedItems },
+        ];
+    })();
     const timeTrackerItem = { label: 'Time Tracker', path: '/app/time-tracker', icon: 'Timer' } as const;
-    const hasTimeTracker = visibleGroups.some((group) =>
+    const hasTimeTracker = groupsWithDepartment.some((group) =>
         group.items.some((item) => item.path === timeTrackerItem.path),
     );
     const normalizeGroupName = (value: string | null) =>
@@ -89,8 +177,8 @@ export function Sidebar({
             .replace(/[\u0300-\u036f]/g, '')
             .toUpperCase();
     const groupsWithTimeTracker = (() => {
-        if (hasTimeTracker) return visibleGroups;
-        const cloned = visibleGroups.map((group) => ({
+        if (hasTimeTracker) return groupsWithDepartment;
+        const cloned = groupsWithDepartment.map((group) => ({
             ...group,
             items: [...group.items],
         }));

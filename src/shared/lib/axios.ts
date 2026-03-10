@@ -95,7 +95,8 @@ api.interceptors.response.use(
 
         // ── 403 — Yetkisiz erişim → 404 sayfasına yönlendir ─────
         if (status === 403) {
-            window.location.href = '/404';
+            const message = resolveErrorMessage(error) || 'Erisim engellendi';
+            toast.error(message, { duration: 3_000 });
             return Promise.reject(error);
         }
 

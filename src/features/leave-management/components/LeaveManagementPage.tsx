@@ -45,7 +45,8 @@ const MANAGER_ROLES = new Set<string>([
 ]);
 
 function formatDate(value: string): string {
-    const date = new Date(value);
+    const parsed = parseDateOnly(value);
+    const date = parsed ?? new Date(value);
     if (Number.isNaN(date.getTime())) return '-';
     return new Intl.DateTimeFormat('tr-TR', { day: '2-digit', month: 'short' }).format(date);
 }
@@ -64,7 +65,9 @@ function toDateInputValue(value: Date): string {
 
 function parseDateOnly(value: string): Date | null {
     if (!value) return null;
-    const date = new Date(`${value}T00:00:00`);
+    const trimmed = value.trim();
+    const datePart = trimmed.split('T')[0]?.split(' ')[0] ?? trimmed;
+    const date = new Date(`${datePart}T00:00:00`);
     if (Number.isNaN(date.getTime())) return null;
     return date;
 }
@@ -110,6 +113,7 @@ export function LeaveManagementPage() {
             search: search.trim() || undefined,
         }),
         staleTime: 30_000,
+        enabled: canManageLeaves,
     });
 
     const personnelQuery = useQuery({
@@ -222,6 +226,21 @@ export function LeaveManagementPage() {
     const pendingCount = filteredRequests.filter((item) => item.status === 'PENDING').length;
     const approvedCount = filteredRequests.filter((item) => item.status === 'APPROVED').length;
     const rejectedCount = filteredRequests.filter((item) => item.status === 'REJECTED').length;
+
+    if (!canManageLeaves) {
+        return (
+            <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
+                <PageHeader
+                    icon={<CalendarCheck size={20} color="#DC2626" />}
+                    title="Izin Yonetimi"
+                    subtitle="Izin taleplerini takip edin, onay sureclerini yonetin."
+                />
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    Bu sayfa yalnizca Admin, CEO, Manager veya HR rollerine aciktir.
+                </div>
+            </div>
+        );
+    }
 
     useEffect(() => {
         if (!isCreateOpen) return;

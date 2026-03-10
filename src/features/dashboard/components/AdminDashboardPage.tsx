@@ -32,6 +32,9 @@ import { getCashflowOverview } from '../../finance/api/cashflow.api';
 import { getSupportRequests } from '../../tickets/api/tickets.api';
 import { getContracts } from '../../contracts/api/contracts.api';
 import { getInvoices } from '../../finance/api/invoices.api';
+import { getProjects } from '../../projects/api/projects.api';
+import { getActiveTimer, getTimerHistory } from '../../time-tracker/api/timeTracker.api';
+import { getMeetings } from '../../meetings/api/meetings.api';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
 
@@ -125,6 +128,47 @@ function formatMoney(value?: number) {
   }).format(value);
 }
 
+function startOfWeek(date: Date): Date {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function endOfWeek(date: Date): Date {
+  const start = startOfWeek(date);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  end.setHours(23, 59, 59, 999);
+  return end;
+}
+
+function formatHours(seconds?: number): string {
+  if (!seconds || Number.isNaN(seconds)) return '0.0';
+  const hours = seconds / 3600;
+  return hours.toFixed(1);
+}
+
+function isActiveProject(status?: string): boolean {
+  const normalized = String(status ?? '').toUpperCase();
+  return !['COMPLETED', 'DONE', 'CANCELLED', 'PASIF', 'INACTIVE'].includes(normalized);
+}
+
+function isSameDay(left: Date, right: Date): boolean {
+  return left.getFullYear() === right.getFullYear()
+    && left.getMonth() === right.getMonth()
+    && left.getDate() === right.getDate();
+}
+
+function parseDateValue(value?: string): Date | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date;
+}
+
 function formatCount(value?: number, loading?: boolean) {
   if (loading) return '...';
   if (typeof value !== 'number' || Number.isNaN(value)) return '-';
@@ -196,18 +240,29 @@ function buildBarData(entries: StatusEntry[]) {
 
 export function AdminDashboardPage() {
   const navigate = useNavigate();
-  const role = useAuthStore((state) => state.user?.role);
+  const user = useAuthStore((state) => state.user);
+  const role = user?.role;
   const normalizedRole = String(role ?? '').toUpperCase();
   const { hasAnyPermission } = usePermission();
   const [monthCount, setMonthCount] = useState<6 | 12>(6);
+  const showPersonalWidgets = Boolean(user?.id);
+  const today = useMemo(() => new Date(), []);
+  const weekStart = useMemo(() => startOfWeek(today), [today]);
+  const weekEnd = useMemo(() => endOfWeek(today), [today]);
+  const weekStartIso = useMemo(() => weekStart.toISOString(), [weekStart]);
+  const weekEndIso = useMemo(() => weekEnd.toISOString(), [weekEnd]);
 
   const canViewUsers = hasAnyPermission(USER_PERMS);
   const canViewProjects = hasAnyPermission(PROJECT_PERMS);
   const canViewClients = hasAnyPermission(CLIENT_PERMS);
   const canViewInvoices = hasAnyPermission(INVOICE_PERMS);
-  const canViewContracts = hasAnyPermission(CONTRACT_PERMS);
+  const canAccessContractsEndpoint = normalizedRole === 'ADMIN' || normalizedRole === 'MANAGER';
+  const canViewContracts = canAccessContractsEndpoint;
   const canViewTickets = hasAnyPermission(TICKET_PERMS);
   const canViewFinance = hasAnyPermission([...PAYMENT_PERMS, ...INVOICE_PERMS, ...EXPENSE_PERMS]);
+  const personalProjectsEnabled = showPersonalWidgets;
+  const personalTimeEnabled = showPersonalWidgets;
+  const personalMeetingsEnabled = showPersonalWidgets;
   const canViewRevenue = canViewFinance || canViewInvoices;
   const canAccessSummaryEndpoint = normalizedRole === 'ADMIN' || normalizedRole === 'MANAGER';
   const wantsSummary = canViewUsers || canViewProjects || canViewClients || canViewRevenue;
@@ -242,12 +297,59 @@ export function AdminDashboardPage() {
     enabled: canViewInvoices,
   });
 
+  const myProjectsQuery = useQuery({
+    queryKey: ['dashboard-my-projects'],
+    queryFn: () => getProjects({ page: 1, limit: 50, myProjectsOnly: true }),
+    enabled: personalProjectsEnabled,
+  });
+
+  const myTimeQuery = useQuery({
+    queryKey: ['dashboard-my-time', weekStartIso, weekEndIso],
+    queryFn: () => getTimerHistory({
+      page: 1,
+      limit: 100,
+      userId: user?.id,
+      startDate: weekStartIso,
+      endDate: weekEndIso,
+    }),
+    enabled: personalTimeEnabled && Boolean(user?.id),
+  });
+
+  const activeTimerQuery = useQuery({
+    queryKey: ['dashboard-active-timer'],
+    queryFn: getActiveTimer,
+    enabled: personalTimeEnabled,
+    refetchInterval: 30_000,
+  });
+
+  const meetingsQuery = useQuery({
+    queryKey: ['dashboard-my-meetings'],
+    queryFn: () => getMeetings(),
+    enabled: personalMeetingsEnabled,
+  });
+
   const summary = summaryQuery.data;
   const cashflow = cashflowQuery.data;
 
   const supportRows = supportQuery.data?.data ?? [];
   const contractRows = contractQuery.data?.data ?? [];
   const invoiceRows = invoiceQuery.data ?? [];
+  const myProjects = myProjectsQuery.data?.data ?? [];
+  const myProjectCount = myProjects.length;
+  const myActiveProjects = myProjects.filter((project) => isActiveProject(project.status)).length;
+  const timeRows = myTimeQuery.data?.data ?? [];
+  const weeklySeconds = timeRows.reduce((sum, entry) => sum + (entry.duration ?? 0), 0);
+  const todaySeconds = timeRows.reduce((sum, entry) => {
+    const started = parseDateValue(entry.startedAt);
+    if (!started) return sum;
+    return isSameDay(started, today) ? sum + (entry.duration ?? 0) : sum;
+  }, 0);
+  const meetings = meetingsQuery.data ?? [];
+  const upcomingMeetings = meetings.filter((meeting) => {
+    const date = parseDateValue(meeting.date);
+    if (!date) return false;
+    return date >= today && date <= new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+  });
 
   const approvalEntries = useMemo(
     () => limitStatusEntries(buildStatusEntries(supportRows, (row) => row.approvalStatus), 5),
@@ -358,6 +460,119 @@ export function AdminDashboardPage() {
           </div>
         )}
       />
+
+      {showPersonalWidgets && (
+        <section className="mb-4 grid gap-3 md:grid-cols-4">
+          <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Profil</p>
+            <p className="mt-1 text-base font-semibold text-gray-900">{user?.name || '-'}</p>
+            <p className="mt-1 text-xs text-gray-500">{user?.role || '-'}</p>
+            <p className="mt-1 text-xs text-gray-500">{user?.department || '-'}</p>
+          </article>
+          {personalProjectsEnabled && (
+            <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Projelerim</p>
+              <p className="mt-1 text-2xl font-bold text-indigo-700">
+                {myProjectsQuery.isLoading ? '...' : myProjectCount}
+              </p>
+              <p className="mt-1 text-xs text-gray-500">Aktif proje: {myActiveProjects}</p>
+            </article>
+          )}
+          {personalTimeEnabled && (
+            <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Bu Hafta Calisma</p>
+              <p className="mt-1 text-2xl font-bold text-emerald-700">
+                {myTimeQuery.isLoading ? '...' : `${formatHours(weeklySeconds)}s`}
+              </p>
+              <p className="mt-1 text-xs text-gray-500">Bugun: {formatHours(todaySeconds)}s</p>
+            </article>
+          )}
+          {personalMeetingsEnabled && (
+            <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Toplantilar</p>
+              <p className="mt-1 text-2xl font-bold text-sky-700">
+                {meetingsQuery.isLoading ? '...' : upcomingMeetings.length}
+              </p>
+              <p className="mt-1 text-xs text-gray-500">7 gun icinde</p>
+            </article>
+          )}
+        </section>
+      )}
+
+      {showPersonalWidgets && (
+        <section className="mb-4 grid gap-3 md:grid-cols-2">
+          {personalTimeEnabled && (
+            <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Aktif Zamanlayici</p>
+                  <p className="mt-1 text-sm font-semibold text-gray-900">
+                    {activeTimerQuery.isLoading
+                      ? 'Yukleniyor...'
+                      : activeTimerQuery.data
+                        ? `${activeTimerQuery.data.projectName || 'Proje'}`
+                        : 'Aktif zamanlayici yok'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/app/time-tracker')}
+                  className="inline-flex h-8 items-center gap-1 rounded-lg border border-gray-300 bg-white px-2 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50"
+                >
+                  Time Tracker
+                  <ArrowRight size={12} />
+                </button>
+              </div>
+              {activeTimerQuery.data && (
+                <p className="mt-2 text-xs text-gray-500">
+                  Gorev: {activeTimerQuery.data.taskTitle || '—'}
+                </p>
+              )}
+            </article>
+          )}
+
+          <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Hizli Aksiyonlar</p>
+                <p className="mt-1 text-sm font-semibold text-gray-900">Kisa yollar</p>
+              </div>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {personalProjectsEnabled && (
+                <button
+                  type="button"
+                  onClick={() => navigate('/app/projelerim')}
+                  className="inline-flex h-8 items-center gap-1 rounded-lg border border-gray-300 bg-white px-2 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50"
+                >
+                  Projelerim
+                  <ArrowRight size={12} />
+                </button>
+              )}
+              {personalMeetingsEnabled && (
+                <button
+                  type="button"
+                  onClick={() => navigate('/app/toplanti-takvimi')}
+                  className="inline-flex h-8 items-center gap-1 rounded-lg border border-gray-300 bg-white px-2 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50"
+                >
+                  Toplantilar
+                  <ArrowRight size={12} />
+                </button>
+              )}
+              {personalTimeEnabled && (
+                <button
+                  type="button"
+                  onClick={() => navigate('/app/time-tracker')}
+                  className="inline-flex h-8 items-center gap-1 rounded-lg border border-gray-300 bg-white px-2 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50"
+                >
+                  Zaman Takibi
+                  <ArrowRight size={12} />
+                </button>
+              )}
+            </div>
+          </article>
+        </section>
+      )}
 
       {wantsSummary && (
         <section className="mb-4 grid gap-3 md:grid-cols-4">

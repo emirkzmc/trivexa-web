@@ -53,6 +53,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
 
     HR: [
         'USERS_CREATE', 'USERS_READ', 'USERS_UPDATE',
+        'TIME_ENTRIES_READ', 'TIME_ENTRIES_UPDATE', 'TIME_ENTRIES_APPROVE',
     ],
 
     CLIENT: [],
