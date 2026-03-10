@@ -102,7 +102,7 @@ export function BankReconciliationPage() {
     });
     const clientsQuery = useQuery({
         queryKey: ['bank-reconciliation-clients'],
-        queryFn: () => getClients({ page: 1, limit: 200 }),
+        queryFn: () => getClients({ page: 1, limit: 100 }),
         enabled: canRead,
     });
     const paymentsQuery = useQuery({
