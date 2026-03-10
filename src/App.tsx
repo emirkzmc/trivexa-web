@@ -32,6 +32,7 @@ import { CustomerPanelLayout } from './features/customer-panel/components/Custom
 import { CustomerPanelDashboardPage } from './features/customer-panel/components/CustomerPanelDashboardPage';
 import { CustomerPanelPlaceholderPage } from './features/customer-panel/components/CustomerPanelPlaceholderPage';
 import { CustomerPanelContractsPage } from './features/customer-panel/components/CustomerPanelContractsPage';
+import { CodeProcessesPage } from './features/code-processes/components/CodeProcessesPage';
 
 function App() {
   return (
@@ -89,6 +90,7 @@ function App() {
         <Route path="gorevler" element={<TasksPage />} />
         <Route path="gorevlerim" element={<Navigate to="/app/gorevler" replace />} />
         <Route path="gorevler/:taskId" element={<TaskDetailPage />} />
+        <Route path="kod" element={<CodeProcessesPage />} />
         <Route path="talepler" element={<SupportRequestsPage />} />
         <Route path="personel-toplantilari" element={<MeetingsCalendarPage />} />
         <Route path="gorusmeler" element={<MeetingsPage />} />

@@ -68,6 +68,36 @@ function timerDurationSeconds(startedAt?: string, stoppedAt?: string, duration?:
     return Number.isFinite(diff) && diff > 0 ? Math.floor(diff / 1000) : 0;
 }
 
+function extractApiErrorMessage(error: unknown, fallback: string): string {
+    if (
+        typeof error === 'object'
+        && error !== null
+        && 'response' in error
+    ) {
+        const response = (error as { response?: { data?: unknown } }).response;
+        const responseData = response?.data;
+        if (
+            typeof responseData === 'object'
+            && responseData !== null
+            && 'message' in responseData
+            && typeof (responseData as { message?: unknown }).message === 'string'
+        ) {
+            return (responseData as { message: string }).message;
+        }
+    }
+
+    if (
+        typeof error === 'object'
+        && error !== null
+        && 'message' in error
+        && typeof (error as { message?: unknown }).message === 'string'
+    ) {
+        return (error as { message: string }).message;
+    }
+
+    return fallback;
+}
+
 function StatCard({ title, value, subtitle }: { title: string; value: string; subtitle: string }) {
     return (
         <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
@@ -110,6 +140,8 @@ export function ProjectDetailPage() {
     const { projectId = '' } = useParams<{ projectId: string }>();
     const [activeTab, setActiveTab] = useState<DetailTab>('overview');
     const [githubRepoUrl, setGithubRepoUrl] = useState('');
+    const [githubAccessToken, setGithubAccessToken] = useState('');
+    const [clearStoredGithubToken, setClearStoredGithubToken] = useState(false);
     const [selectedBranch, setSelectedBranch] = useState('');
 
     const projectQuery = useQuery({
@@ -158,15 +190,22 @@ export function ProjectDetailPage() {
     });
 
     const connectGithubMutation = useMutation({
-        mutationFn: (repoUrl: string) => updateProjectGithubRepository(projectId, repoUrl),
-        onSuccess: async () => {
-            toast.success('GitHub repository baglandi.');
-            setGithubRepoUrl('');
+        mutationFn: (payload: { repoUrl: string; accessToken?: string; clearAccessToken?: boolean }) =>
+            updateProjectGithubRepository(projectId, {
+                githubUrl: payload.repoUrl,
+                accessToken: payload.accessToken,
+                clearAccessToken: payload.clearAccessToken,
+            }),
+        onSuccess: async (result) => {
+            toast.success('GitHub baglanti ayarlari guncellendi.');
+            setGithubRepoUrl(result.repositoryUrl || '');
+            setGithubAccessToken('');
+            setClearStoredGithubToken(false);
             await queryClient.invalidateQueries({ queryKey: ['project-github-overview', projectId] });
             await queryClient.invalidateQueries({ queryKey: ['project-github-commits', projectId] });
         },
-        onError: () => {
-            toast.error('GitHub repository baglanamadi.');
+        onError: (error: unknown) => {
+            toast.error(extractApiErrorMessage(error, 'GitHub repository baglanamadi.'));
         },
     });
 
@@ -221,6 +260,13 @@ export function ProjectDetailPage() {
             );
         }
     }, [githubOverviewQuery.data, selectedBranch]);
+
+    useEffect(() => {
+        const linkedRepositoryUrl = githubOverviewQuery.data?.linkedRepositoryUrl;
+        if (linkedRepositoryUrl && !githubRepoUrl.trim()) {
+            setGithubRepoUrl(linkedRepositoryUrl);
+        }
+    }, [githubOverviewQuery.data?.linkedRepositoryUrl, githubRepoUrl]);
 
     if (!projectId) {
         return <div className="px-8 py-6 text-sm text-red-600">Proje kimligi bulunamadı.</div>;
@@ -397,7 +443,7 @@ export function ProjectDetailPage() {
                                 </div>
                                 {githubOverviewQuery.data?.connected && (
                                     <a
-                                        href={githubOverviewQuery.data.linkedRepositoryUrl}
+                                        href={githubOverviewQuery.data.linkedRepositoryUrl ?? undefined}
                                         target="_blank"
                                         rel="noreferrer"
                                         className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50"
@@ -408,7 +454,7 @@ export function ProjectDetailPage() {
                                 )}
                             </div>
 
-                            {!githubOverviewQuery.data?.connected && canManageGithub && (
+                            {canManageGithub && (
                                 <form
                                     className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-3"
                                     onSubmit={(event) => {
@@ -418,29 +464,74 @@ export function ProjectDetailPage() {
                                             toast.error('GitHub repository URL zorunludur.');
                                             return;
                                         }
-                                        connectGithubMutation.mutate(normalizedUrl);
+                                        const normalizedToken = githubAccessToken.trim();
+                                        connectGithubMutation.mutate({
+                                            repoUrl: normalizedUrl,
+                                            accessToken: normalizedToken || undefined,
+                                            clearAccessToken: clearStoredGithubToken || undefined,
+                                        });
                                     }}
                                 >
-                                    <label className="mb-1 block text-xs font-semibold text-gray-700" htmlFor="projectGithubUrl">
-                                        GitHub Repository URL
-                                    </label>
-                                    <div className="flex flex-col gap-2 sm:flex-row">
-                                        <input
-                                            id="projectGithubUrl"
-                                            type="url"
-                                            value={githubRepoUrl}
-                                            onChange={(event) => setGithubRepoUrl(event.target.value)}
-                                            placeholder="https://github.com/owner/repo"
-                                            className="h-9 flex-1 rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
-                                        />
-                                        <button
-                                            type="submit"
-                                            disabled={connectGithubMutation.isPending}
-                                            className="inline-flex h-9 items-center justify-center rounded-lg bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-300"
-                                        >
-                                            {connectGithubMutation.isPending ? 'Baglaniyor...' : 'Repository Bagla'}
-                                        </button>
+                                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-gray-600">
+                                        GitHub Baglanti Ayarlari
+                                    </p>
+                                    <div className="grid gap-2 md:grid-cols-2">
+                                        <div className="md:col-span-2">
+                                            <label className="mb-1 block text-xs font-semibold text-gray-700" htmlFor="projectGithubUrl">
+                                                GitHub Repository URL
+                                            </label>
+                                            <input
+                                                id="projectGithubUrl"
+                                                type="url"
+                                                value={githubRepoUrl}
+                                                onChange={(event) => setGithubRepoUrl(event.target.value)}
+                                                placeholder="https://github.com/owner/repo"
+                                                className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                            />
+                                        </div>
+                                        <div className="md:col-span-2">
+                                            <label className="mb-1 block text-xs font-semibold text-gray-700" htmlFor="projectGithubToken">
+                                                Private Repo Token (Opsiyonel)
+                                            </label>
+                                            <input
+                                                id="projectGithubToken"
+                                                type="password"
+                                                autoComplete="new-password"
+                                                value={githubAccessToken}
+                                                onChange={(event) => setGithubAccessToken(event.target.value)}
+                                                placeholder="ghp_... veya fine-grained token"
+                                                className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                            />
+                                            <p className="mt-1 text-[11px] text-gray-500">
+                                                Private repository icin token girin. Bos birakirsaniz global backend tokeni kullanilir.
+                                            </p>
+                                        </div>
+                                        <label className="inline-flex items-center gap-2 text-xs text-gray-700">
+                                            <input
+                                                type="checkbox"
+                                                checked={clearStoredGithubToken}
+                                                onChange={(event) => setClearStoredGithubToken(event.target.checked)}
+                                                className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                                            />
+                                            Kayitli proje tokenini sil
+                                        </label>
+                                        <div className="flex items-end justify-end">
+                                            <button
+                                                type="submit"
+                                                disabled={connectGithubMutation.isPending}
+                                                className="inline-flex h-9 items-center justify-center rounded-lg bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+                                            >
+                                                {connectGithubMutation.isPending ? 'Kaydediliyor...' : 'Baglantiyi Kaydet'}
+                                            </button>
+                                        </div>
                                     </div>
+
+                                    {githubOverviewQuery.data?.connected && (
+                                        <p className="mt-2 text-[11px] text-gray-600">
+                                            Aktif baglanti: {githubOverviewQuery.data.linkedRepositoryFullName || '-'} | Token modu:{' '}
+                                            <strong>{githubOverviewQuery.data.hasCustomToken ? 'Proje Tokeni' : 'Global Token'}</strong>
+                                        </p>
+                                    )}
                                 </form>
                             )}
 
@@ -453,11 +544,21 @@ export function ProjectDetailPage() {
                                     GitHub bilgileri yüklenemedi.
                                 </p>
                             ) : !githubOverviewQuery.data?.connected ? (
-                                <p className="rounded-lg border border-dashed border-gray-300 px-3 py-8 text-center text-sm text-gray-500">
-                                    Bu proje icin bağlı bir GitHub repository yok.
-                                </p>
+                                <div className="rounded-lg border border-dashed border-gray-300 px-3 py-8 text-center text-sm text-gray-500">
+                                    <p>Bu proje için bağlı bir GitHub repository yok.</p>
+                                    {githubOverviewQuery.data?.error && (
+                                        <p className="mt-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                                            {githubOverviewQuery.data.error}
+                                        </p>
+                                    )}
+                                </div>
                             ) : (
                                 <>
+                                    {githubOverviewQuery.data?.error && (
+                                        <p className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                                            {githubOverviewQuery.data.error}
+                                        </p>
+                                    )}
                                     <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                                         <article className="rounded-lg border border-gray-200 bg-white p-3">
                                             <p className="text-[11px] uppercase tracking-wide text-gray-500">Repository</p>
@@ -512,6 +613,10 @@ export function ProjectDetailPage() {
                                     ) : githubCommitsQuery.isError ? (
                                         <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-8 text-center text-sm text-red-700">
                                             Commit gecmisi yüklenemedi.
+                                        </p>
+                                    ) : githubCommitsQuery.data?.error ? (
+                                        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-8 text-center text-sm text-amber-700">
+                                            {githubCommitsQuery.data.error}
                                         </p>
                                     ) : (githubCommitsQuery.data?.commits.length ?? 0) === 0 ? (
                                         <p className="rounded-lg border border-dashed border-gray-300 px-3 py-8 text-center text-sm text-gray-500">

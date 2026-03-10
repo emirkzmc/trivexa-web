@@ -106,8 +106,10 @@ export interface ProjectGithubBranch {
 
 export interface ProjectGithubOverview {
     connected: boolean;
-    linkedRepositoryUrl?: string;
-    linkedRepositoryFullName?: string;
+    linkedRepositoryUrl?: string | null;
+    linkedRepositoryFullName?: string | null;
+    hasCustomToken?: boolean;
+    error?: string | null;
     repository: ProjectGithubRepository | null;
     branches: ProjectGithubBranch[];
 }
@@ -125,18 +127,33 @@ export interface ProjectGithubCommit {
 
 export interface ProjectGithubCommitsResponse {
     connected: boolean;
-    linkedRepositoryUrl?: string;
-    linkedRepositoryFullName?: string;
+    linkedRepositoryUrl?: string | null;
+    linkedRepositoryFullName?: string | null;
     branch: string | null;
     page: number;
     perPage: number;
     commits: ProjectGithubCommit[];
+    error?: string | null;
 }
 
 export interface ProjectGithubCommitsParams {
     branch?: string;
     page?: number;
     perPage?: number;
+}
+
+export interface UpdateProjectGithubRepositoryPayload {
+    githubUrl: string;
+    accessToken?: string;
+    clearAccessToken?: boolean;
+}
+
+export interface UpdateProjectGithubRepositoryResponse {
+    projectId?: string;
+    repositoryUrl: string;
+    repositoryFullName: string;
+    hasCustomToken?: boolean;
+    updatedAt?: string;
 }
 
 type BackendProject = Partial<{
@@ -365,11 +382,15 @@ export async function removeProjectMember(projectId: string, userId: string): Pr
 
 export async function updateProjectGithubRepository(
     projectId: string,
-    githubUrl: string,
-): Promise<{ repositoryUrl: string; repositoryFullName: string }> {
-    const { data } = await api.patch<MaybeWrapped<{ repositoryUrl: string; repositoryFullName: string }>>(
+    payload: string | UpdateProjectGithubRepositoryPayload,
+): Promise<UpdateProjectGithubRepositoryResponse> {
+    const requestBody: UpdateProjectGithubRepositoryPayload = typeof payload === 'string'
+        ? { githubUrl: payload }
+        : payload;
+
+    const { data } = await api.patch<MaybeWrapped<UpdateProjectGithubRepositoryResponse>>(
         `/projects/${projectId}/github`,
-        { githubUrl },
+        requestBody,
     );
     return unwrapData(data);
 }
