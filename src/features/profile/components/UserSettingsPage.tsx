@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ImageUp, Lock, Mail, Save, Settings, User } from 'lucide-react';
+import { ImageUp, Lock, Mail, Save, Settings, Trash2, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageHeader } from '../../../shared/components/PageHeader';
 import { useAuthStore } from '../../auth/store/authStore';
@@ -152,6 +152,29 @@ export function UserSettingsPage() {
     }
   }
 
+  function handleRemoveAvatar() {
+    setAvatarLoadError(false);
+    setProfileForm((prev) => ({
+      ...prev,
+      avatarUrl: '',
+      avatarFit: 'cover',
+      avatarPosition: 'center',
+    }));
+    if (authUser) {
+      setUser({
+        id: authUser.id,
+        name: authUser.name,
+        email: authUser.email,
+        role: authUser.role,
+        department: authUser.department ?? '',
+        avatarUrl: null,
+        avatarFit: 'cover',
+        avatarPosition: 'center',
+      });
+    }
+    toast.success('Profil fotografi kaldirildi.');
+  }
+
   const avatarFit = profileForm.avatarFit || 'cover';
   const avatarPosition = profileForm.avatarPosition || 'center';
 
@@ -259,6 +282,15 @@ export function UserSettingsPage() {
                     disabled={isAvatarUploading}
                     className="sr-only"
                   />
+                  <button
+                    type="button"
+                    onClick={handleRemoveAvatar}
+                    disabled={!profileForm.avatarUrl || isAvatarUploading}
+                    className="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-gray-200 bg-white text-[11px] font-semibold text-gray-600 transition hover:border-gray-300 hover:text-gray-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <Trash2 size={12} />
+                    Fotografi kaldir
+                  </button>
                 </div>
                 <div className="grid gap-3 md:grid-cols-2">
                   <div className="flex flex-col gap-2">
