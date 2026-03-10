@@ -119,6 +119,10 @@ export function Sidebar({
                     justifyContent: 'space-between',
                     gap: collapsedState ? 8 : 0,
                     transition: 'padding 0.28s cubic-bezier(0.4, 0, 0.2, 1)',
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 2,
+                    backgroundColor: theme.bg,
                 }}
             >
                 <span
