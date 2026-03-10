@@ -37,6 +37,7 @@ import { DepartmentAssignmentsPage } from './features/departments/components/Dep
 import { LeaveManagementPage } from './features/leave-management/components/LeaveManagementPage';
 import { ContentPlanPage } from './features/content-plan/components/ContentPlanPage';
 import { CampaignsPage } from './features/campaigns/components/CampaignsPage';
+import { DesignProcessesPage } from './features/design-processes/components/DesignProcessesPage';
 
 function App() {
   return (
@@ -97,6 +98,7 @@ function App() {
         <Route path="kod" element={<CodeProcessesPage />} />
         <Route path="icerik-plani" element={<ContentPlanPage />} />
         <Route path="kampanyalar" element={<CampaignsPage />} />
+        <Route path="tasarim" element={<DesignProcessesPage />} />
         <Route path="talepler" element={<SupportRequestsPage />} />
         <Route path="personel-toplantilari" element={<MeetingsCalendarPage />} />
         <Route path="gorusmeler" element={<MeetingsPage />} />
