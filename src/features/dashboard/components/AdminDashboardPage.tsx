@@ -15,6 +15,18 @@ import { ArrowRight, BarChart3, LayoutDashboard, Receipt, Inbox, FileText } from
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../../shared/components/PageHeader';
 import { formatDate } from '../../../shared/utils/formatDate';
+import { useAuthStore } from '../../auth/store/authStore';
+import { usePermission } from '../../../shared/hooks/usePermission';
+import {
+  CLIENT_PERMS,
+  CONTRACT_PERMS,
+  EXPENSE_PERMS,
+  INVOICE_PERMS,
+  PAYMENT_PERMS,
+  PROJECT_PERMS,
+  TICKET_PERMS,
+  USER_PERMS,
+} from '../../../shared/constants/navPermissions';
 import { getDashboardSummary } from '../../reports/api/reports.api';
 import { getCashflowOverview } from '../../finance/api/cashflow.api';
 import { getSupportRequests } from '../../tickets/api/tickets.api';
@@ -184,31 +196,50 @@ function buildBarData(entries: StatusEntry[]) {
 
 export function AdminDashboardPage() {
   const navigate = useNavigate();
+  const role = useAuthStore((state) => state.user?.role);
+  const normalizedRole = String(role ?? '').toUpperCase();
+  const { hasAnyPermission } = usePermission();
   const [monthCount, setMonthCount] = useState<6 | 12>(6);
+
+  const canViewUsers = hasAnyPermission(USER_PERMS);
+  const canViewProjects = hasAnyPermission(PROJECT_PERMS);
+  const canViewClients = hasAnyPermission(CLIENT_PERMS);
+  const canViewInvoices = hasAnyPermission(INVOICE_PERMS);
+  const canViewContracts = hasAnyPermission(CONTRACT_PERMS);
+  const canViewTickets = hasAnyPermission(TICKET_PERMS);
+  const canViewFinance = hasAnyPermission([...PAYMENT_PERMS, ...INVOICE_PERMS, ...EXPENSE_PERMS]);
+  const canViewRevenue = canViewFinance || canViewInvoices;
+  const canAccessSummaryEndpoint = normalizedRole === 'ADMIN' || normalizedRole === 'MANAGER';
+  const wantsSummary = canViewUsers || canViewProjects || canViewClients || canViewRevenue;
 
   const summaryQuery = useQuery({
     queryKey: ['dashboard-summary'],
     queryFn: getDashboardSummary,
+    enabled: wantsSummary && canAccessSummaryEndpoint,
   });
 
   const cashflowQuery = useQuery({
     queryKey: ['dashboard-cashflow', monthCount],
     queryFn: () => getCashflowOverview({ months: monthCount }),
+    enabled: canViewFinance,
   });
 
   const supportQuery = useQuery({
     queryKey: ['dashboard-support-requests'],
     queryFn: () => getSupportRequests({ page: 1, limit: 100 }),
+    enabled: canViewTickets,
   });
 
   const contractQuery = useQuery({
     queryKey: ['dashboard-contracts'],
     queryFn: () => getContracts({ page: 1, limit: 100 }),
+    enabled: canViewContracts,
   });
 
   const invoiceQuery = useQuery({
     queryKey: ['dashboard-invoices'],
     queryFn: () => getInvoices({ page: 1, limit: 100 }),
+    enabled: canViewInvoices,
   });
 
   const summary = summaryQuery.data;
@@ -290,123 +321,145 @@ export function AdminDashboardPage() {
     <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
       <PageHeader
         icon={<LayoutDashboard size={20} color="#1F2937" />}
-        title="Admin Dashboard"
-        subtitle="Genel ozet, finans ve taleplerin anlik gorunumu"
+        title="Dashboard"
+        subtitle="Rolunuze uygun ozet, finans ve talep gorunumu"
         actions={(
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => navigate('/app/portal-talepleri')}
-              className="inline-flex h-9 items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-3 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
-            >
-              <Inbox size={14} />
-              Portal Talepleri
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/app/finans')}
-              className="inline-flex h-9 items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100"
-            >
-              <BarChart3 size={14} />
-              Finans Paneli
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/app/sozlesmeler')}
-              className="inline-flex h-9 items-center gap-1 rounded-lg border border-purple-200 bg-purple-50 px-3 text-xs font-semibold text-purple-700 transition hover:bg-purple-100"
-            >
-              <FileText size={14} />
-              Sozlesmeler
-            </button>
+            {canViewTickets && (
+              <button
+                type="button"
+                onClick={() => navigate('/app/portal-talepleri')}
+                className="inline-flex h-9 items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-3 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
+              >
+                <Inbox size={14} />
+                Portal Talepleri
+              </button>
+            )}
+            {canViewFinance && (
+              <button
+                type="button"
+                onClick={() => navigate('/app/finans')}
+                className="inline-flex h-9 items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100"
+              >
+                <BarChart3 size={14} />
+                Finans Paneli
+              </button>
+            )}
+            {canViewContracts && (
+              <button
+                type="button"
+                onClick={() => navigate('/app/sozlesmeler')}
+                className="inline-flex h-9 items-center gap-1 rounded-lg border border-purple-200 bg-purple-50 px-3 text-xs font-semibold text-purple-700 transition hover:bg-purple-100"
+              >
+                <FileText size={14} />
+                Sozlesmeler
+              </button>
+            )}
           </div>
         )}
       />
 
-      <section className="mb-4 grid gap-3 md:grid-cols-4">
-        <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Toplam Kullanici</p>
-          <p className="mt-1 text-2xl font-bold text-sky-700">{formatCount(summary?.totalUsers, summaryQuery.isLoading)}</p>
-          <p className="mt-1 text-xs text-gray-500">Aktif personel ve admin sayisi</p>
-        </article>
-        <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Toplam Proje</p>
-          <p className="mt-1 text-2xl font-bold text-indigo-700">{formatCount(summary?.totalProjects, summaryQuery.isLoading)}</p>
-          <p className="mt-1 text-xs text-gray-500">Sistemdeki toplam proje</p>
-        </article>
-        <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Toplam Musteri</p>
-          <p className="mt-1 text-2xl font-bold text-emerald-700">{formatCount(summary?.totalClients, summaryQuery.isLoading)}</p>
-          <p className="mt-1 text-xs text-gray-500">Yonetilen aktif musteri</p>
-        </article>
-        <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Toplam Ciro</p>
-          <p className="mt-1 text-2xl font-bold text-amber-700">{summaryQuery.isLoading ? '...' : formatMoney(summary?.totalRevenue)}</p>
-          <p className="mt-1 text-xs text-gray-500">Raporlanan toplam gelir</p>
-        </article>
-      </section>
-
-      <section className="mb-4 grid gap-3 md:grid-cols-4">
-        <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Toplam Tahsilat</p>
-          <p className="mt-1 text-xl font-bold text-emerald-700">{formatMoney(kpis.totalInflow)}</p>
-        </article>
-        <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Toplam Gider</p>
-          <p className="mt-1 text-xl font-bold text-rose-700">{formatMoney(kpis.totalOutflow)}</p>
-        </article>
-        <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Net Nakit</p>
-          <p className={`mt-1 text-xl font-bold ${kpis.netCash >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
-            {formatMoney(kpis.netCash)}
-          </p>
-        </article>
-        <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Geciken Alacak</p>
-          <p className="mt-1 text-xl font-bold text-rose-700">{formatMoney(kpis.overdueAmount)}</p>
-          <p className="mt-0.5 text-xs text-gray-500">{kpis.overdueCount} fatura</p>
-        </article>
-      </section>
-
-      <section className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-base font-semibold text-gray-900">Nakit Akisi Ozeti</h2>
-            <p className="text-xs text-gray-500">Finans panelindeki nakit akis grafiginin ozet gorunumu</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <select
-              value={monthCount}
-              onChange={(event) => setMonthCount(Number(event.target.value) as 6 | 12)}
-              className="h-9 rounded-lg border border-gray-300 bg-white px-2 text-xs font-semibold text-gray-700 outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
-            >
-              <option value={6}>Son 6 Ay</option>
-              <option value={12}>Son 12 Ay</option>
-            </select>
-            <button
-              type="button"
-              onClick={() => navigate('/app/finans')}
-              className="inline-flex h-9 items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 text-xs font-semibold text-gray-700 transition hover:bg-gray-50"
-            >
-              Finans Detayi
-              <ArrowRight size={14} />
-            </button>
-          </div>
-        </div>
-        <div className="mt-4 h-[300px]">
-          {cashflowQuery.isLoading ? (
-            <div className="flex h-full items-center justify-center text-sm text-gray-400">Veriler yukleniyor...</div>
-          ) : cashflowQuery.isError ? (
-            <div className="flex h-full items-center justify-center text-sm text-red-600">Finans verileri alinamadi.</div>
-          ) : !hasCashflowChart ? (
-            <div className="flex h-full items-center justify-center text-sm text-gray-400">Grafik verisi bulunamadi.</div>
-          ) : (
-            <Bar data={cashflowChartData} options={CASHFLOW_OPTIONS} />
+      {wantsSummary && (
+        <section className="mb-4 grid gap-3 md:grid-cols-4">
+          {canViewUsers && (
+            <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Toplam Kullanici</p>
+              <p className="mt-1 text-2xl font-bold text-sky-700">{formatCount(summary?.totalUsers, summaryQuery.isLoading)}</p>
+              <p className="mt-1 text-xs text-gray-500">Aktif personel ve admin sayisi</p>
+            </article>
           )}
-        </div>
-      </section>
+          {canViewProjects && (
+            <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Toplam Proje</p>
+              <p className="mt-1 text-2xl font-bold text-indigo-700">{formatCount(summary?.totalProjects, summaryQuery.isLoading)}</p>
+              <p className="mt-1 text-xs text-gray-500">Sistemdeki toplam proje</p>
+            </article>
+          )}
+          {canViewClients && (
+            <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Toplam Musteri</p>
+              <p className="mt-1 text-2xl font-bold text-emerald-700">{formatCount(summary?.totalClients, summaryQuery.isLoading)}</p>
+              <p className="mt-1 text-xs text-gray-500">Yonetilen aktif musteri</p>
+            </article>
+          )}
+          {canViewRevenue && (
+            <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Toplam Ciro</p>
+              <p className="mt-1 text-2xl font-bold text-amber-700">{summaryQuery.isLoading ? '...' : formatMoney(summary?.totalRevenue)}</p>
+              <p className="mt-1 text-xs text-gray-500">Raporlanan toplam gelir</p>
+            </article>
+          )}
+        </section>
+      )}
 
-      <section className="mb-4 grid gap-4 xl:grid-cols-2">
-        <article className="rounded-xl border border-gray-200 bg-white p-4">
+      {canViewFinance && (
+        <section className="mb-4 grid gap-3 md:grid-cols-4">
+          <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Toplam Tahsilat</p>
+            <p className="mt-1 text-xl font-bold text-emerald-700">{formatMoney(kpis.totalInflow)}</p>
+          </article>
+          <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Toplam Gider</p>
+            <p className="mt-1 text-xl font-bold text-rose-700">{formatMoney(kpis.totalOutflow)}</p>
+          </article>
+          <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Net Nakit</p>
+            <p className={`mt-1 text-xl font-bold ${kpis.netCash >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+              {formatMoney(kpis.netCash)}
+            </p>
+          </article>
+          <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">Geciken Alacak</p>
+            <p className="mt-1 text-xl font-bold text-rose-700">{formatMoney(kpis.overdueAmount)}</p>
+            <p className="mt-0.5 text-xs text-gray-500">{kpis.overdueCount} fatura</p>
+          </article>
+        </section>
+      )}
+
+      {canViewFinance && (
+        <section className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-gray-900">Nakit Akisi Ozeti</h2>
+              <p className="text-xs text-gray-500">Finans panelindeki nakit akis grafiginin ozet gorunumu</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <select
+                value={monthCount}
+                onChange={(event) => setMonthCount(Number(event.target.value) as 6 | 12)}
+                className="h-9 rounded-lg border border-gray-300 bg-white px-2 text-xs font-semibold text-gray-700 outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+              >
+                <option value={6}>Son 6 Ay</option>
+                <option value={12}>Son 12 Ay</option>
+              </select>
+              <button
+                type="button"
+                onClick={() => navigate('/app/finans')}
+                className="inline-flex h-9 items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 text-xs font-semibold text-gray-700 transition hover:bg-gray-50"
+              >
+                Finans Detayi
+                <ArrowRight size={14} />
+              </button>
+            </div>
+          </div>
+          <div className="mt-4 h-[300px]">
+            {cashflowQuery.isLoading ? (
+              <div className="flex h-full items-center justify-center text-sm text-gray-400">Veriler yukleniyor...</div>
+            ) : cashflowQuery.isError ? (
+              <div className="flex h-full items-center justify-center text-sm text-red-600">Finans verileri alinamadi.</div>
+            ) : !hasCashflowChart ? (
+              <div className="flex h-full items-center justify-center text-sm text-gray-400">Grafik verisi bulunamadi.</div>
+            ) : (
+              <Bar data={cashflowChartData} options={CASHFLOW_OPTIONS} />
+            )}
+          </div>
+        </section>
+      )}
+
+      {(canViewTickets || canViewInvoices) && (
+        <section className="mb-4 grid gap-4 xl:grid-cols-2">
+          {canViewTickets && (
+            <article className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-semibold text-gray-900">Portal Talep Onay Dagilimi</h3>
@@ -448,9 +501,11 @@ export function AdminDashboardPage() {
               ))
             )}
           </div>
-        </article>
+            </article>
+          )}
 
-        <article className="rounded-xl border border-gray-200 bg-white p-4">
+          {canViewInvoices && (
+            <article className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-semibold text-gray-900">Fatura Durumlari</h3>
@@ -476,11 +531,15 @@ export function AdminDashboardPage() {
               <Bar data={buildBarData(invoiceEntries)} options={BAR_OPTIONS} />
             )}
           </div>
-        </article>
-      </section>
+            </article>
+          )}
+        </section>
+      )}
 
-      <section className="mb-4 grid gap-4 xl:grid-cols-2">
-        <article className="rounded-xl border border-gray-200 bg-white p-4">
+      {(canViewContracts || canViewFinance) && (
+        <section className="mb-4 grid gap-4 xl:grid-cols-2">
+          {canViewContracts && (
+            <article className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-semibold text-gray-900">Sozlesme Durumlari</h3>
@@ -506,9 +565,11 @@ export function AdminDashboardPage() {
               <Bar data={buildBarData(contractEntries)} options={BAR_OPTIONS} />
             )}
           </div>
-        </article>
+            </article>
+          )}
 
-        <article className="rounded-xl border border-gray-200 bg-white p-4">
+          {canViewFinance && (
+            <article className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-semibold text-gray-900">Geciken Faturalar</h3>
@@ -557,11 +618,15 @@ export function AdminDashboardPage() {
               </tbody>
             </table>
           </div>
-        </article>
-      </section>
+            </article>
+          )}
+        </section>
+      )}
 
-      <section className="grid gap-4 xl:grid-cols-2">
-        <article className="rounded-xl border border-gray-200 bg-white p-4">
+      {(canViewTickets || canViewFinance || canViewInvoices || canViewContracts) && (
+        <section className="grid gap-4 xl:grid-cols-2">
+          {canViewTickets && (
+            <article className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-semibold text-gray-900">Son Portal Talepleri</h3>
@@ -596,9 +661,10 @@ export function AdminDashboardPage() {
               ))
             )}
           </div>
-        </article>
+            </article>
+          )}
 
-        <article className="rounded-xl border border-gray-200 bg-white p-4">
+          <article className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-semibold text-gray-900">Hizli Ozet</h3>
@@ -606,61 +672,81 @@ export function AdminDashboardPage() {
             </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            <button
-              type="button"
-              onClick={() => navigate('/app/faturalar')}
-              className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-left transition hover:bg-gray-50"
-            >
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-amber-50 text-amber-600">
-                <Receipt size={16} />
-              </span>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">Fatura Akisi</p>
-                <p className="text-xs text-gray-500">Durum dagilimi ve tahsilat planlari</p>
+            {canViewInvoices && (
+              <button
+                type="button"
+                onClick={() => navigate('/app/faturalar')}
+                className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-left transition hover:bg-gray-50"
+              >
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-amber-50 text-amber-600">
+                  <Receipt size={16} />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Fatura Akisi</p>
+                  <p className="text-xs text-gray-500">Durum dagilimi ve tahsilat planlari</p>
+                </div>
+              </button>
+            )}
+            {canViewTickets && (
+              <button
+                type="button"
+                onClick={() => navigate('/app/portal-talepleri')}
+                className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-left transition hover:bg-gray-50"
+              >
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                  <Inbox size={16} />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Talep Takibi</p>
+                  <p className="text-xs text-gray-500">Onay ve surec durumlari</p>
+                </div>
+              </button>
+            )}
+            {canViewContracts && (
+              <button
+                type="button"
+                onClick={() => navigate('/app/sozlesmeler')}
+                className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-left transition hover:bg-gray-50"
+              >
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-purple-50 text-purple-600">
+                  <FileText size={16} />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Sozlesmeler</p>
+                  <p className="text-xs text-gray-500">Aktif ve taslak sozlesmeler</p>
+                </div>
+              </button>
+            )}
+            {canViewFinance && (
+              <button
+                type="button"
+                onClick={() => navigate('/app/finans')}
+                className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-left transition hover:bg-gray-50"
+              >
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                  <BarChart3 size={16} />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Finans Paneli</p>
+                  <p className="text-xs text-gray-500">Nakit akis ve gider analizi</p>
+                </div>
+              </button>
+            )}
+            {!canViewInvoices && !canViewTickets && !canViewContracts && !canViewFinance && (
+              <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-center text-xs text-gray-500">
+                Bu rolde gosterilecek hizli aksiyon bulunmuyor.
               </div>
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/app/portal-talepleri')}
-              className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-left transition hover:bg-gray-50"
-            >
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-                <Inbox size={16} />
-              </span>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">Talep Takibi</p>
-                <p className="text-xs text-gray-500">Onay ve surec durumlari</p>
-              </div>
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/app/sozlesmeler')}
-              className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-left transition hover:bg-gray-50"
-            >
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-purple-50 text-purple-600">
-                <FileText size={16} />
-              </span>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">Sozlesmeler</p>
-                <p className="text-xs text-gray-500">Aktif ve taslak sozlesmeler</p>
-              </div>
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/app/finans')}
-              className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-left transition hover:bg-gray-50"
-            >
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-                <BarChart3 size={16} />
-              </span>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">Finans Paneli</p>
-                <p className="text-xs text-gray-500">Nakit akis ve gider analizi</p>
-              </div>
-            </button>
+            )}
           </div>
-        </article>
-      </section>
+          </article>
+        </section>
+      )}
+
+      {!wantsSummary && !canViewFinance && !canViewTickets && !canViewContracts && !canViewInvoices && (
+        <section className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-6 text-center text-sm text-gray-500">
+          Bu rolde goruntulenecek dashboard bilgisi bulunmuyor.
+        </section>
+      )}
     </div>
   );
 }
