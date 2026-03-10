@@ -26,6 +26,9 @@ export function useLogin(options?: UseLoginOptions) {
         email: user.email,
         role: user.role,
         department: user.department,
+        avatarUrl: user.avatarUrl ?? null,
+        avatarFit: user.avatarFit ?? null,
+        avatarPosition: user.avatarPosition ?? null,
       };
 
       const isFirstLogin = !!(user as Record<string, unknown>)

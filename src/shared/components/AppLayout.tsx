@@ -48,6 +48,7 @@ const PAGE_NAMES: Record<string, string> = {
     '/app/roller': 'Roller ve İzinler',
     '/app/audit-log': 'Audit Log',
     '/app/ayarlar': 'Ayarlar',
+    '/app/hesabim': 'Hesap Ayarlari',
     '/app/faturalar': 'Fatura Yönetimi',
     '/app/musterilerim': 'Müşterilerim',
     '/app/iletisim-talepleri': 'Iletisim Talepleri',
@@ -422,9 +423,12 @@ export function AppLayout() {
 
     const headerUser = {
         name: user.name ?? '',
-        initials: (user.name ?? '?').charAt(0).toUpperCase(),
+        initials: user.initials ?? (user.name ?? '?').charAt(0).toUpperCase(),
         role: user.role ?? '',
         email: user.email ?? '',
+        avatarUrl: user.avatarUrl ?? null,
+        avatarFit: user.avatarFit ?? null,
+        avatarPosition: user.avatarPosition ?? null,
     };
 
     function handleLogout() {

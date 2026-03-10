@@ -18,6 +18,9 @@ export interface LoginResponseData {
         role: string;
         department: string;
         forcePasswordChange: boolean;
+        avatarUrl?: string | null;
+        avatarFit?: string | null;
+        avatarPosition?: string | null;
     };
 }
 
@@ -48,6 +51,9 @@ export interface MeResponse {
         lastName: string;
         role: string;
         department: string;
+        avatarUrl?: string | null;
+        avatarFit?: string | null;
+        avatarPosition?: string | null;
     };
 }
 

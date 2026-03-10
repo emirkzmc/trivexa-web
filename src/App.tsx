@@ -50,6 +50,7 @@ import { WorkingHoursPage } from './features/working-hours/components/WorkingHou
 import { PerformancePage } from './features/performance/components/PerformancePage';
 import { ContractsPage } from './features/contracts/components/ContractsPage';
 import { SettingsPage } from './features/settings/components/SettingsPage';
+import { UserSettingsPage } from './features/profile/components/UserSettingsPage';
 
 function App() {
   return (
@@ -155,6 +156,7 @@ function App() {
         <Route path="roller" element={<RolesPermissionsPage />} />
         <Route path="audit-log" element={<AuditLogPage />} />
         <Route path="ayarlar" element={<SettingsPage />} />
+        <Route path="hesabim" element={<UserSettingsPage />} />
         <Route path="*" element={<div>YapÄ±m AÅŸamasÄ±nda</div>} />
       </Route>
 

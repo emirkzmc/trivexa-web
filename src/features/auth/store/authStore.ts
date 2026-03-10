@@ -10,6 +10,9 @@ export interface AuthUser {
     role: string;
     department: string;
     initials: string;
+    avatarUrl?: string | null;
+    avatarFit?: string | null;
+    avatarPosition?: string | null;
 }
 
 export interface AuthState {

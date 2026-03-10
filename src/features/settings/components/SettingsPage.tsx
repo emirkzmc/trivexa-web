@@ -19,6 +19,30 @@ export function SettingsPage() {
   const normalizedRole = normalizeRoleKey(role);
   const canEditLanding = normalizedRole === 'ADMIN';
   const [activeTab, setActiveTab] = useState<'landing' | 'info'>('landing');
+  const [infoTab, setInfoTab] = useState<'panel' | 'notifications' | 'integrations' | 'security'>('panel');
+  const [panelSettings, setPanelSettings] = useState({
+    companyName: 'Trivexa',
+    timezone: 'Europe/Istanbul',
+    language: 'tr',
+    dateFormat: 'DD.MM.YYYY',
+    currency: 'TRY',
+  });
+  const [notificationSettings, setNotificationSettings] = useState({
+    email: true,
+    sms: false,
+    push: true,
+    weeklySummary: true,
+  });
+  const [integrationSettings, setIntegrationSettings] = useState({
+    slackEnabled: false,
+    googleCalendarEnabled: false,
+    githubEnabled: true,
+  });
+  const [securitySettings, setSecuritySettings] = useState({
+    requireTwoFactor: false,
+    sessionTimeout: '60',
+    passwordRotationDays: '90',
+  });
 
   const landingQuery = useQuery({
     queryKey: ['landing-content'],
@@ -43,6 +67,10 @@ export function SettingsPage() {
       toast.error('Landing icerigi guncellenemedi.');
     },
   });
+
+  const handleSaveGeneralSettings = () => {
+    toast.success('Genel ayarlar kaydedildi (demo).');
+  };
 
   const lastUpdated = useMemo(() => {
     const value = landingQuery.data?.meta?.updatedAt;
@@ -282,7 +310,16 @@ export function SettingsPage() {
               <Save size={14} />
               Kaydet
             </button>
-          ) : null
+          ) : (
+            <button
+              type="button"
+              onClick={handleSaveGeneralSettings}
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100"
+            >
+              <Save size={14} />
+              Kaydet
+            </button>
+          )
         )}
       />
 
@@ -774,10 +811,198 @@ export function SettingsPage() {
 
       {activeTab === 'info' && (
         <section className="rounded-xl border border-gray-200 bg-white p-4">
-          <h3 className="text-sm font-semibold text-gray-900">Genel Ayarlar</h3>
-          <p className="mt-2 text-xs text-gray-500">
-            Genel ayarlar ve ileride eklenecek panel konfigurasyonlari burada yer alacak.
-          </p>
+          <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
+            <button
+              type="button"
+              onClick={() => setInfoTab('panel')}
+              className={`px-3 py-1.5 text-xs font-semibold transition ${
+                infoTab === 'panel'
+                  ? 'rounded-md bg-gray-900 text-white'
+                  : 'rounded-md text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              Panel
+            </button>
+            <button
+              type="button"
+              onClick={() => setInfoTab('notifications')}
+              className={`px-3 py-1.5 text-xs font-semibold transition ${
+                infoTab === 'notifications'
+                  ? 'rounded-md bg-gray-900 text-white'
+                  : 'rounded-md text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              Bildirimler
+            </button>
+            <button
+              type="button"
+              onClick={() => setInfoTab('integrations')}
+              className={`px-3 py-1.5 text-xs font-semibold transition ${
+                infoTab === 'integrations'
+                  ? 'rounded-md bg-gray-900 text-white'
+                  : 'rounded-md text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              Entegrasyonlar
+            </button>
+            <button
+              type="button"
+              onClick={() => setInfoTab('security')}
+              className={`px-3 py-1.5 text-xs font-semibold transition ${
+                infoTab === 'security'
+                  ? 'rounded-md bg-gray-900 text-white'
+                  : 'rounded-md text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              Guvenlik
+            </button>
+          </div>
+
+          {infoTab === 'panel' && (
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-gray-600">Firma Adi</label>
+                <input
+                  value={panelSettings.companyName}
+                  onChange={(event) => setPanelSettings((prev) => ({ ...prev, companyName: event.target.value }))}
+                  className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-gray-800 focus:ring-1 focus:ring-gray-800"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-gray-600">Saat Dilimi</label>
+                <input
+                  value={panelSettings.timezone}
+                  onChange={(event) => setPanelSettings((prev) => ({ ...prev, timezone: event.target.value }))}
+                  className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-gray-800 focus:ring-1 focus:ring-gray-800"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-gray-600">Dil</label>
+                <select
+                  value={panelSettings.language}
+                  onChange={(event) => setPanelSettings((prev) => ({ ...prev, language: event.target.value }))}
+                  className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-gray-800 focus:ring-1 focus:ring-gray-800"
+                >
+                  <option value="tr">Turkce</option>
+                  <option value="en">English</option>
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-gray-600">Tarih Formati</label>
+                <input
+                  value={panelSettings.dateFormat}
+                  onChange={(event) => setPanelSettings((prev) => ({ ...prev, dateFormat: event.target.value }))}
+                  className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-gray-800 focus:ring-1 focus:ring-gray-800"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-gray-600">Para Birimi</label>
+                <input
+                  value={panelSettings.currency}
+                  onChange={(event) => setPanelSettings((prev) => ({ ...prev, currency: event.target.value }))}
+                  className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-gray-800 focus:ring-1 focus:ring-gray-800"
+                />
+              </div>
+            </div>
+          )}
+
+          {infoTab === 'notifications' && (
+            <div className="mt-4 grid gap-3">
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={notificationSettings.email}
+                  onChange={(event) => setNotificationSettings((prev) => ({ ...prev, email: event.target.checked }))}
+                />
+                Email bildirimleri
+              </label>
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={notificationSettings.sms}
+                  onChange={(event) => setNotificationSettings((prev) => ({ ...prev, sms: event.target.checked }))}
+                />
+                SMS bildirimleri
+              </label>
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={notificationSettings.push}
+                  onChange={(event) => setNotificationSettings((prev) => ({ ...prev, push: event.target.checked }))}
+                />
+                Push bildirimleri
+              </label>
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={notificationSettings.weeklySummary}
+                  onChange={(event) => setNotificationSettings((prev) => ({ ...prev, weeklySummary: event.target.checked }))}
+                />
+                Haftalik ozet raporu
+              </label>
+            </div>
+          )}
+
+          {infoTab === 'integrations' && (
+            <div className="mt-4 grid gap-3">
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={integrationSettings.slackEnabled}
+                  onChange={(event) => setIntegrationSettings((prev) => ({ ...prev, slackEnabled: event.target.checked }))}
+                />
+                Slack entegrasyonu
+              </label>
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={integrationSettings.googleCalendarEnabled}
+                  onChange={(event) => setIntegrationSettings((prev) => ({ ...prev, googleCalendarEnabled: event.target.checked }))}
+                />
+                Google Calendar entegrasyonu
+              </label>
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={integrationSettings.githubEnabled}
+                  onChange={(event) => setIntegrationSettings((prev) => ({ ...prev, githubEnabled: event.target.checked }))}
+                />
+                GitHub entegrasyonu
+              </label>
+              <p className="text-xs text-gray-500">
+                Entegrasyon anahtarlarini saklamak icin backend ayarlari eklenecek.
+              </p>
+            </div>
+          )}
+
+          {infoTab === 'security' && (
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <label className="flex items-center gap-2 text-sm text-gray-700 md:col-span-2">
+                <input
+                  type="checkbox"
+                  checked={securitySettings.requireTwoFactor}
+                  onChange={(event) => setSecuritySettings((prev) => ({ ...prev, requireTwoFactor: event.target.checked }))}
+                />
+                Tum kullanicilar icin 2FA zorunlu
+              </label>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-gray-600">Oturum Suresi (dk)</label>
+                <input
+                  value={securitySettings.sessionTimeout}
+                  onChange={(event) => setSecuritySettings((prev) => ({ ...prev, sessionTimeout: event.target.value }))}
+                  className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-gray-800 focus:ring-1 focus:ring-gray-800"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-gray-600">Sifre Yenileme (gun)</label>
+                <input
+                  value={securitySettings.passwordRotationDays}
+                  onChange={(event) => setSecuritySettings((prev) => ({ ...prev, passwordRotationDays: event.target.value }))}
+                  className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-gray-800 focus:ring-1 focus:ring-gray-800"
+                />
+              </div>
+            </div>
+          )}
         </section>
       )}
     </div>

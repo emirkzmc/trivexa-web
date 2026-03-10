@@ -9,6 +9,9 @@ interface AppHeaderUser {
     initials: string;
     role: string;
     email?: string;
+    avatarUrl?: string | null;
+    avatarFit?: string | null;
+    avatarPosition?: string | null;
 }
 
 interface PresenceUser {

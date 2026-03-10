@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Bell, ChevronDown, LayoutDashboard, LogOut, Settings } from 'lucide-react';
+import { Bell, ChevronDown, LogOut, Settings } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { RoleBadge } from './RoleBadge';
 import { UserAvatar } from './UserAvatar';
@@ -9,6 +9,9 @@ interface UserMenuDropdownUser {
     initials: string;
     role: string;
     email?: string;
+    avatarUrl?: string | null;
+    avatarFit?: string | null;
+    avatarPosition?: string | null;
 }
 
 interface UserMenuDropdownProps {
@@ -35,13 +38,6 @@ export function UserMenuDropdown({ user, onLogout, compact = false }: UserMenuDr
 
     const menuItems: MenuItem[] = [
         {
-            key: 'dashboard',
-            label: 'Dashboard',
-            description: 'Ana panele don',
-            icon: <LayoutDashboard size={14} />,
-            path: '/app/dashboard',
-        },
-        {
             key: 'notifications',
             label: 'Bildirimler',
             description: 'Tum bildirimleri gor',
@@ -53,7 +49,7 @@ export function UserMenuDropdown({ user, onLogout, compact = false }: UserMenuDr
             label: 'Ayarlar',
             description: 'Hesap ve panel ayarlari',
             icon: <Settings size={14} />,
-            path: '/app/ayarlar',
+            path: '/app/hesabim',
         },
         {
             key: 'logout',
@@ -125,7 +121,12 @@ export function UserMenuDropdown({ user, onLogout, compact = false }: UserMenuDr
                     transition: 'all 0.15s ease',
                 }}
             >
-                <UserAvatar initials={user.initials} />
+                <UserAvatar
+                    initials={user.initials}
+                    avatarUrl={user.avatarUrl ?? null}
+                    avatarFit={user.avatarFit ?? null}
+                    avatarPosition={user.avatarPosition ?? null}
+                />
                 {!compact && (
                     <div style={{ minWidth: 0, textAlign: 'left' }}>
                         <p
