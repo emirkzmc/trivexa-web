@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../features/auth/store/authStore';
 import { getMyPermissions } from '../../features/roles/api/roles.api';
 import { ROLE_PERMISSIONS } from '../constants/permissions';
+import { normalizeRoleKey } from '../utils/roleUtils';
 
 function normalizePermission(value: string): string {
     if (!value) return '';
@@ -13,6 +14,33 @@ function normalizePermission(value: string): string {
     return value.toUpperCase();
 }
 
+function extractPermissionValues(raw: unknown): string[] {
+    if (Array.isArray(raw)) {
+        return raw.flatMap((item) => {
+            if (typeof item === 'string') return [item];
+            if (item && typeof item === 'object') {
+                const record = item as Record<string, unknown>;
+                const id = typeof record.id === 'string' ? record.id : undefined;
+                const name = typeof record.name === 'string' ? record.name : undefined;
+                return [id, name].filter((val): val is string => Boolean(val));
+            }
+            return [];
+        });
+    }
+
+    if (raw && typeof raw === 'object') {
+        const record = raw as Record<string, unknown>;
+        if (Array.isArray(record.permissions)) {
+            return extractPermissionValues(record.permissions);
+        }
+        if (Array.isArray(record.data)) {
+            return extractPermissionValues(record.data);
+        }
+    }
+
+    return [];
+}
+
 /**
  * Kullanıcının belirli bir izne sahip olup olmadığını kontrol eder.
  * CEO rolü her zaman true döner ('*' wildcard).
@@ -20,7 +48,10 @@ function normalizePermission(value: string): string {
  */
 export function usePermission() {
     const role = useAuthStore((s) => s.user?.role);
-    const normalizedRole = String(role ?? '').toUpperCase();
+    const normalizedRole = normalizeRoleKey(role);
+    const fallbackRole = normalizedRole === 'SEO'
+        ? 'SOCIAL_MEDIA'
+        : (normalizedRole.includes('MUHASEBE') ? 'ACCOUNTING' : normalizedRole);
 
     const permissionsQuery = useQuery({
         queryKey: ['my-permissions', normalizedRole],
@@ -32,19 +63,19 @@ export function usePermission() {
     });
 
     const dynamicPermissions = useMemo(() => {
-        const items = permissionsQuery.data ?? [];
-        return items
-            .map((perm) => perm.id || perm.name)
-            .filter((perm): perm is string => Boolean(perm))
-            .map(normalizePermission);
+        const values = extractPermissionValues(permissionsQuery.data);
+        return values.map(normalizePermission).filter(Boolean);
     }, [permissionsQuery.data]);
 
     const fallbackPermissions = useMemo(() => {
-        const items = ROLE_PERMISSIONS[normalizedRole] ?? [];
+        const items = ROLE_PERMISSIONS[fallbackRole] ?? [];
         return items.map(normalizePermission);
-    }, [normalizedRole]);
+    }, [fallbackRole]);
 
-    const shouldUseFallback = !role || permissionsQuery.isError || permissionsQuery.data === undefined;
+    const shouldUseFallback = !role
+        || permissionsQuery.isError
+        || permissionsQuery.data === undefined
+        || (dynamicPermissions.length === 0 && fallbackPermissions.length > 0);
     const effectivePermissions = shouldUseFallback ? fallbackPermissions : dynamicPermissions;
     const permissionSet = useMemo(() => new Set(effectivePermissions), [effectivePermissions]);
 

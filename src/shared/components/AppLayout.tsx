@@ -12,6 +12,7 @@ import { useStopTimer } from '../../features/time-tracker/hooks/useTimerMutation
 import { DraggableActiveTimer } from '../../features/time-tracker/components/DraggableActiveTimer';
 import { NAV_CONFIG } from '../constants/navConfig';
 import { buildRoleAccentPalette } from '../utils/colorTheme';
+import { normalizeRoleKey } from '../utils/roleUtils';
 
 interface PresenceUser {
     userId: string;
@@ -38,6 +39,7 @@ const PAGE_NAMES: Record<string, string> = {
     '/app/finans': 'Finans Dashboard',
     '/app/tahsilat-takibi': 'Tahsilat Takibi',
     '/app/gider-yonetimi': 'Gider Yönetimi',
+    '/app/puantaj': 'Puantaj ve Bordro',
     '/app/banka-mutabakat': 'Banka POS Mutabakat',
     '/app/musteri-ekstresi': 'Müşteri Hesap Ekstresi',
     '/app/vergi-beyan': 'Vergi Beyan Hazırlık',
@@ -129,7 +131,10 @@ export function AppLayout() {
     const noticeTimerRef = useRef<number | null>(null);
     const roleAccent = useMemo(() => {
         if (!user?.role) return '#DC2626';
-        return NAV_CONFIG[user.role]?.theme.accent ?? '#DC2626';
+        const normalizedRole = normalizeRoleKey(user.role);
+        return NAV_CONFIG[user.role]?.theme.accent
+            ?? NAV_CONFIG[normalizedRole]?.theme.accent
+            ?? '#DC2626';
     }, [user?.role]);
     const rolePalette = useMemo(() => buildRoleAccentPalette(roleAccent), [roleAccent]);
     const layoutStyle = useMemo<CSSProperties>(

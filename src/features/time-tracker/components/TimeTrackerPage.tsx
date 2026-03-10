@@ -19,14 +19,18 @@ import {NAV_CONFIG} from '../../../shared/constants/navConfig';
 import { ManualEntryModal } from './ManualEntryModal';
 import { getPersonnel } from '../../personnel/api/personnel.api';
 import { DEPARTMENT_LABELS } from '../../../shared/constants/departments';
+import { normalizeRoleKey } from '../../../shared/utils/roleUtils';
 
 const HISTORY_LIMIT_OPTIONS = [10, 20, 50];
 
 export function TimeTrackerPage() {
     const currentUser = useAuthStore((state) => state.user);
     const userRole = currentUser?.role;
-    const activeTimerAccent = userRole ? (NAV_CONFIG[userRole]?.theme.accent ?? '#DC2626') : '#DC2626';
-    const hasTeamAccess = userRole === 'ADMIN' || userRole === 'MANAGER' || userRole === 'CEO';
+    const normalizedRole = normalizeRoleKey(userRole);
+    const activeTimerAccent = userRole
+        ? (NAV_CONFIG[userRole]?.theme.accent ?? NAV_CONFIG[normalizedRole]?.theme.accent ?? '#DC2626')
+        : '#DC2626';
+    const hasTeamAccess = normalizedRole === 'ADMIN' || normalizedRole === 'MANAGER' || normalizedRole === 'CEO';
     const myProjectsOnly = !hasTeamAccess;
 
     const [activeTab, setActiveTab] = useState<TrackerTab>('timer');

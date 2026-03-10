@@ -13,6 +13,7 @@ import { NAV_CONFIG, type RoleNavConfig } from '../../shared/constants/navConfig
 import { ROLES } from '../../shared/constants/roles';
 import { NAV_PERMISSION_MAP } from '../constants/navPermissions';
 import { usePermission } from '../hooks/usePermission';
+import { normalizeRoleKey } from '../utils/roleUtils';
 
 const ICON_MAP: Record<string, React.ElementType> = {
     LayoutDashboard, Bell, Users, Building2, FolderKanban, CheckSquare,
@@ -48,7 +49,7 @@ export function Sidebar({
 
     const navConfigMap = NAV_CONFIG as Record<string, RoleNavConfig>;
     const rawRole = String(user.role ?? '');
-    const normalizedRole = rawRole.toUpperCase();
+    const normalizedRole = normalizeRoleKey(rawRole);
     const config = navConfigMap[rawRole]
         ?? navConfigMap[normalizedRole]
         ?? (normalizedRole === 'SEO' ? navConfigMap[ROLES.SOCIAL_MEDIA] : undefined)
@@ -78,6 +79,33 @@ export function Sidebar({
             return { ...group, items: visibleItems };
         })
         .filter((group) => group.items.length > 0);
+    const timeTrackerItem = { label: 'Time Tracker', path: '/app/time-tracker', icon: 'Timer' } as const;
+    const hasTimeTracker = visibleGroups.some((group) =>
+        group.items.some((item) => item.path === timeTrackerItem.path),
+    );
+    const normalizeGroupName = (value: string | null) =>
+        String(value ?? '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toUpperCase();
+    const groupsWithTimeTracker = (() => {
+        if (hasTimeTracker) return visibleGroups;
+        const cloned = visibleGroups.map((group) => ({
+            ...group,
+            items: [...group.items],
+        }));
+        const toolsIndex = cloned.findIndex(
+            (group) => normalizeGroupName(group.group).includes('ARAC'),
+        );
+        if (toolsIndex >= 0) {
+            cloned[toolsIndex].items.push(timeTrackerItem);
+            return cloned;
+        }
+        return [
+            ...cloned,
+            { group: 'ARACLAR', items: [timeTrackerItem] },
+        ];
+    })();
 
     function handleLogout() {
         logoutStore();
@@ -201,7 +229,7 @@ export function Sidebar({
             </div>
 
             <nav style={{ flex: 1, padding: '12px 0' }}>
-                {visibleGroups.map((grp, gi) => (
+                {groupsWithTimeTracker.map((grp, gi) => (
                     <div key={gi} style={{ marginBottom: 8 }}>
                         {grp.group && !collapsedState && (
                             <p

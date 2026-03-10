@@ -38,7 +38,6 @@ export const NAV_PERMISSION_MAP: Record<string, string[] | string> = {
     '/app/sozlesmeler': CONTRACT_PERMS,
     '/app/dosyalar': FILE_PERMS,
     '/app/dosyalarim': FILE_PERMS,
-    '/app/time-tracker': TIME_PERMS,
     '/app/audit-log': 'AUDIT_READ',
     '/app/iletisim-talepleri': CLIENT_PERMS,
 };

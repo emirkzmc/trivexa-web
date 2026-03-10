@@ -111,8 +111,11 @@ api.interceptors.response.use(
         }
 
         // ── Diğer hatalar → Sonner toast ─────────────────────────
-        const message = resolveErrorMessage(error);
-        toast.error(message, { duration: 3_000 });
+        const shouldSkipToast = Boolean(originalRequest?.headers?.['x-skip-error-toast']);
+        if (!shouldSkipToast) {
+            const message = resolveErrorMessage(error);
+            toast.error(message, { duration: 3_000 });
+        }
 
         return Promise.reject(error);
     },

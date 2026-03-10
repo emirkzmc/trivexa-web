@@ -5,6 +5,7 @@ import { login } from "../api/auth.api";
 import type { LoginCredentials, LoginResponse } from "../api/auth.api";
 import { useAuthStore } from '../store/authStore';
 import { ROLE_DASHBOARD_MAP } from '../../../shared/constants/roleDashboardMap';
+import { normalizeRoleKey } from '../../../shared/utils/roleUtils';
 
 interface UseLoginOptions {
   onFirstLogin?: () => void;
@@ -37,7 +38,10 @@ export function useLogin(options?: UseLoginOptions) {
         return;
       }
 
-      const targetRoute = ROLE_DASHBOARD_MAP[user.role] || "/app/dashboard";
+      const normalizedRole = normalizeRoleKey(user.role);
+      const targetRoute = ROLE_DASHBOARD_MAP[user.role]
+        || ROLE_DASHBOARD_MAP[normalizedRole]
+        || "/app/dashboard";
       navigate(targetRoute, { replace: true });
     },
     onError: () => {

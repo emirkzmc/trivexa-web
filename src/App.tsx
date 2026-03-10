@@ -22,6 +22,7 @@ import { InvoiceDetailPage } from './features/finance/components/InvoiceDetailPa
 import { CollectionTrackingPage } from './features/finance/components/CollectionTrackingPage';
 import { ExpenseManagementPage } from './features/finance/components/ExpenseManagementPage';
 import { CashflowDashboardPage } from './features/finance/components/CashflowDashboardPage';
+import { PayrollAttendancePage } from './features/finance/components/PayrollAttendancePage';
 import { AdminDashboardPage } from './features/dashboard/components/AdminDashboardPage';
 import { SupportRequestsPage } from './features/tickets/components/SupportRequestsPage';
 import { PortalRequestsPage } from './features/tickets/components/PortalRequestsPage';
@@ -48,7 +49,7 @@ import { ProductionProcessesPage } from './features/production-processes/compone
 import { WorkingHoursPage } from './features/working-hours/components/WorkingHoursPage';
 import { PerformancePage } from './features/performance/components/PerformancePage';
 import { ContractsPage } from './features/contracts/components/ContractsPage';
-import { PayrollAttendancePage } from './features/finance/components/PayrollAttendancePage';
+import { SettingsPage } from './features/settings/components/SettingsPage';
 
 function App() {
   return (
@@ -132,6 +133,10 @@ function App() {
           element={<ExpenseManagementPage />}
         />
         <Route
+          path="puantaj"
+          element={<PayrollAttendancePage />}
+        />
+        <Route
           path="banka-mutabakat"
           element={<BankReconciliationPage />}
         />
@@ -143,13 +148,13 @@ function App() {
           path="vergi-beyan"
           element={<TaxDeclarationPrepPage />}
         />
-        <Route path="puantaj" element={<PayrollAttendancePage />} />
         <Route path="toplanti-takvimi" element={<MeetingsCalendarPage />} />
         <Route path="dosyalar" element={<FilesManagementPage />} />
         <Route path="dosyalarim" element={<FilesManagementPage />} />
         <Route path="time-tracker" element={<TimeTrackerPage />} />
         <Route path="roller" element={<RolesPermissionsPage />} />
         <Route path="audit-log" element={<AuditLogPage />} />
+        <Route path="ayarlar" element={<SettingsPage />} />
         <Route path="*" element={<div>YapÄ±m AÅŸamasÄ±nda</div>} />
       </Route>
 
