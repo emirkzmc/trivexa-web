@@ -35,6 +35,7 @@ import { CustomerPanelContractsPage } from './features/customer-panel/components
 import { CodeProcessesPage } from './features/code-processes/components/CodeProcessesPage';
 import { DepartmentAssignmentsPage } from './features/departments/components/DepartmentAssignmentsPage';
 import { LeaveManagementPage } from './features/leave-management/components/LeaveManagementPage';
+import { ContentPlanPage } from './features/content-plan/components/ContentPlanPage';
 
 function App() {
   return (
@@ -93,6 +94,7 @@ function App() {
         <Route path="gorevlerim" element={<Navigate to="/app/gorevler" replace />} />
         <Route path="gorevler/:taskId" element={<TaskDetailPage />} />
         <Route path="kod" element={<CodeProcessesPage />} />
+        <Route path="icerik-plani" element={<ContentPlanPage />} />
         <Route path="talepler" element={<SupportRequestsPage />} />
         <Route path="personel-toplantilari" element={<MeetingsCalendarPage />} />
         <Route path="gorusmeler" element={<MeetingsPage />} />
