@@ -176,6 +176,45 @@ function withPersonnelMeetingsSidebar(config: RoleNavConfig): RoleNavConfig {
     };
 }
 
+function mergeRoleNavGroups(
+    theme: SidebarTheme,
+    configs: RoleNavConfig[],
+): RoleNavConfig {
+    const normalizeGroupKey = (value: string | null) => {
+        if (!value) return '__ROOT__';
+        return value
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toUpperCase();
+    };
+
+    const groupMap = new Map<string, { group: string | null; items: NavItem[]; paths: Set<string> }>();
+
+    configs.forEach((config) => {
+        config.groups.forEach((group) => {
+            const key = normalizeGroupKey(group.group);
+            const existing = groupMap.get(key);
+            const bucket = existing ?? { group: group.group ?? null, items: [], paths: new Set<string>() };
+            group.items.forEach((item) => {
+                if (bucket.paths.has(item.path)) return;
+                bucket.items.push(item);
+                bucket.paths.add(item.path);
+            });
+            if (!existing) {
+                groupMap.set(key, bucket);
+            }
+        });
+    });
+
+    return {
+        theme,
+        groups: Array.from(groupMap.values()).map(({ group, items }) => ({
+            group,
+            items,
+        })),
+    };
+}
+
 // ─── ADMIN ────────────────────────────────────────────────────────────────────
 
 const ADMIN_NAV: RoleNavConfig = {
@@ -564,7 +603,19 @@ const CLIENT_NAV: RoleNavConfig = {
 // ─── ANA CONFIG ──────────────────────────────────────────────────────────────
 
 export const NAV_CONFIG: Record<string, RoleNavConfig> = {
-    [ROLES.ADMIN]: withPersonnelMeetingsSidebar(withFinanceSidebar(ADMIN_NAV)),
+    [ROLES.ADMIN]: mergeRoleNavGroups(THEMES.ADMIN, [
+        withPersonnelMeetingsSidebar(withFinanceSidebar(ADMIN_NAV)),
+        withPersonnelMeetingsSidebar(withFinanceSidebar(CEO_NAV)),
+        withPersonnelMeetingsSidebar(withFinanceSidebar(MANAGER_NAV)),
+        withPersonnelMeetingsSidebar(withFinanceSidebar(ACCOUNTING_NAV)),
+        withPersonnelMeetingsSidebar(ACCOUNT_MANAGER_NAV),
+        withPersonnelMeetingsSidebar(DEVELOPER_NAV),
+        withPersonnelMeetingsSidebar(withFinanceSidebar(SOCIAL_MEDIA_NAV)),
+        withPersonnelMeetingsSidebar(CREATIVE_NAV),
+        withPersonnelMeetingsSidebar(MARKETING_NAV),
+        withPersonnelMeetingsSidebar(PRODUCTION_NAV),
+        withPersonnelMeetingsSidebar(HR_NAV),
+    ]),
     [ROLES.CEO]: withPersonnelMeetingsSidebar(withFinanceSidebar(CEO_NAV)),
     [ROLES.MANAGER]: withPersonnelMeetingsSidebar(withFinanceSidebar(MANAGER_NAV)),
     [ROLES.ACCOUNTING]: withPersonnelMeetingsSidebar(withFinanceSidebar(ACCOUNTING_NAV)),
