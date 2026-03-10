@@ -165,3 +165,4 @@ export async function convertMeetingToTicket(
 ): Promise<void> {
     await api.post(`/meetings/${meetingId}/convert-to-ticket`, payload);
 }
+
