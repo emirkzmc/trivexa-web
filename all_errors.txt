@@ -1,0 +1,89 @@
+src/features\audit\api\audit.api.ts:36 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+src/features\audit\api\audit.api.ts:45 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+src/features\code-processes\components\CodeProcessesPage.tsx:4 [@typescript-eslint/no-unused-vars] 'AlertTriangle' is defined but never used.
+src/features\code-processes\components\CodeProcessesPage.tsx:5 [@typescript-eslint/no-unused-vars] 'CheckCircle2' is defined but never used.
+src/features\code-processes\components\CodeProcessesPage.tsx:6 [@typescript-eslint/no-unused-vars] 'Clock3' is defined but never used.
+src/features\code-processes\components\CodeProcessesPage.tsx:220 [react-hooks/set-state-in-effect] Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchroniz
+src/features\departments\components\DepartmentsPage.tsx:139 [react-hooks/preserve-manual-memoization] Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component b
+src/features\departments\components\DepartmentsPage.tsx:139 [react-hooks/preserve-manual-memoization] Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component b
+src/features\finance\components\CashflowDashboardPage.tsx:155 [react-hooks/rules-of-hooks] React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component rend
+src/features\finance\components\CashflowDashboardPage.tsx:169 [react-hooks/rules-of-hooks] React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component rend
+src/features\finance\components\CashflowDashboardPage.tsx:178 [react-hooks/rules-of-hooks] React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component rend
+src/features\finance\components\InvoiceDetailPage.tsx:436 [react-hooks/immutability] Error: Cannot reassign variable after render completes
+
+Reassigning `runningCollected` after render has completed can ca
+src/features\meetings\components\MeetingsPage.tsx:353 [react-hooks/purity] Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produ
+src/features\notifications\components\NotificationsPage.tsx:102 [react-hooks/set-state-in-effect] Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchroniz
+src/features\personnel\hooks\useExportPersonnel.ts:54 [@typescript-eslint/no-unused-vars] '_page' is assigned a value but never used.
+src/features\personnel\hooks\useExportPersonnel.ts:54 [@typescript-eslint/no-unused-vars] '_limit' is assigned a value but never used.
+src/features\projects\components\ProjectDetailPage.tsx:244 [react-hooks/set-state-in-effect] Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchroniz
+src/features\projects\components\ProjectDetailPage.tsx:267 [react-hooks/set-state-in-effect] Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchroniz
+src/features\projects\hooks\useProjectCreate.ts:185 [react-hooks/set-state-in-effect] Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchroniz
+src/features\projects\hooks\useProjectCreate.ts:195 [react-hooks/set-state-in-effect] Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchroniz
+src/features\projects\hooks\useProjectCreate.ts:206 [react-hooks/set-state-in-effect] Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchroniz
+src/features\roles\components\RolesPermissionsPage.tsx:56 [react-hooks/set-state-in-effect] Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchroniz
+src/features\roles\components\RolesPermissionsPage.tsx:68 [react-hooks/set-state-in-effect] Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchroniz
+src/features\tasks\components\TaskCreateModal.tsx:50 [react-hooks/set-state-in-effect] Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchroniz
+src/features\tasks\components\TaskDetailPage.tsx:90 [react-hooks/set-state-in-effect] Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchroniz
+src/features\tasks\components\TasksPage.tsx:145 [react-hooks/set-state-in-effect] Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchroniz
+src/features\tasks\components\TasksPage.tsx:366 [react-hooks/set-state-in-effect] Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchroniz
+src/features\time-tracker\components\DraggableActiveTimer.tsx:67 [react-hooks/set-state-in-effect] Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchroniz
+src/features\time-tracker\components\DraggableActiveTimer.tsx:125 [react-hooks/set-state-in-effect] Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchroniz
+src/features\time-tracker\components\TimeTrackerPage.tsx:147 [react-hooks/preserve-manual-memoization] Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component b
+src/features\time-tracker\components\TimeTrackerPage.tsx:147 [react-hooks/preserve-manual-memoization] Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component b
+src/features\time-tracker\components\TimeTrackerPage.tsx:216 [react-hooks/preserve-manual-memoization] Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component b
+src/features\time-tracker\components\TimeTrackerPage.tsx:284 [react-hooks/preserve-manual-memoization] Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component b
+src/features\time-tracker\components\TimeTrackerPage.tsx:284 [react-hooks/preserve-manual-memoization] Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component b
+src/shared\components\AppLayout.tsx:396 [react-hooks/set-state-in-effect] Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchroniz
+src/shared\components\header\UserMenuDropdown.tsx:93 [react-hooks/set-state-in-effect] Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchroniz
+src/sonner.tsx:21 [react-refresh/only-export-components] Fast refresh only works when a file only exports components. Use a new file to share constants or functions between comp

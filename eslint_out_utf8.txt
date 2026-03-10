@@ -1,0 +1,529 @@
+﻿
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\clients\components\ClientsPage.tsx
+  61:11  warning  The 'rows' conditional could make the dependencies of useMemo Hook (at line 72) change on every render. To fix this, wrap the initialization of 'rows' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\code-processes\components\CodeProcessesPage.tsx
+  214:11  warning  The 'projects' logical expression could make the dependencies of useEffect Hook (at line 221) change on every render. To fix this, wrap the initialization of 'projects' in its own useMemo() Hook                                             react-hooks/exhaustive-deps
+  214:11  warning  The 'projects' logical expression could make the dependencies of useMemo Hook (at line 225) change on every render. To fix this, wrap the initialization of 'projects' in its own useMemo() Hook                                               react-hooks/exhaustive-deps
+  239:11  warning  The 'recentTasks' logical expression could make the dependencies of useMemo Hook (at line 254) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'recentTasks' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\content-plan\components\ContentPlanPage.tsx
+  117:11  warning  The 'projects' logical expression could make the dependencies of useMemo Hook (at line 120) change on every render. To fix this, wrap the initialization of 'projects' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-hooks/exhaustive-deps
+  117:11  warning  The 'projects' logical expression could make the dependencies of useEffect Hook (at line 128) change on every render. To fix this, wrap the initialization of 'projects' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       react-hooks/exhaustive-deps
+  126:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\content-plan\components\ContentPlanPage.tsx:126:13
+  124 |         if (!canReadTasks) return;
+  125 |         if (!selectedProjectId && projects.length > 0) {
+> 126 |             setSelectedProjectId(projects[0].id);
+      |             ^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  127 |         }
+  128 |     }, [canReadTasks, projects, selectedProjectId]);
+  129 |  react-hooks/set-state-in-effect
+  136:11  warning  The 'members' logical expression could make the dependencies of useMemo Hook (at line 139) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'members' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    react-hooks/exhaustive-deps
+  164:11  warning  The 'rows' logical expression could make the dependencies of useMemo Hook (at line 190) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'rows' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react-hooks/exhaustive-deps
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\customer-panel\components\CustomerPanelContractsPage.tsx
+  65:11  warning  The 'contracts' logical expression could make the dependencies of useMemo Hook (at line 82) change on every render. To fix this, wrap the initialization of 'contracts' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  65:11  warning  The 'contracts' logical expression could make the dependencies of useMemo Hook (at line 90) change on every render. To fix this, wrap the initialization of 'contracts' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\departments\components\DepartmentAssignmentsPage.tsx
+  64:11  warning  The 'departments' logical expression could make the dependencies of useMemo Hook (at line 75) change on every render. To fix this, wrap the initialization of 'departments' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  64:11  warning  The 'departments' logical expression could make the dependencies of useMemo Hook (at line 83) change on every render. To fix this, wrap the initialization of 'departments' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  64:11  warning  The 'departments' logical expression could make the dependencies of useMemo Hook (at line 93) change on every render. To fix this, wrap the initialization of 'departments' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  64:11  warning  The 'departments' logical expression could make the dependencies of useMemo Hook (at line 98) change on every render. To fix this, wrap the initialization of 'departments' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\departments\components\DepartmentsPage.tsx
+  114:11  warning  The 'departments' logical expression could make the dependencies of useMemo Hook (at line 122) change on every render. To fix this, wrap the initialization of 'departments' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+  114:11  warning  The 'departments' logical expression could make the dependencies of useMemo Hook (at line 126) change on every render. To fix this, wrap the initialization of 'departments' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+  114:11  warning  The 'departments' logical expression could make the dependencies of useMemo Hook (at line 131) change on every render. To fix this, wrap the initialization of 'departments' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+  134:11  warning  The 'teamLeaders' logical expression could make the dependencies of useMemo Hook (at line 137) change on every render. To fix this, wrap the initialization of 'teamLeaders' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+  134:11  warning  The 'teamLeaders' logical expression could make the dependencies of useMemo Hook (at line 167) change on every render. To fix this, wrap the initialization of 'teamLeaders' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+  139:43  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `moduleDepartment`, but the source dependencies were [moduleDepartment?.name, editingModule?.teamLeadId, teamLeaders]. Inferred less specific property than source.
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\departments\components\DepartmentsPage.tsx:139:43
+  137 |         [teamLeaders],
+  138 |     );
+> 139 |     const selectableTeamLeaders = useMemo(() => {
+      |                                           ^^^^^^^
+> 140 |         if (!moduleDepartment?.name) {
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 141 |             return [];
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 166 |             : filtered;
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 167 |     }, [moduleDepartment?.name, editingModule?.teamLeadId, teamLeaders]);
+      | ^^^^^^ Could not preserve existing manual memoization
+  168 |
+  169 |     const isSubmitting = createMutation.isPending || updateMutation.isPending;
+  170 |     const isModuleSubmitting = createModuleMutation.isPending || updateModuleMutation.isPending;  react-hooks/preserve-manual-memoization
+  139:43  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `editingModule`, but the source dependencies were [moduleDepartment?.name, editingModule?.teamLeadId, teamLeaders]. Inferred less specific property than source.
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\departments\components\DepartmentsPage.tsx:139:43
+  137 |         [teamLeaders],
+  138 |     );
+> 139 |     const selectableTeamLeaders = useMemo(() => {
+      |                                           ^^^^^^^
+> 140 |         if (!moduleDepartment?.name) {
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 141 |             return [];
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 166 |             : filtered;
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 167 |     }, [moduleDepartment?.name, editingModule?.teamLeadId, teamLeaders]);
+      | ^^^^^^ Could not preserve existing manual memoization
+  168 |
+  169 |     const isSubmitting = createMutation.isPending || updateMutation.isPending;
+  170 |     const isModuleSubmitting = createModuleMutation.isPending || updateModuleMutation.isPending;     react-hooks/preserve-manual-memoization
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\files\components\FilesManagementPage.tsx
+  260:11  warning  The 'entityOptions' logical expression could make the dependencies of useMemo Hook (at line 275) change on every render. To fix this, wrap the initialization of 'entityOptions' in its own useMemo() Hook    react-hooks/exhaustive-deps
+  260:11  warning  The 'entityOptions' logical expression could make the dependencies of useEffect Hook (at line 316) change on every render. To fix this, wrap the initialization of 'entityOptions' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  408:8   warning  React Hook useMemo has a missing dependency: 'getResolvedAutoPath'. Either include it or remove the dependency array                                                                                          react-hooks/exhaustive-deps
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\finance\components\CashflowDashboardPage.tsx
+  135:9  warning  The 'overdueInvoices' logical expression could make the dependencies of useMemo Hook (at line 152) change on every render. To fix this, wrap the initialization of 'overdueInvoices' in its own useMemo() Hook          react-hooks/exhaustive-deps
+  135:9  warning  The 'overdueInvoices' logical expression could make the dependencies of useMemo Hook (at line 161) change on every render. To fix this, wrap the initialization of 'overdueInvoices' in its own useMemo() Hook          react-hooks/exhaustive-deps
+  136:9  warning  The 'upcomingReceivables' logical expression could make the dependencies of useMemo Hook (at line 152) change on every render. To fix this, wrap the initialization of 'upcomingReceivables' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  136:9  warning  The 'upcomingReceivables' logical expression could make the dependencies of useMemo Hook (at line 170) change on every render. To fix this, wrap the initialization of 'upcomingReceivables' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\finance\components\InvoiceDetailPage.tsx
+  356:11  warning  The 'payments' logical expression could make the dependencies of useMemo Hook (at line 363) change on every render. To fix this, wrap the initialization of 'payments' in its own useMemo() Hook                                                         react-hooks/exhaustive-deps
+  356:11  warning  The 'payments' logical expression could make the dependencies of useMemo Hook (at line 407) change on every render. To fix this, wrap the initialization of 'payments' in its own useMemo() Hook                                                         react-hooks/exhaustive-deps
+  356:11  warning  The 'payments' logical expression could make the dependencies of useMemo Hook (at line 414) change on every render. To fix this, wrap the initialization of 'payments' in its own useMemo() Hook                                                         react-hooks/exhaustive-deps
+  356:11  warning  The 'payments' logical expression could make the dependencies of useMemo Hook (at line 421) change on every render. To fix this, wrap the initialization of 'payments' in its own useMemo() Hook                                                         react-hooks/exhaustive-deps
+  440:11  warning  The 'paymentAuditRows' logical expression could make the dependencies of useMemo Hook (at line 471) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'paymentAuditRows' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\finance\components\InvoicesPage.tsx
+  130:11  warning  The 'rows' logical expression could make the dependencies of useMemo Hook (at line 166) change on every render. To fix this, wrap the initialization of 'rows' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\leave-management\components\LeaveManagementPage.tsx
+  74:11  warning  The 'requests' conditional could make the dependencies of useMemo Hook (at line 77) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'requests' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\meetings\components\MeetingsCalendarPage.tsx
+  163:11  warning  The 'visibleMeetings' logical expression could make the dependencies of useMemo Hook (at line 180) change on every render. To fix this, wrap the initialization of 'visibleMeetings' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\meetings\components\MeetingsPage.tsx
+  244:11  warning  The 'rows' logical expression could make the dependencies of useMemo Hook (at line 294) change on every render. To fix this, wrap the initialization of 'rows' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  244:11  warning  The 'rows' logical expression could make the dependencies of useMemo Hook (at line 327) change on every render. To fix this, wrap the initialization of 'rows' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  244:11  warning  The 'rows' logical expression could make the dependencies of useMemo Hook (at line 335) change on every render. To fix this, wrap the initialization of 'rows' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\notifications\components\NotificationsPage.tsx
+   75:11  warning  The 'rows' logical expression could make the dependencies of useMemo Hook (at line 82) change on every render. To fix this, wrap the initialization of 'rows' in its own useMemo() Hook   react-hooks/exhaustive-deps
+   75:11  warning  The 'rows' logical expression could make the dependencies of useMemo Hook (at line 98) change on every render. To fix this, wrap the initialization of 'rows' in its own useMemo() Hook   react-hooks/exhaustive-deps
+   75:11  warning  The 'rows' logical expression could make the dependencies of useMemo Hook (at line 116) change on every render. To fix this, wrap the initialization of 'rows' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  109:13  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\projects\components\ProjectDetailPage.tsx
+  213:11  warning  The 'members' logical expression could make the dependencies of useMemo Hook (at line 220) change on every render. To fix this, wrap the initialization of 'members' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            react-hooks/exhaustive-deps
+  214:11  warning  The 'tasks' logical expression could make the dependencies of useMemo Hook (at line 235) change on every render. To fix this, wrap the initialization of 'tasks' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+  244:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\projects\components\ProjectDetailPage.tsx:244:13
+  242 |         const overview = githubOverviewQuery.data;
+  243 |         if (!overview?.connected) {
+> 244 |             setSelectedBranch('');
+      |             ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  245 |             return;
+  246 |         }
+  247 |                                                                                                                             react-hooks/set-state-in-effect
+  267:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\projects\components\ProjectDetailPage.tsx:267:13
+  265 |         const linkedRepositoryUrl = githubOverviewQuery.data?.linkedRepositoryUrl;
+  266 |         if (linkedRepositoryUrl && !githubRepoUrl.trim()) {
+> 267 |             setGithubRepoUrl(linkedRepositoryUrl);
+      |             ^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  268 |         }
+  269 |     }, [githubOverviewQuery.data?.linkedRepositoryUrl, githubRepoUrl]);
+  270 |  react-hooks/set-state-in-effect
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\projects\components\ProjectsPage.tsx
+  94:11  warning  The 'rows' logical expression could make the dependencies of useMemo Hook (at line 215) change on every render. To fix this, wrap the initialization of 'rows' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  94:11  warning  The 'rows' logical expression could make the dependencies of useMemo Hook (at line 232) change on every render. To fix this, wrap the initialization of 'rows' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\projects\hooks\useProjectCreate.ts
+   41:11  warning  The 'clients' conditional could make the dependencies of useEffect Hook (at line 187) change on every render. To fix this, wrap the initialization of 'clients' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+   42:11  warning  The 'departments' conditional could make the dependencies of useMemo Hook (at line 50) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'departments' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    react-hooks/exhaustive-deps
+   43:11  warning  The 'personnel' conditional could make the dependencies of useMemo Hook (at line 68) change on every render. To fix this, wrap the initialization of 'personnel' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/exhaustive-deps
+   43:11  warning  The 'personnel' conditional could make the dependencies of useMemo Hook (at line 81) change on every render. To fix this, wrap the initialization of 'personnel' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/exhaustive-deps
+  185:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\projects\hooks\useProjectCreate.ts:185:13
+  183 |
+  184 |         if (!createForm.clientId && clients.length > 0) {
+> 185 |             setCreateForm((prev) => ({ ...prev, clientId: clients[0].id }));
+      |             ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  186 |         }
+  187 |     }, [createPanelOpen, clients, createForm.clientId]);
+  188 |                                                     react-hooks/set-state-in-effect
+  195:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\projects\hooks\useProjectCreate.ts:195:13
+  193 |
+  194 |         if (!createForm.departmentId && departmentOptions.length > 0) {
+> 195 |             setCreateForm((prev) => ({ ...prev, departmentId: departmentOptions[0].id }));
+      |             ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  196 |         }
+  197 |     }, [createPanelOpen, departmentOptions, createForm.departmentId]);
+  198 |           react-hooks/set-state-in-effect
+  206:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\projects\hooks\useProjectCreate.ts:206:13
+  204 |         const exists = departmentPersonnel.some((person) => person.id === createForm.teamLeadId);
+  205 |         if (!exists) {
+> 206 |             setCreateForm((prev) => ({ ...prev, teamLeadId: '' }));
+      |             ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  207 |         }
+  208 |     }, [departmentPersonnel, createForm.teamLeadId]);
+  209 |  react-hooks/set-state-in-effect
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\roles\components\RolesPermissionsPage.tsx
+   56:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\roles\components\RolesPermissionsPage.tsx:56:13
+  54 |         if (!rolesQuery.data?.length) return;
+  55 |         if (!selectedRoleId || !rolesQuery.data.some((role) => role.id === selectedRoleId)) {
+> 56 |             setSelectedRoleId(rolesQuery.data[0].id);
+     |             ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  57 |         }
+  58 |     }, [rolesQuery.data, selectedRoleId]);
+  59 |              react-hooks/set-state-in-effect
+   68:9   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\roles\components\RolesPermissionsPage.tsx:68:9
+  66 |     useEffect(() => {
+  67 |         if (!rolePermissionsQuery.data) return;
+> 68 |         setDraftPermissionIds(Array.from(new Set(rolePermissionsQuery.data.map((permission) => permission.id))));
+     |         ^^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  69 |     }, [rolePermissionsQuery.data]);
+  70 |
+  71 |     const saveMutation = useMutation({  react-hooks/set-state-in-effect
+  115:11  warning  The 'permissionPool' logical expression could make the dependencies of useMemo Hook (at line 123) change on every render. To fix this, wrap the initialization of 'permissionPool' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react-hooks/exhaustive-deps
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\tasks\components\TaskCreateModal.tsx
+  50:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\tasks\components\TaskCreateModal.tsx:50:13
+  48 |     useEffect(() => {
+  49 |         if (isOpen) {
+> 50 |             setForm(INITIAL_STATE);
+     |             ^^^^^^^ Avoid calling setState() directly within an effect
+  51 |         }
+  52 |     }, [isOpen]);
+  53 |  react-hooks/set-state-in-effect
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\tasks\components\TaskDetailPage.tsx
+  90:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\tasks\components\TaskDetailPage.tsx:90:9
+  88 |         }
+  89 |
+> 90 |         setForm({
+     |         ^^^^^^^ Avoid calling setState() directly within an effect
+  91 |             title: task.title,
+  92 |             description: task.description ?? '',
+  93 |             priority: task.priority ?? 'MEDIUM',  react-hooks/set-state-in-effect
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\tasks\components\TasksPage.tsx
+  133:11  warning  The 'projects' logical expression could make the dependencies of useMemo Hook (at line 136) change on every render. To fix this, wrap the initialization of 'projects' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-hooks/exhaustive-deps
+  133:11  warning  The 'projects' logical expression could make the dependencies of useEffect Hook (at line 147) change on every render. To fix this, wrap the initialization of 'projects' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       react-hooks/exhaustive-deps
+  145:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\tasks\components\TasksPage.tsx:145:13
+  143 |
+  144 |         if (!selectedProjectId && projects.length > 0) {
+> 145 |             setSelectedProjectId(projects[0].id);
+      |             ^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  146 |         }
+  147 |     }, [canReadTasks, projects, selectedProjectId]);
+  148 |  react-hooks/set-state-in-effect
+  155:11  warning  The 'members' logical expression could make the dependencies of useMemo Hook (at line 158) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'members' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    react-hooks/exhaustive-deps
+  174:11  warning  The 'rows' logical expression could make the dependencies of useMemo Hook (at line 199) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'rows' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react-hooks/exhaustive-deps
+  366:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\tasks\components\TasksPage.tsx:366:13
+  364 |     useEffect(() => {
+  365 |         if (page > totalPages) {
+> 366 |             setPage(totalPages);
+      |             ^^^^^^^ Avoid calling setState() directly within an effect
+  367 |         }
+  368 |     }, [page, totalPages]);
+  369 |                                                           react-hooks/set-state-in-effect
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\time-tracker\components\DraggableActiveTimer.tsx
+   67:9   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\time-tracker\components\DraggableActiveTimer.tsx:67:9
+  65 |         if (!visible || position) return;
+  66 |         const expanded = getExpandedSize();
+> 67 |         setPosition({
+     |         ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  68 |             x: Math.max(VIEWPORT_MARGIN, window.innerWidth - expanded.width - 24),
+  69 |             y: Math.max(VIEWPORT_MARGIN, window.innerHeight - expanded.height - 24),
+  70 |         });  react-hooks/set-state-in-effect
+  125:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\time-tracker\components\DraggableActiveTimer.tsx:125:13
+  123 |     useEffect(() => {
+  124 |         if (!visible) {
+> 125 |             setMobileExpanded(false);
+      |             ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  126 |         }
+  127 |     }, [visible]);
+  128 |                                                                                                                                                              react-hooks/set-state-in-effect
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\time-tracker\components\TimeTrackerPage.tsx
+  107:11  warning  The 'projects' logical expression could make the dependencies of useMemo Hook (at line 134) change on every render. To fix this, wrap the initialization of 'projects' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/exhaustive-deps
+  109:11  warning  The 'historyRows' logical expression could make the dependencies of useMemo Hook (at line 124) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'historyRows' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react-hooks/exhaustive-deps
+  110:11  warning  The 'teamRows' logical expression could make the dependencies of useMemo Hook (at line 258) change on every render. To fix this, wrap the initialization of 'teamRows' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/exhaustive-deps
+  110:11  warning  The 'teamRows' logical expression could make the dependencies of useMemo Hook (at line 272) change on every render. To fix this, wrap the initialization of 'teamRows' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/exhaustive-deps
+  110:11  warning  The 'teamRows' logical expression could make the dependencies of useMemo Hook (at line 281) change on every render. To fix this, wrap the initialization of 'teamRows' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/exhaustive-deps
+  111:11  warning  The 'dashboardRows' logical expression could make the dependencies of useMemo Hook (at line 193) change on every render. To fix this, wrap the initialization of 'dashboardRows' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+  111:11  warning  The 'dashboardRows' logical expression could make the dependencies of useMemo Hook (at line 198) change on every render. To fix this, wrap the initialization of 'dashboardRows' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+  111:11  warning  The 'dashboardRows' logical expression could make the dependencies of useMemo Hook (at line 203) change on every render. To fix this, wrap the initialization of 'dashboardRows' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+  111:11  warning  The 'dashboardRows' logical expression could make the dependencies of useMemo Hook (at line 208) change on every render. To fix this, wrap the initialization of 'dashboardRows' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+  111:11  warning  The 'dashboardRows' logical expression could make the dependencies of useMemo Hook (at line 213) change on every render. To fix this, wrap the initialization of 'dashboardRows' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+  111:11  warning  The 'dashboardRows' logical expression could make the dependencies of useMemo Hook (at line 247) change on every render. To fix this, wrap the initialization of 'dashboardRows' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+  111:11  warning  The 'dashboardRows' logical expression could make the dependencies of useMemo Hook (at line 258) change on every render. To fix this, wrap the initialization of 'dashboardRows' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+  112:11  warning  The 'teamPersonnelRows' logical expression could make the dependencies of useMemo Hook (at line 115) change on every render. To fix this, wrap the initialization of 'teamPersonnelRows' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             react-hooks/exhaustive-deps
+  112:11  warning  The 'teamPersonnelRows' logical expression could make the dependencies of useMemo Hook (at line 119) change on every render. To fix this, wrap the initialization of 'teamPersonnelRows' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             react-hooks/exhaustive-deps
+  147:50  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `resolveProjectName`, but the source dependencies were [filteredHistoryRows, sortField, sortDirection, projectNameMap]. Inferred different dependency than source.
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\time-tracker\components\TimeTrackerPage.tsx:147:50
+  145 |     }, [personnelMapById]);
+  146 |
+> 147 |     const filteredAndSortedHistoryRows = useMemo(() => {
+      |                                                  ^^^^^^^
+> 148 |         const sorted = [...filteredHistoryRows].sort((a, b) => {
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 149 |             let aVal: unknown = a[sortField as keyof TimerEntry];
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 172 |         return sorted;
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 173 |     }, [filteredHistoryRows, sortField, sortDirection, projectNameMap]);
+      | ^^^^^^ Could not preserve existing manual memoization
+  174 |
+  175 |     const activeTimer = activeTimerQuery.timer;
+  176 |     const activeProjectName = activeTimer?.projectName  react-hooks/preserve-manual-memoization
+  147:50  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `resolveProjectName`, but the source dependencies were [filteredHistoryRows, sortField, sortDirection, projectNameMap]. Inferred different dependency than source.
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\time-tracker\components\TimeTrackerPage.tsx:147:50
+  145 |     }, [personnelMapById]);
+  146 |
+> 147 |     const filteredAndSortedHistoryRows = useMemo(() => {
+      |                                                  ^^^^^^^
+> 148 |         const sorted = [...filteredHistoryRows].sort((a, b) => {
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 149 |             let aVal: unknown = a[sortField as keyof TimerEntry];
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 172 |         return sorted;
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 173 |     }, [filteredHistoryRows, sortField, sortDirection, projectNameMap]);
+      | ^^^^^^ Could not preserve existing manual memoization
+  174 |
+  175 |     const activeTimer = activeTimerQuery.timer;
+  176 |     const activeProjectName = activeTimer?.projectName  react-hooks/preserve-manual-memoization
+  173:8   warning  React Hook useMemo has a missing dependency: 'resolveProjectName'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            react-hooks/exhaustive-deps
+  216:42  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `resolveProjectName`, but the source dependencies were [dashboardRows]. Inferred different dependency than source.
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\time-tracker\components\TimeTrackerPage.tsx:216:42
+  214 |     );
+  215 |
+> 216 |     const dashboardTopProjects = useMemo(() => {
+      |                                          ^^^^^^^
+> 217 |         const totals = new Map<string, number>();
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 218 |         dashboardRows.forEach((row) => {
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 226 |             .slice(0, 6);
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 227 |     }, [dashboardRows]);
+      | ^^^^^^ Could not preserve existing manual memoization
+  228 |
+  229 |     const dashboardTopUsers = useMemo(() => {
+  230 |         const totals = new Map<string, { name: string; seconds: number; entries: number }>();                                                                                                                                                                                    react-hooks/preserve-manual-memoization
+  227:8   warning  React Hook useMemo has a missing dependency: 'resolveProjectName'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            react-hooks/exhaustive-deps
+  284:36  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `resolveProjectName`, but the source dependencies were [filteredTeamRows, teamSortField, teamSortDirection]. Inferred different dependency than source.
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\time-tracker\components\TimeTrackerPage.tsx:284:36
+  282 |     );
+  283 |
+> 284 |     const sortedTeamRows = useMemo(() => {
+      |                                    ^^^^^^^
+> 285 |         const sorted = [...filteredTeamRows].sort((a, b) => {
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 286 |             let aVal: string | number = '';
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 320 |         return sorted;
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 321 |     }, [filteredTeamRows, teamSortField, teamSortDirection]);
+      | ^^^^^^ Could not preserve existing manual memoization
+  322 |
+  323 |     const handleSort = (field: keyof TimerEntry | 'projectName') => {
+  324 |         if (sortField === field) {                                                                                                         react-hooks/preserve-manual-memoization
+  284:36  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `resolveProjectName`, but the source dependencies were [filteredTeamRows, teamSortField, teamSortDirection]. Inferred different dependency than source.
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\features\time-tracker\components\TimeTrackerPage.tsx:284:36
+  282 |     );
+  283 |
+> 284 |     const sortedTeamRows = useMemo(() => {
+      |                                    ^^^^^^^
+> 285 |         const sorted = [...filteredTeamRows].sort((a, b) => {
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 286 |             let aVal: string | number = '';
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 320 |         return sorted;
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 321 |     }, [filteredTeamRows, teamSortField, teamSortDirection]);
+      | ^^^^^^ Could not preserve existing manual memoization
+  322 |
+  323 |     const handleSort = (field: keyof TimerEntry | 'projectName') => {
+  324 |         if (sortField === field) {                                                                                                         react-hooks/preserve-manual-memoization
+  321:8   warning  React Hook useMemo has a missing dependency: 'resolveProjectName'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            react-hooks/exhaustive-deps
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\shared\components\AppLayout.tsx
+  372:8   warning  React Hook useEffect has a missing dependency: 'location.pathname'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 react-hooks/exhaustive-deps
+  396:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\shared\components\AppLayout.tsx:396:13
+  394 |     useEffect(() => {
+  395 |         if (location.pathname.startsWith('/app/notifications')) {
+> 396 |             setHasFreshNotification(false);
+      |             ^^^^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  397 |         }
+  398 |     }, [location.pathname]);
+  399 |  react-hooks/set-state-in-effect
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\shared\components\header\UserMenuDropdown.tsx
+  93:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa-web\src\shared\components\header\UserMenuDropdown.tsx:93:9
+  91 |
+  92 |     useEffect(() => {
+> 93 |         setOpen(false);
+     |         ^^^^^^^ Avoid calling setState() directly within an effect
+  94 |     }, [location.pathname]);
+  95 |
+  96 |     function handleSelect(item: MenuItem) {  react-hooks/set-state-in-effect
+
+Γ£û 95 problems (23 errors, 72 warnings)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+
