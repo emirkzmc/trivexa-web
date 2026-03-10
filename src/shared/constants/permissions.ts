@@ -5,6 +5,7 @@
  */
 export const ROLE_PERMISSIONS: Record<string, string[]> = {
     CEO: ['*'],
+    ADMIN: ['*'],
 
     MANAGER: [
         'USERS_READ', 'USERS_UPDATE',

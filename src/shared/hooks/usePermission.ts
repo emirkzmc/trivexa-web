@@ -50,15 +50,18 @@ export function usePermission() {
 
     function hasPermission(permission: string): boolean {
         if (!role) return false;
+        if (normalizedRole === 'ADMIN') return true;
         if (permissionSet.has('*')) return true;
         return permissionSet.has(normalizePermission(permission));
     }
 
     function hasAnyPermission(perms: string[]): boolean {
+        if (normalizedRole === 'ADMIN') return true;
         return perms.some(hasPermission);
     }
 
     function hasAllPermissions(perms: string[]): boolean {
+        if (normalizedRole === 'ADMIN') return true;
         return perms.every(hasPermission);
     }
 
