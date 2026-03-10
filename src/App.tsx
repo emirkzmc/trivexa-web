@@ -32,6 +32,8 @@ import { CustomerPanelLayout } from './features/customer-panel/components/Custom
 import { CustomerPanelDashboardPage } from './features/customer-panel/components/CustomerPanelDashboardPage';
 import { CustomerPanelPlaceholderPage } from './features/customer-panel/components/CustomerPanelPlaceholderPage';
 import { CustomerPanelContractsPage } from './features/customer-panel/components/CustomerPanelContractsPage';
+import { CustomerPanelProjectsPage } from './features/customer-panel/components/CustomerPanelProjectsPage';
+import { CustomerPanelProjectDetailPage } from './features/customer-panel/components/CustomerPanelProjectDetailPage';
 import { CodeProcessesPage } from './features/code-processes/components/CodeProcessesPage';
 import { DepartmentAssignmentsPage } from './features/departments/components/DepartmentAssignmentsPage';
 import { LeaveManagementPage } from './features/leave-management/components/LeaveManagementPage';
@@ -53,15 +55,8 @@ function App() {
       <Route path="/customer-panel" element={<CustomerPanelLayout />}>
         <Route index element={<Navigate to="/customer-panel/dashboard" replace />} />
         <Route path="dashboard" element={<CustomerPanelDashboardPage />} />
-        <Route
-          path="projeler"
-          element={(
-            <CustomerPanelPlaceholderPage
-              title="Projelerim"
-              description="Musteri paneli proje listesi yakinda bu alana entegre edilecek."
-            />
-          )}
-        />
+        <Route path="projeler" element={<CustomerPanelProjectsPage />} />
+        <Route path="projeler/:projectId" element={<CustomerPanelProjectDetailPage />} />
         <Route path="kontratlarim" element={<CustomerPanelContractsPage />} />
         <Route
           path="talepler"
