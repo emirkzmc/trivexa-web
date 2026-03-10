@@ -22,6 +22,7 @@ import { InvoiceDetailPage } from './features/finance/components/InvoiceDetailPa
 import { CollectionTrackingPage } from './features/finance/components/CollectionTrackingPage';
 import { ExpenseManagementPage } from './features/finance/components/ExpenseManagementPage';
 import { CashflowDashboardPage } from './features/finance/components/CashflowDashboardPage';
+import { AdminDashboardPage } from './features/dashboard/components/AdminDashboardPage';
 import { SupportRequestsPage } from './features/tickets/components/SupportRequestsPage';
 import { PortalRequestsPage } from './features/tickets/components/PortalRequestsPage';
 import { CustomerStatementPage } from './features/finance/components/CustomerStatementPage';
@@ -87,7 +88,7 @@ function App() {
 
       {/* Panel â€” AppLayout ile sarmalanmÄ±ÅŸ tÃ¼m /app/* sayfalarÄ± */}
       <Route path="/app" element={<AppLayout />}>
-        <Route path="dashboard" element={<div>Dashboard Paneli</div>} />
+        <Route path="dashboard" element={<AdminDashboardPage />} />
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="personel" element={<PersonnelPage />} />
         <Route path="projeler" element={<ProjectsPage />} />
