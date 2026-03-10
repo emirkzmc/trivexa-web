@@ -15,14 +15,11 @@ import {
 import { PageHeader } from '../../../shared/components/PageHeader';
 import { useAuthStore } from '../../auth/store/authStore';
 import {
-    getProjectGithubCommits,
-    getProjectGithubOverview,
+    getProjectCodeProcesses,
     getProjects,
     type ProjectGithubCommit,
-    type ProjectGithubOverview,
     type ProjectItem,
 } from '../../projects/api/projects.api';
-import { getProjectTasks, type TaskItem } from '../../tasks/api/tasks.api';
 import { ROLES } from '../../../shared/constants/roles';
 
 type StageStatus = 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'BLOCKED' | 'DONE';
@@ -101,7 +98,7 @@ const PAGE_THEME: CSSProperties = {
     '--code-accent-2': '#f59e0b',
 } as CSSProperties;
 
-function normalizeTaskStatus(task: TaskItem): StageStatus {
+function normalizeTaskStatus(task: { status?: string }): StageStatus {
     const normalized = String(task.status ?? '').toUpperCase();
     if (normalized === 'IN_PROGRESS') return 'IN_PROGRESS';
     if (normalized === 'IN_REVIEW') return 'IN_REVIEW';
@@ -144,21 +141,20 @@ function getToneClasses(tone: CheckTone): string {
 }
 
 function buildQualityChecks(
-    overview: ProjectGithubOverview | undefined,
+    connected: boolean,
+    branchCount: number,
     reviewCount: number,
     blockedCount: number,
     doneThisWeek: number,
 ): QualityCheck[] {
-    const branchCount = overview?.branches.length ?? 0;
-
     return [
         {
             key: 'repo',
             label: 'Repo baglantisi',
-            description: overview?.connected
+            description: connected
                 ? `Depo baglantisi aktif, ${branchCount} branch izlendi.`
                 : 'Bu proje icin GitHub baglantisi henuz tanimlanmamis.',
-            tone: overview?.connected ? 'ok' : 'alert',
+            tone: connected ? 'ok' : 'alert',
         },
         {
             key: 'review',
@@ -230,67 +226,51 @@ export function CodeProcessesPage() {
         [projects, selectedProjectId],
     );
 
-    const tasksQuery = useQuery({
-        queryKey: ['code-processes', 'tasks', selectedProjectId],
-        queryFn: () => getProjectTasks(selectedProjectId, { page: 1, limit: 500 }),
+    const codeProcessQuery = useQuery({
+        queryKey: ['code-processes', selectedProjectId],
+        queryFn: () => getProjectCodeProcesses(selectedProjectId, { commitsPerPage: 6, recentTaskLimit: 18 }),
         enabled: !!selectedProjectId,
         staleTime: 30_000,
     });
 
-    const overviewQuery = useQuery({
-        queryKey: ['code-processes', 'github-overview', selectedProjectId],
-        queryFn: () => getProjectGithubOverview(selectedProjectId),
-        enabled: !!selectedProjectId,
-        staleTime: 60_000,
-    });
-
-    const commitsQuery = useQuery({
-        queryKey: ['code-processes', 'github-commits', selectedProjectId],
-        queryFn: () => getProjectGithubCommits(selectedProjectId, { perPage: 6, page: 1 }),
-        enabled: !!selectedProjectId,
-        staleTime: 30_000,
-    });
-
-    const tasks = tasksQuery.data?.data ?? [];
-    const commits = commitsQuery.data?.commits ?? [];
+    const codeProcess = codeProcessQuery.data;
+    const overview = codeProcess?.github.overview;
+    const commits = codeProcess?.github.commits.commits ?? [];
+    const tasksSnapshot = codeProcess?.tasks;
+    const recentTasks = tasksSnapshot?.recentTasks ?? [];
+    const summary = tasksSnapshot?.summary;
+    const githubErrors = codeProcess?.github.errors;
 
     const stageCards = useMemo(
         () => STAGE_DEFINITIONS.map((stage) => {
-            const items = tasks
+            const items = recentTasks
                 .filter((task) => normalizeTaskStatus(task) === stage.key)
                 .slice(0, 4);
             return {
                 ...stage,
-                count: tasks.filter((task) => normalizeTaskStatus(task) === stage.key).length,
+                count: summary?.byStatus?.[stage.key] ?? 0,
                 items,
             };
         }),
-        [tasks],
+        [recentTasks, summary],
     );
 
-    const metrics = useMemo(() => {
-        const now = Date.now();
-        const weekAgo = now - (7 * 24 * 60 * 60 * 1000);
-        const reviewCount = tasks.filter((task) => normalizeTaskStatus(task) === 'IN_REVIEW').length;
-        const blockedCount = tasks.filter((task) => normalizeTaskStatus(task) === 'BLOCKED').length;
-        const inProgressCount = tasks.filter((task) => normalizeTaskStatus(task) === 'IN_PROGRESS').length;
-        const doneThisWeek = tasks.filter((task) => {
-            const status = normalizeTaskStatus(task);
-            const updatedTime = Date.parse(task.updatedAt);
-            return status === 'DONE' && Number.isFinite(updatedTime) && updatedTime >= weekAgo;
-        }).length;
-
-        return {
-            reviewCount,
-            blockedCount,
-            inProgressCount,
-            doneThisWeek,
-        };
-    }, [tasks]);
+    const metrics = useMemo(() => ({
+        reviewCount: summary?.byStatus?.IN_REVIEW ?? 0,
+        blockedCount: summary?.byStatus?.BLOCKED ?? 0,
+        inProgressCount: summary?.byStatus?.IN_PROGRESS ?? 0,
+        doneThisWeek: summary?.doneThisWeek ?? 0,
+    }), [summary]);
 
     const qualityChecks = useMemo(
-        () => buildQualityChecks(overviewQuery.data, metrics.reviewCount, metrics.blockedCount, metrics.doneThisWeek),
-        [metrics.blockedCount, metrics.doneThisWeek, metrics.reviewCount, overviewQuery.data],
+        () => buildQualityChecks(
+            Boolean(overview?.connected),
+            overview?.branches?.length ?? 0,
+            metrics.reviewCount,
+            metrics.blockedCount,
+            metrics.doneThisWeek,
+        ),
+        [metrics.blockedCount, metrics.doneThisWeek, metrics.reviewCount, overview],
     );
 
     const releaseWindows = useMemo(() => buildReleaseWindows(new Date()), []);
@@ -386,7 +366,7 @@ export function CodeProcessesPage() {
                         </article>
                         <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                             <p className="text-[11px] uppercase tracking-[0.08em] text-gray-500">Branch Sayisi</p>
-                            <p className="mt-1 text-2xl font-bold text-gray-900">{overviewQuery.data?.branches.length ?? 0}</p>
+                            <p className="mt-1 text-2xl font-bold text-gray-900">{overview?.branches?.length ?? 0}</p>
                             <p className="text-xs text-gray-500">Aktif olarak izlenen dal</p>
                         </article>
                         <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
@@ -407,13 +387,13 @@ export function CodeProcessesPage() {
                                     <span className="text-xs text-gray-500">Task durumuna gore canli dagilim</span>
                                 </div>
 
-                                {tasksQuery.isLoading ? (
+                                {codeProcessQuery.isLoading ? (
                                     <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
                                         {Array.from({ length: 6 }).map((_, index) => (
                                             <div key={index} className="h-24 animate-pulse rounded-lg border border-gray-200 bg-gray-50" />
                                         ))}
                                     </div>
-                                ) : tasksQuery.isError ? (
+                                ) : codeProcessQuery.isError ? (
                                     <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-8 text-sm text-rose-700">
                                         Task verileri alinamadi.
                                     </div>
@@ -455,15 +435,19 @@ export function CodeProcessesPage() {
                                     <span className="text-xs text-gray-500">Son commit hareketleri</span>
                                 </div>
 
-                                {commitsQuery.isLoading ? (
+                                {codeProcessQuery.isLoading ? (
                                     <div className="space-y-2">
                                         {Array.from({ length: 4 }).map((_, index) => (
                                             <div key={index} className="h-14 animate-pulse rounded-lg border border-gray-200 bg-gray-50" />
                                         ))}
                                     </div>
-                                ) : commitsQuery.isError ? (
+                                ) : codeProcessQuery.isError ? (
                                     <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-8 text-sm text-rose-700">
                                         Commit listesi alinamadi.
+                                    </div>
+                                ) : githubErrors?.commits ? (
+                                    <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-8 text-sm text-rose-700">
+                                        {githubErrors.commits}
                                     </div>
                                 ) : commits.length === 0 ? (
                                     <div className="rounded-lg border border-dashed border-gray-200 px-3 py-8 text-sm text-gray-500">
@@ -496,41 +480,45 @@ export function CodeProcessesPage() {
                                     Repo Durumu
                                 </h3>
 
-                                {overviewQuery.isLoading ? (
+                                {codeProcessQuery.isLoading ? (
                                     <div className="space-y-2">
                                         {Array.from({ length: 3 }).map((_, index) => (
                                             <div key={index} className="h-10 animate-pulse rounded-md bg-gray-100" />
                                         ))}
                                     </div>
-                                ) : overviewQuery.isError ? (
+                                ) : codeProcessQuery.isError ? (
                                     <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-3 text-sm text-rose-700">
                                         Repo ozeti alinamadi.
+                                    </p>
+                                ) : githubErrors?.overview ? (
+                                    <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-3 text-sm text-rose-700">
+                                        {githubErrors.overview}
                                     </p>
                                 ) : (
                                     <div className="space-y-3">
                                         <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
                                             <p className="text-xs text-gray-500">Baglanti</p>
                                             <p className="mt-1 text-sm font-semibold text-gray-900">
-                                                {overviewQuery.data?.connected ? 'GitHub bagli' : 'GitHub baglantisi yok'}
+                                                {overview?.connected ? 'GitHub bagli' : 'GitHub baglantisi yok'}
                                             </p>
                                         </div>
                                         <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
                                             <p className="text-xs text-gray-500">Repository</p>
                                             <p className="mt-1 text-sm font-semibold text-gray-900">
-                                                {overviewQuery.data?.repository?.fullName ?? 'Tanimli degil'}
+                                                {overview?.repository?.fullName ?? 'Tanimli degil'}
                                             </p>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2">
                                             <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
                                                 <p className="text-xs text-gray-500">Open Issues</p>
                                                 <p className="mt-1 text-sm font-bold text-gray-900">
-                                                    {overviewQuery.data?.repository?.openIssues ?? 0}
+                                                    {overview?.repository?.openIssues ?? 0}
                                                 </p>
                                             </div>
                                             <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
                                                 <p className="text-xs text-gray-500">Default Branch</p>
                                                 <p className="mt-1 text-sm font-bold text-gray-900">
-                                                    {overviewQuery.data?.repository?.defaultBranch ?? '-'}
+                                                    {overview?.repository?.defaultBranch ?? '-'}
                                                 </p>
                                             </div>
                                         </div>
@@ -571,32 +559,7 @@ export function CodeProcessesPage() {
                         </div>
                     </section>
 
-                    <section className="mt-4 grid gap-3 sm:grid-cols-3">
-                        <article className="rounded-xl border border-cyan-200 bg-cyan-50 p-3">
-                            <p className="inline-flex items-center gap-1 text-xs font-semibold text-cyan-700">
-                                <Clock3 size={13} /> Build Stabilitesi
-                            </p>
-                            <p className="mt-1 text-sm text-cyan-900">
-                                CI surelerini 8 dakikanin altina cekmek icin test paketlerini paralel calistir.
-                            </p>
-                        </article>
-                        <article className="rounded-xl border border-amber-200 bg-amber-50 p-3">
-                            <p className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700">
-                                <AlertTriangle size={13} /> Risk Noktasi
-                            </p>
-                            <p className="mt-1 text-sm text-amber-900">
-                                Review kuyrugu artarsa release penceresi kayabilir; gunluk triage onerilir.
-                            </p>
-                        </article>
-                        <article className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
-                            <p className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700">
-                                <CheckCircle2 size={13} /> Sonraki Adim
-                            </p>
-                            <p className="mt-1 text-sm text-emerald-900">
-                                Bu tasarimin sonraki iterasyonunda PR bazli aksiyonlari API ile canli baglayabiliriz.
-                            </p>
-                        </article>
-                    </section>
+                    <section className="mt-4" />
                 </>
             )}
         </div>

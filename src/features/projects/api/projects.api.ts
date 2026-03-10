@@ -142,6 +142,66 @@ export interface ProjectGithubCommitsParams {
     perPage?: number;
 }
 
+export interface ProjectCodeProcessTaskSummary {
+    total: number;
+    byStatus: {
+        TODO: number;
+        IN_PROGRESS: number;
+        IN_REVIEW: number;
+        BLOCKED: number;
+        DONE: number;
+    };
+    doneThisWeek: number;
+}
+
+export interface ProjectCodeProcessRecentTask {
+    id: string;
+    title: string;
+    status: string;
+    priority: string;
+    updatedAt: string;
+    dueDate?: string | null;
+    assignee?: {
+        id: string;
+        email?: string | null;
+        firstName?: string | null;
+        lastName?: string | null;
+    } | null;
+}
+
+export interface ProjectCodeProcessTaskSnapshot {
+    summary: ProjectCodeProcessTaskSummary;
+    recentTasks: ProjectCodeProcessRecentTask[];
+}
+
+export interface ProjectCodeProcessesQuality {
+    reviewQueue: { count: number; state: 'OK' | 'WARNING' | 'CRITICAL' };
+    blockers: { count: number; state: 'OK' | 'WARNING' | 'CRITICAL' };
+    weeklyThroughput: { doneThisWeek: number; state: 'OK' | 'WARNING' | 'CRITICAL' };
+    completion: { total: number; done: number; ratio: number };
+}
+
+export interface ProjectCodeProcessesResponse {
+    project: { id: string; name: string; status: string };
+    generatedAt: string;
+    tasks: ProjectCodeProcessTaskSnapshot;
+    github: {
+        overview: ProjectGithubOverview;
+        commits: ProjectGithubCommitsResponse;
+        errors?: {
+            overview?: string | null;
+            commits?: string | null;
+        };
+    };
+    quality: ProjectCodeProcessesQuality;
+}
+
+export interface ProjectCodeProcessesParams {
+    branch?: string;
+    commitsPerPage?: number;
+    recentTaskLimit?: number;
+}
+
 export interface UpdateProjectGithubRepositoryPayload {
     githubUrl: string;
     accessToken?: string;
@@ -410,6 +470,17 @@ export async function getProjectGithubCommits(
 ): Promise<ProjectGithubCommitsResponse> {
     const { data } = await api.get<MaybeWrapped<ProjectGithubCommitsResponse>>(
         `/projects/${projectId}/github/commits`,
+        { params },
+    );
+    return unwrapData(data);
+}
+
+export async function getProjectCodeProcesses(
+    projectId: string,
+    params?: ProjectCodeProcessesParams,
+): Promise<ProjectCodeProcessesResponse> {
+    const { data } = await api.get<MaybeWrapped<ProjectCodeProcessesResponse>>(
+        `/projects/${projectId}/code-processes`,
         { params },
     );
     return unwrapData(data);

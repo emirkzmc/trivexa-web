@@ -211,6 +211,7 @@ const ADMIN_NAV: RoleNavConfig = {
             items: [
                 { label: 'Time Tracker', path: '/app/time-tracker', icon: 'Timer' },
                 { label: 'Dosya Yönetimi', path: '/app/dosyalar', icon: 'FolderOpen' },
+                { label: 'Kod Süreçleri', path: '/app/kod', icon: 'Code2' },
                 { label: 'Görüşmeler', path: '/app/gorusmeler', icon: 'MessageSquare' },
                 { label: 'Destek Talepleri', path: '/app/talepler', icon: 'Inbox' },
             ],
