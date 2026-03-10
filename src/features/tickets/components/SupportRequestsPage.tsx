@@ -88,7 +88,17 @@ function isMeetingRequest(subject: string, type: string): boolean {
     return normalizeForMeetingMatch(subject).startsWith('gorusme talebi');
 }
 
-export function SupportRequestsPage() {
+interface SupportRequestsPageProps {
+    title?: string;
+    subtitle?: string;
+    showMeetingNote?: boolean;
+}
+
+export function SupportRequestsPage({
+    title = 'Destek Talepleri',
+    subtitle = 'Musteri portalindan gelen talepleri takip edin.',
+    showMeetingNote = true,
+}: SupportRequestsPageProps) {
     const queryClient = useQueryClient();
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
@@ -172,13 +182,15 @@ export function SupportRequestsPage() {
         <div className="px-8 py-6 max-[900px]:px-4 max-[900px]:py-4">
             <PageHeader
                 icon={<Inbox size={20} color="var(--role-accent-600)" />}
-                title="Destek Talepleri"
-                subtitle="Musteri portalindan gelen talepleri takip edin."
+                title={title}
+                subtitle={subtitle}
             />
 
-            <p className="mb-4 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-700">
-                Gorusme talepleri bu listeden ayrildi. Onaylanan gorusmeleri <strong>Gorusmeler</strong> ekranindan takip edin.
-            </p>
+            {showMeetingNote && (
+                <p className="mb-4 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-700">
+                    Gorusme talepleri bu listeden ayrildi. Onaylanan gorusmeleri <strong>Gorusmeler</strong> ekranindan takip edin.
+                </p>
+            )}
 
             <section className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
                 <article className="rounded-xl border border-gray-200 bg-white p-4">

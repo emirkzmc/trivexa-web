@@ -16,18 +16,21 @@ import { TaskDetailPage } from './features/tasks/components/TaskDetailPage';
 import { NotificationsPage } from './features/notifications/components/NotificationsPage';
 import { ClientsPage } from './features/clients/components/ClientsPage';
 import { ClientDetailPage } from './features/clients/components/ClientDetailPage';
+import { LandingContactRequestsPage } from './features/clients/components/LandingContactRequestsPage';
 import { InvoicesPage } from './features/finance/components/InvoicesPage';
 import { InvoiceDetailPage } from './features/finance/components/InvoiceDetailPage';
 import { CollectionTrackingPage } from './features/finance/components/CollectionTrackingPage';
 import { ExpenseManagementPage } from './features/finance/components/ExpenseManagementPage';
 import { CashflowDashboardPage } from './features/finance/components/CashflowDashboardPage';
 import { SupportRequestsPage } from './features/tickets/components/SupportRequestsPage';
+import { PortalRequestsPage } from './features/tickets/components/PortalRequestsPage';
 import { CustomerStatementPage } from './features/finance/components/CustomerStatementPage';
 import { BankReconciliationPage } from './features/finance/components/BankReconciliationPage';
 import { TaxDeclarationPrepPage } from './features/finance/components/TaxDeclarationPrepPage';
 import { MeetingsPage } from './features/meetings/components/MeetingsPage';
 import { FilesManagementPage } from './features/files/components/FilesManagementPage';
 import { MeetingsCalendarPage } from './features/meetings/components/MeetingsCalendarPage';
+import { MeetingRequestsPage } from './features/meetings/components/MeetingRequestsPage';
 import { CustomerPanelLayout } from './features/customer-panel/components/CustomerPanelLayout';
 import { CustomerPanelDashboardPage } from './features/customer-panel/components/CustomerPanelDashboardPage';
 import { CustomerPanelPlaceholderPage } from './features/customer-panel/components/CustomerPanelPlaceholderPage';
@@ -110,6 +113,9 @@ function App() {
         <Route path="musteriler" element={<ClientsPage />} />
         <Route path="musteriler/:clientId" element={<ClientDetailPage />} />
         <Route path="musterilerim" element={<Navigate to="/app/musteriler" replace />} />
+        <Route path="iletisim-talepleri" element={<LandingContactRequestsPage />} />
+        <Route path="portal-talepleri" element={<PortalRequestsPage />} />
+        <Route path="gorusme-talepleri" element={<MeetingRequestsPage />} />
         <Route path="finans" element={<CashflowDashboardPage />} />
         <Route path="finans-dashboard" element={<Navigate to="/app/finans" replace />} />
         <Route path="sozlesmeler" element={<ContractsPage />} />

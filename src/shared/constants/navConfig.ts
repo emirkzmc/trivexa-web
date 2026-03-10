@@ -224,9 +224,9 @@ const ADMIN_NAV: RoleNavConfig = {
         {
             group: 'MÜŞTERİ & ONAY',
             items: [
-                {label: 'Yeni Talepler', path: '/app/yeni-talepler', icon: 'Inbox', badge: 'unread'},
-                {label: 'Brief Yönetimi', path: '/app/briefler', icon: 'ClipboardList'},
-                {label: 'Ön Onay Paneli', path: '/app/on-onay', icon: 'ShieldCheck'},
+                {label: 'Iletisim Talepleri', path: '/app/iletisim-talepleri', icon: 'MessageSquarePlus'},
+                {label: 'Portal Talepleri', path: '/app/portal-talepleri', icon: 'Inbox', badge: 'unread'},
+                {label: 'Gorusme Talepleri', path: '/app/gorusme-talepleri', icon: 'CalendarCheck'},
                 {label: 'Görüşmeler', path: '/app/gorusmeler', icon: 'MessageSquare'},
             ],
         },
@@ -391,9 +391,9 @@ const ACCOUNT_MANAGER_NAV: RoleNavConfig = {
             group: 'MÜŞTERİ',
             items: [
                 {label: 'Müşterilerim', path: '/app/musterilerim', icon: 'Building2'},
-                {label: 'Yeni Talepler', path: '/app/yeni-talepler', icon: 'Inbox', badge: 'unread'},
-                {label: 'Brief Yönetimi', path: '/app/briefler', icon: 'ClipboardList'},
-                {label: 'Ön Onay Paneli', path: '/app/on-onay', icon: 'ShieldCheck'},
+                {label: 'Iletisim Talepleri', path: '/app/iletisim-talepleri', icon: 'MessageSquarePlus'},
+                {label: 'Portal Talepleri', path: '/app/portal-talepleri', icon: 'Inbox', badge: 'unread'},
+                {label: 'Gorusme Talepleri', path: '/app/gorusme-talepleri', icon: 'CalendarCheck'},
             ],
         },
         {
