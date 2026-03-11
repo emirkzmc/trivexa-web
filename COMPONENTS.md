@@ -85,3 +85,49 @@ Kimlik doğrulama ekranı bileşenidir.
 ---
 
 *(Bileşenlerin tamamı FSD yapısına uygun olarak `src/features/[feature_name]/components/` veya `src/shared/components/` altında konumlandırılmaktadır. Yeni bir bileşen geliştirirken doğrudan ortak Shared nesnelere (Button, Input, vb.) başvurulması standart kabul edilmiştir.)*
+
+---
+
+## 4. Trivexa Landing - Shared / Core UI Components
+Müşteri portalı ve kurumsal sayfalar (`trivexa-landing`) için ortak kullanılan, sadeleştirilmiş bileşenlerdir.
+
+### `Button` (`src/shared/ui/Button.tsx`)
+Temel buton bileşenidir. Yönetim paneli projelerinden farklı olarak sınırlı varyasyon sunar.
+- `variant` ('default' | 'login') *(opsiyonel)*: Butonun stil varyantı.
+- `text` veya `children` (ReactNode): Buton içeriği.
+
+### `Input` (`src/shared/ui/Input.tsx`)
+Basitleştirilmiş metin giriş bileşenidir.
+- `variant` ('default' | 'login') *(opsiyonel)*: Login varyantında gri çerçeveli daha belirgin bir zemin kullanılır.
+
+### `FormField` (`src/shared/ui/FormField.tsx`)
+Label ve yardımcı elementleri saran dikey bir kapsayıcıdır.
+- `label` (string): Giriş alanının başlığı.
+- `htmlFor` (string) *(opsiyonel)*: Erişilebilirlik için içerideki input'un ID değeri.
+- `children` (ReactNode): Genellikle `Input` bileşenini içine alır.
+
+---
+
+## 5. Trivexa Landing - Shared / Layout Components
+Açılış sayfaları ve Müşteri Paneli yapısını kuran bileşenlerdir.
+
+### `Navbar` (`src/shared/layout/Navbar.tsx`)
+Tüm genel sayfalarda (Ana sayfa, İletişim, Takım) görünen üst menüdür.
+- `currentPath` (string): Aktif menüyü çizgi ile vurgular.
+- `isScrolled` (boolean): Sayfa aşağı kaydırıldığında arka planı solid siyaha çevirir (backdrop-blur tabanlı).
+- `onNavigate` (function): Navigasyon linki tıklandığında History API hook'unu tetikler.
+
+### `CustomerPanelSidebar` (`src/features/customer-panel/components/CustomerPanelSidebar.tsx`)
+Müşteri paneli (`/customer-panel/*`) için sol menü yönetimi.
+- `currentPath` (string): İlgili sayfayı vurgular (ör: Sozlesmeler, Projeler).
+- `isMobile`, `mobileOpen`, `collapsed`: Menünün dar, açık (hamburger) veya kapalı olmasını belirleyen responsive proplar.
+- `unreadTickets` / `pendingInvoices`: İlgili menülerin sağ tarafında bildirim (badge) sayılarını görüntüler.
+
+### `CustomerPanelHeader` (`src/features/customer-panel/components/CustomerPanelHeader.tsx`)
+Müşteri paneli üst kısmı. Mobilde hamburger menü erişimi ve kullanıcı profil bilgilerini barındırır.
+- `pageName` (string): Bulunulan sayfanın başlığı.
+- `userName` / `userEmail` / `roleLabel`: Giriş yapmış kullanıcının detayları.
+
+### `CustomerPanelContent` (`src/features/customer-panel/components/CustomerPanelContent.tsx`)
+`CustomerPanelPage` içerisindeki merkezi yönlendirme (İçerik render) bileşenidir. 
+- `currentPath` prop değerine göre ilgili alt bileşenleri (Projeler, Sözleşmeler, Destek Talepleri bileşenleri) ekrana çizer ve gerekli state objelerini (`dashboardData`, `tickets`, `projects` vb.) dağıtır.

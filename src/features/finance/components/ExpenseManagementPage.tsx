@@ -7,6 +7,7 @@ import { ROLES } from '../../../shared/constants/roles';
 import { formatDate } from '../../../shared/utils/formatDate';
 import { useAuthStore } from '../../auth/store/authStore';
 import { getDepartments } from '../../departments/api/departments.api';
+import { uploadFile } from '../../files/api/files.api';
 import {
     approveExpense,
     createExpense,
@@ -44,9 +45,24 @@ function statusClass(status: string) {
     return 'bg-gray-100 text-gray-700';
 }
 
+function toPathSegment(value: string): string {
+    return value
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'genel';
+}
+
+function buildExpenseFolderPath(department: string, expenseDate?: string): string {
+    const dateSegment = expenseDate || new Date().toISOString().slice(0, 10);
+    const departmentSegment = toPathSegment(department || 'genel');
+    return `finance/${departmentSegment}/gider/${dateSegment}`;
+}
+
 export function ExpenseManagementPage() {
     const queryClient = useQueryClient();
     const userRole = useAuthStore((state) => state.user?.role);
+    const userDepartment = useAuthStore((state) => state.user?.department ?? '');
     const role = String(userRole ?? '').toUpperCase();
     const hasAccountingRole = role === ROLES.ACCOUNTING || role.includes('ACCOUNTING') || role.includes('MUHASEBE');
     const canRead = role === ROLES.ADMIN || role === ROLES.MANAGER || role === ROLES.CEO || role === ROLES.SOCIAL_MEDIA || role === 'SEO' || hasAccountingRole;
@@ -65,7 +81,9 @@ export function ExpenseManagementPage() {
         category: 'OFFICE' as ExpenseCategory,
         department: '',
         expenseDate: new Date().toISOString().slice(0, 10),
+        receiptUrl: '',
     });
+    const [isReceiptUploading, setIsReceiptUploading] = useState(false);
 
     const expensesQuery = useQuery({ queryKey: ['expenses-list'], queryFn: getExpenses, enabled: canRead });
     const departmentsQuery = useQuery({
@@ -134,7 +152,31 @@ export function ExpenseManagementPage() {
             category: form.category,
             department: form.department.trim(),
             expenseDate: form.expenseDate || undefined,
+            receiptUrl: form.receiptUrl.trim() || undefined,
         });
+    }
+
+    async function handleReceiptUpload(file: File | null) {
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Belge dosyasi 5MB boyutunu asmamali.');
+            return;
+        }
+
+        setIsReceiptUploading(true);
+        try {
+            const folderPath = buildExpenseFolderPath(form.department || userDepartment, form.expenseDate);
+            const uploaded = await uploadFile(file, {
+                entityType: 'EXPENSE',
+                folderPath,
+            });
+            setForm((prev) => ({ ...prev, receiptUrl: uploaded.filePath || '' }));
+            toast.success('Gider belgesi yuklendi.');
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Belge yuklenemedi.');
+        } finally {
+            setIsReceiptUploading(false);
+        }
     }
 
     async function handleExport() {
@@ -189,7 +231,7 @@ export function ExpenseManagementPage() {
             {canCreate && (
                 <section className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
                     <p className="mb-3 text-sm font-semibold text-gray-800">Yeni Gider Kaydi</p>
-                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
                         <input value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="Aciklama" className="h-9 rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 xl:col-span-2" />
                         <input type="number" min={0} step="0.01" value={form.amount} onChange={(e) => setForm((p) => ({ ...p, amount: e.target.value }))} placeholder="Tutar" className="h-9 rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500" />
                         <select value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value as ExpenseCategory }))} className="h-9 rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500">{CATEGORY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select>
@@ -208,9 +250,35 @@ export function ExpenseManagementPage() {
                                 </option>
                             ))}
                         </select>
+                        <div className="flex items-center gap-2">
+                            <label
+                                htmlFor="expense-receipt-upload"
+                                className="inline-flex h-9 flex-1 cursor-pointer items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 text-xs font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-100"
+                            >
+                                Belge Yukle
+                            </label>
+                            <input
+                                id="expense-receipt-upload"
+                                type="file"
+                                accept="image/*,application/pdf"
+                                onChange={(event) => handleReceiptUpload(event.target.files?.[0] ?? null)}
+                                disabled={isReceiptUploading}
+                                className="sr-only"
+                            />
+                            {form.receiptUrl ? (
+                                <a
+                                    href={form.receiptUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-xs font-semibold text-blue-600 underline"
+                                >
+                                    Goruntule
+                                </a>
+                            ) : null}
+                        </div>
                     </div>
                     <div className="mt-3 flex justify-end">
-                        <button type="button" onClick={submitCreate} disabled={createMutation.isPending} className="inline-flex h-9 items-center rounded-lg border border-red-200 bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60">{createMutation.isPending ? 'Kaydediliyor...' : 'Gider Ekle'}</button>
+                        <button type="button" onClick={submitCreate} disabled={createMutation.isPending || isReceiptUploading} className="inline-flex h-9 items-center rounded-lg border border-red-200 bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60">{createMutation.isPending ? 'Kaydediliyor...' : 'Gider Ekle'}</button>
                     </div>
                 </section>
             )}
@@ -285,6 +353,18 @@ export function ExpenseManagementPage() {
                                             ) : (
                                                 <span className="text-xs text-gray-400">-</span>
                                             )}
+                                            {row.receiptUrl ? (
+                                                <div>
+                                                    <a
+                                                        href={row.receiptUrl}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="text-[11px] font-semibold text-blue-600 underline"
+                                                    >
+                                                        Belge
+                                                    </a>
+                                                </div>
+                                            ) : null}
                                         </td>
                                     </tr>
                                 );

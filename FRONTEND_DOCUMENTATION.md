@@ -1,8 +1,11 @@
-# Trivexa Web - Frontend Documentation
+# Trivexa - Frontend Documentation
 
-## 1. Project Overview
-- **Proje Adı:** Trivexa Web
-- **Amaç:** Yönetim ve Müşteri Paneli (Admin & Customer Dashboard)
+Bu dokümantasyon Trivexa'nın iki ana frontend projesini kapsamaktadır: **trivexa-web** (Admin Dashboard) ve **trivexa-landing** (Müşteri Portal ve Tanıtım Yüzü).
+
+## 1. Project Overviews
+
+### A. Trivexa Web (Admin Panel)
+- **Amaç:** Yönetim ve Müşteri Paneli (Admin Dashboard)
 - **Kullanılan Framework:** React (v19)
 - **Kullanılan Dil:** TypeScript
 - **Build Tool:** Vite
@@ -10,56 +13,56 @@
 - **State Management:** Zustand (Client State), React Query (Server State)
 - **API Yapısı:** Axios (Custom Interceptor ile yapılandırılmış)
 
+### B. Trivexa Landing (Müşteri Yüzü)
+- **Amaç:** Kurumsal Tanıtım Sitesi ve Müşteri Portalı (Customer Portal)
+- **Kullanılan Framework:** React (v19)
+- **Kullanılan Dil:** TypeScript
+- **Build Tool:** Vite
+- **Styling Sistemi:** Tailwind CSS (v4)
+- **State Management:** Yerel Component State (`useState`), Custom Hook'lar (Örn: `useAppRouter`, LocalStorage Session). Dış bir kütüphane (Redux/Zustand) kullanılmamıştır.
+- **Routing:** Vanilla tarayıcı History API üzerine kurulu özel `useAppRouter` hook'u.
+
 ## 2. Tech Stack
+
 - **Core:** React, TypeScript, Vite
-- **Routing:** React Router DOM
-- **State Management:** Zustand, @tanstack/react-query
-- **API & Network:** Axios, Socket.io-client
-- **Form & Validation:** React Hook Form, Zod, @hookform/resolvers
 - **Styling & UI:** Tailwind CSS, Lucide React (İkonlar)
-- **Notifications & Modals:** Sonner, SweetAlert2, React Toastify
-- **Utils & Charts:** Chart.js, React-Chartjs-2, docx, jspdf, xlsx
+- **Trivexa Web Özel Bağımlılıklar:** 
+  - React Router DOM, Zustand, @tanstack/react-query
+  - Axios, Socket.io-client
+  - React Hook Form, Zod, @hookform/resolvers
+  - Sonner, SweetAlert2, React Toastify, Chart.js, XLSX, vb.
 
 ## 3. Project Structure
-Projenin kök dizini altında bulunan `src` klasörü Feature-Sliced Design (FSD) prensiplerine uygun olarak organize edilmiştir:
+Her iki projenin kök dizini altında bulunan `src` klasörleri **Feature-Sliced Design (FSD)** prensiplerine uygun olarak organize edilmiştir:
 
 ```
 src/
-├── app/          # Uygulama genelindeki router, layout vb. çekirdek yapılandırmalar (guards vb.)
-├── features/     # Her bir iş modülünün (domain) kendi bileşenleri, hook'ları ve API tanımları (auth, dashboard, projects, vb.)
-└── shared/       # Tüm projede ortak kullanılan UI bileşenleri (Button, Modal vb.), utility fonksiyonları, API ayarları (axios.ts) ve sabitler
+├── app/          # Uygulama genelindeki router (`useAppRouter` veya `react-router`), layout vb. çekirdek yapılandırmalar (guards vb.)
+├── features/     # Her bir iş modülünün (domain) kendi bileşenleri, hook'ları ve API tanımları (auth, dashboard, projects, contact, vb.)
+└── shared/       # Tüm projede ortak kullanılan UI bileşenleri (Button, Modal vb.), utility fonksiyonları
 ```
 
 ## 4. Architecture
-Projede **Feature-Sliced Design (FSD)** benzeri (Domain-driven) modüler bir mimari kullanılmıştır. Mantıksal her bir yapı veya sayfa kendi `features` klasörü altında barındırılır. 
-Örneğin; `auth` modülü kendi `api`, `components`, `hooks` ve `store` alt dizinlerine sahiptir. Bu sayede modüller arası bağımlılık en aza indirilmiştir.
+Her iki projede de **Feature-Sliced Design (FSD)** benzeri (Domain-driven) modüler bir mimari kullanılmıştır. Mantıksal her bir yapı veya sayfa kendi `features` klasörü altında barındırılır. Bu sayede modüller arası bağımlılık (coupling) en aza indirilmiştir.
 
 ## 5. Routing Structure
-Routing işlemleri `react-router-dom` kullanılarak `App.tsx` içerisinde merkezi olarak yönetilmektedir:
-- **Genel Yapı:** Kök `/` rotası otomatik olarak `/login` rotasına yönlendirilmektedir.
-- **Korumalı Alanlar (Layouts):** 
-  - Yönetim Paneli: `AppLayout` ile sarmalanmış tüm `/app/*` rotaları (Örn: `/app/dashboard`, `/app/projeler`).
-  - Müşteri Paneli: `CustomerPanelLayout` ile sarmalanmış tüm `/customer-panel/*` rotaları.
-- **Fallback:** Tanımlı olmayan rotalar (`*`) 404 mantığıyla giriş sayfasına veya ilgili panelin ana sayfasına (dashboard) yönlendirilir.
+Projelere göre routing işlemleri farklılık gösterir:
+
+- **Trivexa Web:** `react-router-dom` kullanılarak `App.tsx` içerisinde merkezi olarak yönetilmektedir. Korumalı alanlar kapsayıcı (layout) bileşenler üzerinden yönlendirilir.
+- **Trivexa Landing:** Performans ve sadelik odaklı olarak projenin kendi history-api bazlı `useAppRouter.ts` custom hook'u geliştirilmiştir. Sayfa değişimleri `App.tsx` üzerinden render edilen component'ler aracılığıyla gerçekleştirilir (Örn: `currentPath === '/iletisim'`).
 
 ## 6. State Management
-- **Global / Client State:** `Zustand` kullanılmıştır (Örn: `useAuthStore`). Kimlik doğrulama, kullanıcı bilgileri ve arayüz durumları Zustand ile tutulmaktadır.
-- **Server / API State:** `@tanstack/react-query` kullanılmaktadır. API'den gelen verilerin önbelleğe alınması (caching), fetch edilmesi ve yönetimi bu kütüphane üzerinden sağlanır.
+- **Trivexa Web:** `Zustand` (Global/Client State) ve `@tanstack/react-query` (API/Server State).
+- **Trivexa Landing:** Harici kütüphane yoktur. Oturum bilgileri LocalStorage tabanlı oturum servisleri (`portalSession.ts`) ile yönetilmekte; arayüz durumsallığı bileşen özellikleri (props) ve context ile taşınmaktadır.
 
 ## 7. API Layer
-API katmanı `axios` üzerine inşa edilmiştir. `src/shared/lib/axios.ts` içerisinde merkezi bir interceptor mantığı bulunmaktadır:
-- **Request Interceptor:** `Zustand` statinden güncel `token` alınır ve istek başlıklarına `Authorization: Bearer <token>` olarak eklenir.
-- **Response Interceptor:** 
-  - `401 Unauthorized`: Token süresi dolmuşsa otomatik olarak `/auth/refresh` tetiklenir istek kuyruğa alınır (pendingQueue), token yenilendikten sonra önceki istek tekrar gönderilir.
-  - `403 Forbidden`: Yetkisiz erişim hataları yakalanıp uyarı verilir.
-  - `429 Too Many Requests`: `Retry-After` süresi backend'den okunarak istek bekletilir ve ardından tekrar atılır (Rate limit handling).
-  - Sunucu hataları `sonner` ile global bir `toast` olarak kullanıcıya gösterilir.
+- **Trivexa Web:** Merkezi bir Axios instance'ı kullanılmış, token refresh ve yetki kontrolleri (interceptor) yapılandırılmıştır.
+- **Trivexa Landing:** Form gönderimleri genellikle fetch veya page-specific özel hook'lar üzerinden ele alınmakta (varsa mock datalarla desteklenmekte). İleri seviye bir global caching hook'u (React Query gibi) bu projede tercih edilmemiştir.
 
 ## 8. Component Structure
-Componentler modüler ve tekrar kullanılabilir bir yapıda yazılmıştır.
-- **Shared Components:** `src/shared/components` içerisinde genel UI elemanları (Modal, Pagination, Sidebar, AppLayout) bulunur.
-- **Feature Components:** `src/features/[feature]/components` altında domaine özel parçalar (Örn: AuthCard, LoginForm) yer alır.
-- **Compound/Dumb Components:** Forma veya state'e bağımlı olmayan UI yapı bileşenleri (Input, Button) genellikle kendi `ui` klasörlerinde ayrıştırılır.
+Componentler modüler ve tekrar kullanılabilir bir yapıda yazılmıştır. Her iki proje de şu desenleri takip eder:
+- **Shared Components:** `src/shared/layout` ve `src/shared/ui` (veya `src/shared/components`) içerisinde genel UI elemanları (Navbar, Button) bulunur.
+- **Feature Components:** `src/features/[feature]/components` altında domaine özel iş mantığı olan kapsayıcı parçalar yer alır.
 
 ## 9. Styling System
 Projede styling için **Tailwind CSS v4** kullanılmaktadır. 

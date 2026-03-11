@@ -15,6 +15,7 @@ import {
     type InvoiceStatus,
 } from '../api/invoices.api';
 import { getProjectById } from '../../projects/api/projects.api';
+import { uploadFile } from '../../files/api/files.api';
 import {
     createPayment,
     getPaymentAuditByInvoice,
@@ -95,6 +96,22 @@ function formatAuditEventLabel(action?: string, eventType?: string) {
     return 'Diger Islem';
 }
 
+function toPathSegment(value: string): string {
+    return value
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'genel';
+}
+
+function buildReceiptFolderPath(department: string, invoiceId: string, target: 'payment' | 'refund'): string {
+    const dateSegment = new Date().toISOString().slice(0, 10);
+    const departmentSegment = toPathSegment(department || 'genel');
+    const invoiceSegment = toPathSegment(invoiceId || 'fatura');
+    const typeSegment = target === 'payment' ? 'odeme' : 'iade';
+    return `finance/${departmentSegment}/fatura/${invoiceSegment}/${typeSegment}/${dateSegment}`;
+}
+
 function toRecordValue(value: unknown): Record<string, unknown> {
     if (typeof value === 'object' && value !== null) {
         return value as Record<string, unknown>;
@@ -143,6 +160,7 @@ export function InvoiceDetailPage() {
     const navigate = useNavigate();
     const { invoiceId = '' } = useParams<{ invoiceId: string }>();
     const userRole = useAuthStore((state) => state.user?.role);
+    const userDepartment = useAuthStore((state) => state.user?.department ?? '');
     const normalizedRole = String(userRole ?? '').toUpperCase();
     const hasAccountingRole = normalizedRole === ROLES.ACCOUNTING
         || normalizedRole.includes('ACCOUNTING')
@@ -164,6 +182,7 @@ export function InvoiceDetailPage() {
     const [paymentReference, setPaymentReference] = useState<string>('');
     const [paymentNotes, setPaymentNotes] = useState<string>('');
     const [paymentReceiptUrl, setPaymentReceiptUrl] = useState<string>('');
+    const [isPaymentReceiptUploading, setIsPaymentReceiptUploading] = useState<boolean>(false);
     const [editingPaymentId, setEditingPaymentId] = useState<string | null>(null);
     const [paymentSearch, setPaymentSearch] = useState<string>('');
     const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('ALL');
@@ -174,6 +193,7 @@ export function InvoiceDetailPage() {
     const [refundAmount, setRefundAmount] = useState<string>('');
     const [refundReason, setRefundReason] = useState<string>('');
     const [refundReceiptUrl, setRefundReceiptUrl] = useState<string>('');
+    const [isRefundReceiptUploading, setIsRefundReceiptUploading] = useState<boolean>(false);
     const [refundPaymentDate, setRefundPaymentDate] = useState<string>(new Date().toISOString().slice(0, 10));
     const [refundApprovalConfirmed, setRefundApprovalConfirmed] = useState<boolean>(false);
     const [auditEventFilter, setAuditEventFilter] = useState<
@@ -231,6 +251,39 @@ export function InvoiceDetailPage() {
         setPaymentReference('');
         setPaymentNotes('');
         setPaymentReceiptUrl('');
+    }
+
+    async function handleReceiptUpload(file: File | null, target: 'payment' | 'refund') {
+        if (!file) return;
+        if (!invoiceId) {
+            toast.error('Fatura ID bulunamadi.');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Dekont dosyasi 5MB boyutunu asmamali.');
+            return;
+        }
+
+        const setUploading = target === 'payment' ? setIsPaymentReceiptUploading : setIsRefundReceiptUploading;
+        setUploading(true);
+        try {
+            const folderPath = buildReceiptFolderPath(userDepartment, invoiceId, target);
+            const uploaded = await uploadFile(file, {
+                entityType: 'INVOICE',
+                entityId: invoiceId,
+                folderPath,
+            });
+            if (target === 'payment') {
+                setPaymentReceiptUrl(uploaded.filePath || '');
+            } else {
+                setRefundReceiptUrl(uploaded.filePath || '');
+            }
+            toast.success('Dekont yuklendi.');
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Dekont yuklenemedi.');
+        } finally {
+            setUploading(false);
+        }
     }
 
     const createPaymentMutation = useMutation({
@@ -400,7 +453,9 @@ export function InvoiceDetailPage() {
     const anyPaymentMutationPending = createPaymentMutation.isPending
         || updatePaymentMutation.isPending
         || deletePaymentMutation.isPending
-        || refundPaymentMutation.isPending;
+        || refundPaymentMutation.isPending
+        || isPaymentReceiptUploading
+        || isRefundReceiptUploading;
     const resolvedProjectName = projectQuery.data?.name || invoice?.projectName || '-';
     const collectedAmount = useMemo(
         () => payments.reduce((sum, payment) => sum + (payment.amount || 0), 0),
@@ -966,6 +1021,27 @@ export function InvoiceDetailPage() {
                                         className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
                                         disabled={anyPaymentMutationPending}
                                     />
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <label
+                                            htmlFor="payment-receipt-upload"
+                                            className="inline-flex h-9 cursor-pointer items-center rounded-lg border border-gray-300 bg-white px-3 text-xs font-semibold text-gray-700 transition hover:bg-gray-50"
+                                        >
+                                            Dekont Dosyasi Sec
+                                        </label>
+                                        <input
+                                            id="payment-receipt-upload"
+                                            type="file"
+                                            accept="image/*,application/pdf"
+                                            onChange={(event) => handleReceiptUpload(event.target.files?.[0] ?? null, 'payment')}
+                                            disabled={anyPaymentMutationPending || isPaymentReceiptUploading}
+                                            className="sr-only"
+                                        />
+                                        {isPaymentReceiptUploading && (
+                                            <span className="text-xs font-semibold text-gray-500">
+                                                Yukleniyor...
+                                            </span>
+                                        )}
+                                    </div>
                                     <textarea
                                         value={paymentNotes}
                                         onChange={(event) => setPaymentNotes(event.target.value)}
@@ -1472,6 +1548,27 @@ export function InvoiceDetailPage() {
                                         className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
                                         disabled={refundPaymentMutation.isPending}
                                     />
+                                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                                        <label
+                                            htmlFor="refund-receipt-upload"
+                                            className="inline-flex h-9 cursor-pointer items-center rounded-lg border border-gray-300 bg-white px-3 text-xs font-semibold text-gray-700 transition hover:bg-gray-50"
+                                        >
+                                            Dekont Dosyasi Sec
+                                        </label>
+                                        <input
+                                            id="refund-receipt-upload"
+                                            type="file"
+                                            accept="image/*,application/pdf"
+                                            onChange={(event) => handleReceiptUpload(event.target.files?.[0] ?? null, 'refund')}
+                                            disabled={refundPaymentMutation.isPending || isRefundReceiptUploading}
+                                            className="sr-only"
+                                        />
+                                        {isRefundReceiptUploading && (
+                                            <span className="text-xs font-semibold text-gray-500">
+                                                Yukleniyor...
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                             <div>

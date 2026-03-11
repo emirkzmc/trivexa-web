@@ -219,6 +219,7 @@ export function FilesManagementPage() {
     const userRole = useAuthStore((state) => state.user?.role?.toUpperCase());
     const currentUserId = useAuthStore((state) => state.user?.id ?? '');
     const userDepartment = useAuthStore((state) => state.user?.department ?? '');
+    const isAdmin = userRole === 'ADMIN';
 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isDragActive, setIsDragActive] = useState(false);
@@ -324,6 +325,7 @@ export function FilesManagementPage() {
             return uploadFile(selectedFile, {
                 entityType: metadata.entityType || undefined,
                 entityId: metadata.entityId || undefined,
+                folderPath: autoUploadPath || undefined,
             });
         },
         onSuccess: (uploaded) => {
@@ -370,12 +372,28 @@ export function FilesManagementPage() {
         );
     }
 
+    const visibleRecords = useMemo(() => {
+        if (isAdmin) return records;
+        if (!userRole) return [];
+
+        return records.filter((item) => {
+            if (item.uploadedBy && item.uploadedBy === currentUserId) {
+                return true;
+            }
+            if (item.isPublic) {
+                return true;
+            }
+            const recordType = (item.entityType ?? '') as EntityType;
+            return canLoadEntityType(userRole, recordType);
+        });
+    }, [records, userRole, currentUserId, isAdmin]);
+
     const filteredRecords = useMemo(() => {
         const term = search.trim().toLocaleLowerCase('tr');
         const departmentTerm = departmentFilter.trim().toLocaleLowerCase('tr');
         const entityTypeTerm = entityTypeFilter.trim().toUpperCase();
 
-        return records.filter((item) => {
+        return visibleRecords.filter((item) => {
             const context = fileContextMap[item.id];
             const departmentLabel = context?.department ?? '';
             if (departmentTerm && departmentLabel.toLocaleLowerCase('tr') !== departmentTerm) {
@@ -406,7 +424,7 @@ export function FilesManagementPage() {
             return !term || haystack.includes(term);
         });
     }, [
-        records,
+        visibleRecords,
         search,
         departmentFilter,
         fileContextMap,
@@ -416,8 +434,8 @@ export function FilesManagementPage() {
     ]);
 
     const totalBytes = useMemo(
-        () => records.reduce((sum, item) => sum + (Number.isFinite(item.size) ? item.size : 0), 0),
-        [records],
+        () => visibleRecords.reduce((sum, item) => sum + (Number.isFinite(item.size) ? item.size : 0), 0),
+        [visibleRecords],
     );
 
     async function handleUploadSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -517,7 +535,7 @@ export function FilesManagementPage() {
             <section className="mb-4 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-xl border border-gray-200 bg-white p-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Toplam Kayit</p>
-                    <p className="mt-2 text-2xl font-bold text-gray-900">{records.length}</p>
+                    <p className="mt-2 text-2xl font-bold text-gray-900">{visibleRecords.length}</p>
                 </div>
                 <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.08em] text-blue-700">Toplam Boyut</p>
@@ -811,11 +829,11 @@ export function FilesManagementPage() {
                     </div>
                 </div>
 
-                {filesQuery.isLoading && records.length === 0 ? (
+                {filesQuery.isLoading && visibleRecords.length === 0 ? (
                     <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500">
                         Dosyalar yukleniyor...
                     </div>
-                ) : filesQuery.isError && records.length === 0 ? (
+                ) : filesQuery.isError && visibleRecords.length === 0 ? (
                     <div className="rounded-lg border border-dashed border-red-300 bg-red-50 px-4 py-10 text-center text-sm text-red-700">
                         Dosya listesi alinamadi. Lutfen tekrar deneyin.
                     </div>

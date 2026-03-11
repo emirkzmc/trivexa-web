@@ -1,14 +1,15 @@
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, Calculator, CheckSquare, ClipboardList, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageHeader } from '../../../shared/components/PageHeader';
 import { ROLES } from '../../../shared/constants/roles';
 import { formatDate } from '../../../shared/utils/formatDate';
 import { useAuthStore } from '../../auth/store/authStore';
-import { getExpenses } from '../api/expenses.api';
+import { getExpenses, updateExpenseReceipt } from '../api/expenses.api';
 import { getInvoices } from '../api/invoices.api';
 import { exportTable, type ExportFormat } from '../utils/tableExport';
+import { uploadFile } from '../../files/api/files.api';
 
 type PeriodPreset = 'CURRENT_MONTH' | 'LAST_MONTH' | 'CURRENT_QUARTER' | 'CUSTOM';
 
@@ -82,8 +83,24 @@ function toNumberString(value: string) {
     return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function toPathSegment(value: string): string {
+    return value
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'genel';
+}
+
+function buildExpenseFolderPath(department: string, expenseDate?: string): string {
+    const dateSegment = (expenseDate || new Date().toISOString().slice(0, 10)).slice(0, 10);
+    const departmentSegment = toPathSegment(department || 'genel');
+    return `finance/${departmentSegment}/gider/${dateSegment}`;
+}
+
 export function TaxDeclarationPrepPage() {
+    const queryClient = useQueryClient();
     const userRole = useAuthStore((state) => state.user?.role);
+    const userDepartment = useAuthStore((state) => state.user?.department ?? '');
     const role = String(userRole ?? '').toUpperCase();
     const hasAccountingRole = role === ROLES.ACCOUNTING || role.includes('ACCOUNTING') || role.includes('MUHASEBE');
     const canRead = role === ROLES.ADMIN || role === ROLES.MANAGER || role === ROLES.CEO || role === 'SEO' || hasAccountingRole;
@@ -98,6 +115,7 @@ export function TaxDeclarationPrepPage() {
     const [previousVatCredit, setPreviousVatCredit] = useState('0');
     const [withholdingCredit, setWithholdingCredit] = useState('0');
     const [otherCredit, setOtherCredit] = useState('0');
+    const [uploadingExpenseId, setUploadingExpenseId] = useState<string | null>(null);
     const [checklist, setChecklist] = useState<DeclarationChecklistItem[]>([
         { id: 'docs', label: 'Fatura ve gider belgeleri tamamlandi', checked: false },
         { id: 'bank', label: 'Banka/POS mutabakati yapildi', checked: false },
@@ -114,6 +132,18 @@ export function TaxDeclarationPrepPage() {
         queryKey: ['tax-prep-expenses'],
         queryFn: getExpenses,
         enabled: canRead,
+    });
+
+    const updateReceiptMutation = useMutation({
+        mutationFn: ({ expenseId, receiptUrl }: { expenseId: string; receiptUrl?: string }) =>
+            updateExpenseReceipt(expenseId, receiptUrl),
+        onSuccess: async () => {
+            toast.success('Gider belgesi guncellendi.');
+            await queryClient.invalidateQueries({ queryKey: ['tax-prep-expenses'] });
+        },
+        onError: () => {
+            toast.error('Gider belgesi guncellenemedi.');
+        },
     });
 
     const periodRange = useMemo(() => {
@@ -227,6 +257,32 @@ export function TaxDeclarationPrepPage() {
         setChecklist((prev) => prev.map((item) => (
             item.id === id ? { ...item, checked: !item.checked } : item
         )));
+    }
+
+    async function handleExpenseReceiptUpload(expenseId: string, department: string, expenseDate: string | undefined, file: File | null) {
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Belge dosyasi 5MB boyutunu asmamali.');
+            return;
+        }
+
+        setUploadingExpenseId(expenseId);
+        try {
+            const folderPath = buildExpenseFolderPath(department || userDepartment, expenseDate);
+            const uploaded = await uploadFile(file, {
+                entityType: 'EXPENSE',
+                entityId: expenseId,
+                folderPath,
+            });
+            await updateReceiptMutation.mutateAsync({
+                expenseId,
+                receiptUrl: uploaded.filePath || '',
+            });
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Belge yuklenemedi.');
+        } finally {
+            setUploadingExpenseId(null);
+        }
     }
 
     async function exportDeclarationReport() {
@@ -453,6 +509,7 @@ export function TaxDeclarationPrepPage() {
                                     <th className="px-3 py-2 text-left">Kategori</th>
                                     <th className="px-3 py-2 text-right">Tutar</th>
                                     <th className="px-3 py-2 text-right">Tahmini KDV</th>
+                                    <th className="px-3 py-2 text-right">Belge</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -465,6 +522,38 @@ export function TaxDeclarationPrepPage() {
                                             <td className="px-3 py-2">{category}</td>
                                             <td className="px-3 py-2 text-right">{formatMoney(expense.amount)}</td>
                                             <td className="px-3 py-2 text-right">{formatMoney(Number(expense.amount || 0) * rate)}</td>
+                                            <td className="px-3 py-2 text-right">
+                                                {expense.receiptUrl ? (
+                                                    <a
+                                                        href={expense.receiptUrl}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="text-[11px] font-semibold text-blue-600 underline"
+                                                    >
+                                                        Goruntule
+                                                    </a>
+                                                ) : (
+                                                    <label
+                                                        htmlFor={`expense-receipt-${expense.id}`}
+                                                        className="inline-flex cursor-pointer items-center rounded-md border border-gray-200 bg-white px-2 py-1 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50"
+                                                    >
+                                                        {uploadingExpenseId === expense.id ? 'Yukleniyor...' : 'Belge Yukle'}
+                                                        <input
+                                                            id={`expense-receipt-${expense.id}`}
+                                                            type="file"
+                                                            accept="image/*,application/pdf"
+                                                            className="sr-only"
+                                                            disabled={uploadingExpenseId === expense.id}
+                                                            onChange={(event) => handleExpenseReceiptUpload(
+                                                                expense.id,
+                                                                expense.department || userDepartment,
+                                                                expense.expenseDate || expense.createdAt,
+                                                                event.target.files?.[0] ?? null,
+                                                            )}
+                                                        />
+                                                    </label>
+                                                )}
+                                            </td>
                                         </tr>
                                     );
                                 })}

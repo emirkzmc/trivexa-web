@@ -50,6 +50,7 @@ import { PerformancePage } from './features/performance/components/PerformancePa
 import { ContractsPage } from './features/contracts/components/ContractsPage';
 import { SettingsPage } from './features/settings/components/SettingsPage';
 import { UserSettingsPage } from './features/profile/components/UserSettingsPage';
+import { NotFoundPage } from './shared/components/NotFoundPage';
 
 function App() {
   return (
@@ -85,7 +86,7 @@ function App() {
             />
           )}
         />
-        <Route path="*" element={<Navigate to="/customer-panel/dashboard" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
 
       {/* Panel — AppLayout ile sarmalanmış tüm /app/* sayfaları */}
@@ -155,11 +156,11 @@ function App() {
         <Route path="audit-log" element={<AuditLogPage />} />
         <Route path="ayarlar" element={<SettingsPage />} />
         <Route path="hesabim" element={<UserSettingsPage />} />
-        <Route path="*" element={<div>Yapım Aşamasında</div>} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
 
       {/* Fallback */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

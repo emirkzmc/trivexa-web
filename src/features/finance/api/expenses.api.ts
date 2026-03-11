@@ -123,3 +123,11 @@ export async function rejectExpense(id: string): Promise<ExpenseItem> {
     const response = unwrapData<ExpenseItem>(data);
     return normalizeExpense(response);
 }
+
+export async function updateExpenseReceipt(id: string, receiptUrl?: string): Promise<ExpenseItem> {
+    const { data } = await api.patch<MaybeWrapped<ExpenseItem>>(`/expenses/${id}/receipt`, {
+        receiptUrl,
+    });
+    const response = unwrapData<ExpenseItem>(data);
+    return normalizeExpense(response);
+}

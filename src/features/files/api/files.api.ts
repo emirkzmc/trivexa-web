@@ -170,6 +170,10 @@ export async function uploadFile(
 
     if (metadata.entityType) formData.append('entityType', metadata.entityType);
     if (metadata.entityId) formData.append('entityId', metadata.entityId);
+    if (metadata.folderPath) formData.append('folderPath', metadata.folderPath);
+    if (typeof metadata.isPublic === 'boolean') {
+        formData.append('isPublic', metadata.isPublic ? 'true' : 'false');
+    }
 
     const { data } = await api.post<MaybeWrapped<RawFileMetadata>>('/files/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
