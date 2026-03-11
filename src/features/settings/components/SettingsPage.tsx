@@ -1,5 +1,5 @@
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Save, Settings, UploadCloud, XCircle, PlusCircle } from 'lucide-react';
 import { toast } from 'sonner';
@@ -44,15 +44,19 @@ export function SettingsPage() {
     passwordRotationDays: '90',
   });
 
-  const landingQuery = useQuery({
+  const landingQuery = useQuery<LandingContent>({
     queryKey: ['landing-content'],
     queryFn: getLandingContent,
-    onSuccess: (data) => {
-      setForm(data);
-    },
   });
 
   const [form, setForm] = useState<LandingContent>(DEFAULT_LANDING_CONTENT);
+
+  useEffect(() => {
+    if (landingQuery.data) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setForm(landingQuery.data);
+    }
+  }, [landingQuery.data]);
 
   const updateMutation = useMutation({
     mutationFn: () => updateLandingContent(form),

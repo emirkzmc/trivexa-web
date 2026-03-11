@@ -508,7 +508,7 @@ export function CodeProcessesPage() {
                                                     </span>
                                                 </div>
                                                 <p className="mt-1 text-xs text-gray-500">
-                                                    {commit.authorName} • {toReadableDate(commit.committedAt)}
+                                                    {commit.authorName} Â• {toReadableDate(commit.committedAt)}
                                                 </p>
                                             </li>
                                         ))}
