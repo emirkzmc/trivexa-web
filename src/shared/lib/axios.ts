@@ -42,9 +42,10 @@ api.interceptors.response.use(
     async (error: AxiosError) => {
         const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
         const status = error.response?.status;
+        const skipAuthRefresh = Boolean(originalRequest?.headers?.['x-skip-auth-refresh']);
 
         // ── 401 — Token refresh ──────────────────────────────────
-        if (status === 401 && !originalRequest._retry) {
+        if (status === 401 && !originalRequest._retry && !skipAuthRefresh) {
             originalRequest._retry = true;
 
             if (isRefreshing) {

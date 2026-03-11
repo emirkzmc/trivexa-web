@@ -1,14 +1,36 @@
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import type { AxiosError } from "axios";
 import { login } from "../api/auth.api";
 import type { LoginCredentials, LoginResponse } from "../api/auth.api";
 import { useAuthStore } from '../store/authStore';
 import { ROLE_DASHBOARD_MAP } from '../../../shared/constants/roleDashboardMap';
 import { normalizeRoleKey } from '../../../shared/utils/roleUtils';
+import { ERROR_MESSAGES, resolveErrorMessage } from "../../../shared/constants/errorMessages";
 
 interface UseLoginOptions {
   onFirstLogin?: () => void;
+  onInvalidCredentials?: (message: string) => void;
+}
+
+function extractInvalidCredentialsMessage(error: unknown): string | null {
+  if (!error || typeof error !== "object") return null;
+
+  const err = error as AxiosError;
+  const response = err.response as
+    | { status?: number; data?: Record<string, unknown> }
+    | undefined;
+  const status = response?.status;
+  const data = response?.data ?? {};
+  const code = data.errorCode ?? data.code;
+  const message = typeof data.message === "string" ? data.message.trim() : "";
+
+  if (status === 401 || code === "INVALID_CREDENTIALS") {
+    return message || ERROR_MESSAGES.INVALID_CREDENTIALS;
+  }
+
+  return null;
 }
 
 export function useLogin(options?: UseLoginOptions) {
@@ -47,8 +69,17 @@ export function useLogin(options?: UseLoginOptions) {
         || "/app/dashboard";
       navigate(targetRoute, { replace: true });
     },
-    onError: () => {
-      toast.error("E-posta veya şifre hatalı", { duration: 3_000 });
+    onError: (error) => {
+      const invalidMessage = extractInvalidCredentialsMessage(error);
+      if (invalidMessage) {
+        if (options?.onInvalidCredentials) {
+          options.onInvalidCredentials(invalidMessage);
+          return;
+        }
+        toast.error(invalidMessage, { duration: 3_000 });
+        return;
+      }
+      toast.error(resolveErrorMessage(error), { duration: 3_000 });
     },
   });
 }

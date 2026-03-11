@@ -30,6 +30,8 @@ export function LoginForm() {
   const {
     register,
     handleSubmit,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -41,11 +43,15 @@ export function LoginForm() {
 
   const { mutate, isPending } = useLogin({
     onFirstLogin: () => setShowFirstLoginModal(true),
+    onInvalidCredentials: (message) => {
+      setError('root', { type: 'manual', message });
+    },
   });
 
   const isFirstLoginModalOpen = showFirstLoginModal || (!!user && isFirstLogin);
 
   const onSubmit: SubmitHandler<LoginFormValues> = (values) => {
+    clearErrors();
     mutate(values);
   };
 
@@ -102,6 +108,12 @@ export function LoginForm() {
                 )}
               </div>
             </div>
+
+            {errors.root?.message && (
+              <p className="rounded-md border border-[#fecaca] bg-[#fef2f2] px-3 py-2 text-left text-xs text-[#b91c1c]">
+                {errors.root.message}
+              </p>
+            )}
 
             <div className="mt-4">
               <Button type="submit" disabled={isPending}>

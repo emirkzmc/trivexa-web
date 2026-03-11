@@ -60,7 +60,12 @@ export interface MeResponse {
 // ─── API Functions ───────────────────────────────────────────────────────────
 
 export async function login(credentials: LoginCredentials): Promise<LoginResponse> {
-    const { data } = await api.post<LoginResponse>('/auth/login', credentials);
+    const { data } = await api.post<LoginResponse>('/auth/login', credentials, {
+        headers: {
+            'x-skip-auth-refresh': '1',
+            'x-skip-error-toast': '1',
+        },
+    });
     return data;
 }
 
