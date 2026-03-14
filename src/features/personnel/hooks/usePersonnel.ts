@@ -19,6 +19,7 @@ export function usePersonnel() {
         page: Number(searchParams.get('page')) || 1,
         limit: Number(searchParams.get('limit')) || DEFAULT_LIMIT,
         department: searchParams.get('department') || undefined,
+        subDepartmentId: searchParams.get('subDepartmentId') || undefined,
         role: searchParams.get('role') || undefined,
         isActive: searchParams.get('isActive') || undefined,
         search: searchParams.get('search') || undefined,

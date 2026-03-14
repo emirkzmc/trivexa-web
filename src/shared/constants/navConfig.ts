@@ -196,6 +196,9 @@ const ADMIN_NAV: RoleNavConfig = {
                 {label: 'Personel Yönetimi', path: '/app/personel', icon: 'Users'},
                 {label: 'Departmanlar', path: '/app/departmanlar', icon: 'Network'},
                 {label: 'Departman Atamaları', path: '/app/departman-atamalari', icon: 'Network'},
+                {label: 'İzin Yönetimi', path: '/app/izin-yonetimi', icon: 'CalendarCheck'},
+                {label: 'Çalışma Süresi', path: '/app/calisma-suresi', icon: 'Clock'},
+                {label: 'Performans', path: '/app/performans', icon: 'TrendingUp'},
                 {label: 'Müşteri Yönetimi', path: '/app/musteriler', icon: 'Building2'},
                 {label: 'Projeler', path: '/app/projeler', icon: 'FolderKanban'},
                 {label: 'Görev Yönetimi', path: '/app/gorevler', icon: 'CheckSquare'},
@@ -253,6 +256,7 @@ const ADMIN_NAV: RoleNavConfig = {
             items: [
                 {label: 'Time Tracker', path: '/app/time-tracker', icon: 'Timer'},
                 {label: 'Dosya Yönetimi', path: '/app/dosyalar', icon: 'FolderOpen'},
+                {label: 'Dosyalarım', path: '/app/dosyalarim', icon: 'FolderOpen'},
             ],
         },
         {
@@ -261,6 +265,7 @@ const ADMIN_NAV: RoleNavConfig = {
                 {label: 'Roller & İzinler', path: '/app/roller', icon: 'ShieldCheck'},
                 {label: 'Audit Log', path: '/app/audit-log', icon: 'ShieldCheck'},
                 {label: 'Ayarlar', path: '/app/ayarlar', icon: 'Settings'},
+                {label: 'Hesabım', path: '/app/hesabim', icon: 'Settings'},
             ],
         },
     ],

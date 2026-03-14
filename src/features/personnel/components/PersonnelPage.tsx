@@ -46,6 +46,7 @@ export function PersonnelPage() {
     const [editItem, setEditItem] = useState<PersonnelItem | null>(null);
     const [exportFormat, setExportFormat] = useState<PersonnelExportFormat>('pdf');
 
+    const departments = departmentsQuery.data ?? [];
     const personnel = Array.isArray(data?.data) ? data.data : [];
     const total = data?.meta?.total ?? 0;
     const currentPage = filters.page ?? 1;
@@ -59,7 +60,7 @@ export function PersonnelPage() {
         };
     });
 
-    const departmentOptions = (departmentsQuery.data ?? []).map((department) => {
+    const departmentOptions = departments.map((department) => {
         const normalizedName = department.name.trim().toUpperCase();
         return {
             value: department.name,
@@ -68,7 +69,7 @@ export function PersonnelPage() {
     });
 
     const departmentModulesByDepartment = Object.fromEntries(
-        (departmentsQuery.data ?? []).map((department) => [
+        departments.map((department) => [
             department.name,
             (department.modules ?? []).map((module) => ({
                 value: module.id,
@@ -76,6 +77,10 @@ export function PersonnelPage() {
             })),
         ]),
     );
+
+    const moduleOptions = filters.department
+        ? (departmentModulesByDepartment[filters.department] ?? [])
+        : [];
 
     function handleCreate() {
         setEditItem(null);
@@ -130,13 +135,32 @@ export function PersonnelPage() {
     function clearFilters() {
         setFilters({
             department: undefined,
+            subDepartmentId: undefined,
             role: undefined,
             isActive: undefined,
             search: undefined,
         });
     }
 
-    const hasFilters = !!(filters.department || filters.role || filters.isActive || filters.search);
+    const hasFilters = !!(
+        filters.department
+        || filters.subDepartmentId
+        || filters.role
+        || filters.isActive
+        || filters.search
+    );
+
+    function handleFilterChange(key: string, value: string | undefined) {
+        if (key === 'department') {
+            setFilters({
+                department: value,
+                subDepartmentId: undefined,
+            });
+            return;
+        }
+
+        setFilter(key, value);
+    }
 
     const headerActions = (
         <>
@@ -212,8 +236,9 @@ export function PersonnelPage() {
 
             <PersonnelFilters
                 filters={filters}
-                onFilterChange={setFilter}
+                onFilterChange={handleFilterChange}
                 onClear={clearFilters}
+                moduleOptions={moduleOptions}
             />
 
             <PersonnelTable

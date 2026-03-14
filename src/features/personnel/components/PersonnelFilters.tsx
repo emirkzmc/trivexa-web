@@ -4,14 +4,26 @@ import { ROLES } from '../../../shared/constants/roles';
 import { ROLE_LABELS } from '../../../shared/constants/roleLabels';
 import type { PersonnelListParams } from '../api/personnel.api';
 
+interface ModuleOption {
+    value: string;
+    label: string;
+}
+
 interface PersonnelFiltersProps {
     filters: PersonnelListParams;
     onFilterChange: (key: string, value: string | undefined) => void;
     onClear: () => void;
+    moduleOptions: ModuleOption[];
 }
 
-export function PersonnelFilters({ filters, onFilterChange, onClear }: PersonnelFiltersProps) {
-    const hasFilters = filters.department || filters.role || filters.isActive || filters.search;
+export function PersonnelFilters({ filters, onFilterChange, onClear, moduleOptions }: PersonnelFiltersProps) {
+    const hasFilters = filters.department || filters.subDepartmentId || filters.role || filters.isActive || filters.search;
+    const moduleDisabled = !filters.department || moduleOptions.length === 0;
+    const modulePlaceholder = !filters.department
+        ? 'Once departman secin'
+        : moduleOptions.length > 0
+            ? 'Tum Alt Departmanlar'
+            : 'Alt departman yok';
 
     return (
         <div style={{
@@ -46,6 +58,21 @@ export function PersonnelFilters({ filters, onFilterChange, onClear }: Personnel
                 {Object.entries(DEPARTMENTS).map(([key, value]) => (
                     <option key={key} value={value}>
                         {DEPARTMENT_LABELS[key] ?? key}
+                    </option>
+                ))}
+            </select>
+
+            {/* Alt Departman */}
+            <select
+                value={filters.subDepartmentId ?? ''}
+                onChange={(e) => onFilterChange('subDepartmentId', e.target.value || undefined)}
+                style={selectStyle}
+                disabled={moduleDisabled}
+            >
+                <option value="">{modulePlaceholder}</option>
+                {moduleOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                        {option.label}
                     </option>
                 ))}
             </select>
