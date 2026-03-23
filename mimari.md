@@ -322,3 +322,44 @@ trivexa-web/
 ├── tsconfig.node.json
 └── vite.config.ts
 ```
+
+## Klasörlerin İşlevleri ve Mimari Yaklaşım
+
+**Trivexa Web** projesi, gelişmiş bir B2B / Kurumsal Yönetim Paneli uygulamasıdır. `trivexa-landing` projesinde olduğu gibi **Feature-Sliced Design (FSD)** mimarisinden ilham alarak kurgulanmıştır. Çok sayıda sayfaya ve iş mantığına sahip olduğu için `features` (özellikler) ile `shared` (ortak) katmanı birbirinden çok daha keskin bir şekilde ayrılmıştır.
+
+### 📁 Kök Dizin (Root) Klasörleri ve Dosyaları
+* **`public/`**: Vite tarafından derlenmeden doğrudan kök dizine gönderilen, statik imajlar (SVG, WebIcon).
+* **Proje Yapılandırma Dosyaları**:
+  * `package.json`: Projenin yeteneklerini belirleyen temel kütüphaneler (React, React Router, Zustand, React-Query, Tailwind v4 vb.) ve komut betikleri.
+  * `vite.config.ts`, `tailwind.config.js`: Derleyici ve stil aracı ayarları.
+  * Kalabalık `.json` ve `.txt` ESLint çıktıları: Projenin linting ve kod kalite iyileştirmelerinin log (rapor) dosyalarıdır.
+  * `.env.development`: Geliştirme ortamı için ortam (environment) değişkenlerini barındırır.
+
+---
+
+### 📁 `src/` (Kaynak Kod) Klasörü
+
+Paneli oluşturan asıl dosyaların bulunduğu kök dizindir:
+
+#### 1. `app/` (Sistem Kabuğu ve Güvenlik)
+* **`router/guards/`**: Uygulamanın güvenliğinin sağlandığı noktadır. Kullanıcı giriş yapmış mı (`PrivateRoute`) ve girdiği sayfaya yetkisi var mı (`RoleGuard`) gibi kontroller yapılarak yetkisiz erişimler engellenir.
+
+#### 2. `assets/` (Proje İçi Statikler)
+* Proje içinde, bileşen olarak konumlandırılan ya da modül olarak eklenen SVG formatındaki ikonları (`icons/` klasörü altında) ve logoları içerir. 
+
+#### 3. `features/` (İzole İş Modülleri - Core Domain)
+Projenin "kalbi" olan bu klasör, yönetim panelinin her bir sayfa veya işlev grubunu (domain) tek bir yer etrafında toplar. Her özelliğin (örn. İnsan Kaynakları, Finans vb.) kendi API katmanı (`api/`), kendi durum yönetimi (`store/` veya `hooks/`) ve kendi sayfaları/bileşenleri (`components/`) bulunur:
+* **`auth/`**: Giriş, oturum açma, log out gibi sadece kimlik doğrulama süreçlerini yürüten izole paket.
+* **`projects/`, `finance/`, `personnel/`, `tasks/` vb.**: Her biri Trivexa panelindeki devasa birer modüldür. "Finans" bölümünü değiştirdiğinizde sadece `finance/` modülünün içerisine dokunursunuz, diğer bölümler etkilenmez.
+
+#### 4. `shared/` (Ortak Katman)
+Uygulamanın farklı **feature**'ları (Örn: `finance` modülü ile `personnel` modülü) tarafından *ortak olarak* tüketilen "paylaşımlı" yapılar havuzudur:
+* **`components/`**: Genel sayfa yapısını oluşturan `Sidebar`, `AppHeader`, `AppLayout`, `Modal` gibi genel arayüz bileşenleri. 
+* **`constants/`**: Çok kritik olan yetkilendirme rolleri (`roles.ts`), menü yapılandırması (`navConfig.ts`), departman listeleri (`departments.ts`) gibi sistem geneli değişmeyen sabit bilgiler.
+* **`lib/`**: Üçüncü taraf kütüphane ayarlamalarının yapıldığı izolasyon klasörü. **Axios** (API aracı), **React Query Client** (Önbellekleme) ve **SweetAlert** burada başlatılır (boot edilir).
+* **`utils/`**: Uygulamanın farklı yerlerinde tekrar tekrar kullanılan "tarih formatlama" vb. işlevler.
+
+#### 5. Ana Dosyalar (`src/` Kökü)
+* **`App.tsx` & `main.tsx`**: Uygulamayı ayağa kaldıran, React-Query ve Router gibi sistem çekirdeklerini en dıştan saran başlangıç noktalarıdır.
+* **`index.css` & `App.css`**: Tailwind'in ve global değişkenlerin içeri alındığı ortak stil dosyaları.
+* **`sonner.tsx`**: Projede beliren (toast) bildirimlerin/uyarı mesajlarının global bileşenini sarmalar.

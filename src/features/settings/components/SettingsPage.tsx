@@ -291,6 +291,20 @@ export function SettingsPage() {
     }));
   };
 
+  const handlePrivacyPolicyChange = (field: keyof LandingContent['privacyPolicy'], value: string) => {
+    setForm((prev) => ({
+      ...prev,
+      privacyPolicy: { ...prev.privacyPolicy, [field]: value },
+    }));
+  };
+
+  const handleUserPolicyChange = (field: keyof LandingContent['userPolicy'], value: string) => {
+    setForm((prev) => ({
+      ...prev,
+      userPolicy: { ...prev.userPolicy, [field]: value },
+    }));
+  };
+
   const isSaving = updateMutation.isPending;
   const isDisabled = !canEditLanding || isSaving;
 
@@ -788,6 +802,74 @@ export function SettingsPage() {
                     onChange={(event) => handleContactChange('image', event.target.value)}
                     disabled={isDisabled}
                     className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-gray-800 focus:ring-1 focus:ring-gray-800"
+                  />
+                </div>
+              </div>
+            </article>
+
+            <article className="rounded-xl border border-gray-200 bg-white p-4">
+              <h3 className="text-sm font-semibold text-gray-900">Gizlilik Politikası</h3>
+              <p className="mb-4 text-xs text-gray-500">Landing sayfasındaki Gizlilik Politikası içeriği.</p>
+              <div className="grid gap-3 md:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-600">Baslik</label>
+                  <input
+                    value={form.privacyPolicy?.title || ''}
+                    onChange={(event) => handlePrivacyPolicyChange('title', event.target.value)}
+                    disabled={isDisabled}
+                    className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-gray-800 focus:ring-1 focus:ring-gray-800"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-600">Link Etiketi</label>
+                  <input
+                    value={form.privacyPolicy?.label || ''}
+                    onChange={(event) => handlePrivacyPolicyChange('label', event.target.value)}
+                    disabled={isDisabled}
+                    className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-gray-800 focus:ring-1 focus:ring-gray-800"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="mb-1 block text-xs font-semibold text-gray-600">İçerik</label>
+                  <textarea
+                    value={form.privacyPolicy?.content || ''}
+                    onChange={(event) => handlePrivacyPolicyChange('content', event.target.value)}
+                    disabled={isDisabled}
+                    className="h-48 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-gray-800 focus:ring-1 focus:ring-gray-800"
+                  />
+                </div>
+              </div>
+            </article>
+
+            <article className="rounded-xl border border-gray-200 bg-white p-4">
+              <h3 className="text-sm font-semibold text-gray-900">Kullanıcı Politikası</h3>
+              <p className="mb-4 text-xs text-gray-500">Landing sayfasındaki Kullanıcı Politikası içeriği.</p>
+              <div className="grid gap-3 md:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-600">Baslik</label>
+                  <input
+                    value={form.userPolicy?.title || ''}
+                    onChange={(event) => handleUserPolicyChange('title', event.target.value)}
+                    disabled={isDisabled}
+                    className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-gray-800 focus:ring-1 focus:ring-gray-800"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-600">Link Etiketi</label>
+                  <input
+                    value={form.userPolicy?.label || ''}
+                    onChange={(event) => handleUserPolicyChange('label', event.target.value)}
+                    disabled={isDisabled}
+                    className="h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-gray-800 focus:ring-1 focus:ring-gray-800"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="mb-1 block text-xs font-semibold text-gray-600">İçerik</label>
+                  <textarea
+                    value={form.userPolicy?.content || ''}
+                    onChange={(event) => handleUserPolicyChange('content', event.target.value)}
+                    disabled={isDisabled}
+                    className="h-48 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-gray-800 focus:ring-1 focus:ring-gray-800"
                   />
                 </div>
               </div>

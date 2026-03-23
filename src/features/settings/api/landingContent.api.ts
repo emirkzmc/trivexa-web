@@ -61,6 +61,12 @@ export type LandingContactContent = {
   image: string;
 };
 
+export type LandingPolicyContent = {
+  label: string;
+  title: string;
+  content: string;
+};
+
 export type LandingContent = {
   hero: LandingHeroContent;
   intro: LandingIntroContent;
@@ -68,6 +74,8 @@ export type LandingContent = {
   process: LandingProcessContent;
   impact: LandingImpactContent;
   contact: LandingContactContent;
+  privacyPolicy: LandingPolicyContent;
+  userPolicy: LandingPolicyContent;
   meta?: {
     updatedAt?: string;
     updatedBy?: string | null;
@@ -76,92 +84,132 @@ export type LandingContent = {
 
 export const DEFAULT_LANDING_CONTENT: LandingContent = {
   hero: {
-    title: 'Bir yonetimden daha fazlasi',
-    subtitle: 'Harika fikirler, guclu yazilimlarla hayat bulur.',
-    ctaLabel: 'Hemen Basla',
+    title: 'Bir yönetimden daha fazlası',
+    subtitle: 'Harika fikirler, güçlü yazılımlarla hayat bulur.',
+    ctaLabel: 'Hemen Başla',
     ctaLink: '#agency-intro',
     backgroundImage: '/photo.png',
   },
   intro: {
     label: 'TRIVEXA',
-    title: 'Yazilim ajansiniz: fikri urune, urunu buyumeye donusturuyoruz.',
+    title: 'Yazılım ajansınız: fikri ürüne, ürünü büyümeye dönüştürüyoruz.',
     paragraphs: [
-      'Trivexa; web ve mobil uygulama gelistirme, urun tasarimi, altyapi kurulumu ve teknik danismanlik alanlarinda uctan uca hizmet veren bir yazilim ajansidir. Ekibimiz, markanizin hedeflerine uygun, olceklenebilir ve performans odakli dijital urunler tasarlar.',
-      'Sureci netlestiren, hizli teslimat yapan ve kaliteyi koruyan bir yaklasimla calisiriz. Ister sifirdan bir urun gelistirin, ister mevcut projenizi bir ust seviyeye tasiyin; Trivexa teknik gucunuz olur.',
+      'Trivexa; web ve mobil uygulama geliştirme, ürün tasarımı, altyapı kurulumu ve teknik danışmanlık alanlarında uçtan uca hizmet veren bir yazılım ajansıdır. Ekibimiz, markanızın hedeflerine uygun, ölçeklenebilir ve performans odaklı dijital ürünler tasarlar.',
+      'Süreci netleştiren, hızlı teslimat yapan ve kaliteyi koruyan bir yaklaşımla çalışırız. İster sıfırdan bir ürün geliştirin, ister mevcut projenizi bir üst seviyeye taşıyın; Trivexa teknik gücünüz olur.',
     ],
     tickerTexts: ['Trivexa', 'Solve the Problem,'],
   },
   services: {
     label: 'Hizmetler',
-    title: 'Uctan uca yazilim cozumleri',
+    title: 'Uçtan uca yazılım çözümleri',
     items: [
       {
-        title: 'Web Uygulama Gelistirme',
+        title: 'Web Uygulama Geliştirme',
         description:
-          'Performans odakli, olceklenebilir ve surdurulebilir web urunleri gelistiriyoruz.',
+          'Performans odaklı, ölçeklenebilir ve sürdürülebilir web ürünleri geliştiriyoruz.',
       },
       {
-        title: 'Mobil Uygulama Gelistirme',
+        title: 'Mobil Uygulama Geliştirme',
         description:
-          'iOS ve Android icin kullanici odakli, hizli ve guvenilir mobil deneyimler tasarliyoruz.',
+          'iOS ve Android için kullanıcı odaklı, hızlı ve güvenilir mobil deneyimler tasarlıyoruz.',
       },
       {
-        title: 'UI/UX Tasarim',
+        title: 'UI/UX Tasarım',
         description:
-          'Markaniza uygun, sade ve etkili arayuzlerle kullanici deneyimini guclendiriyoruz.',
+          'Markanıza uygun, sade ve etkili arayüzlerle kullanıcı deneyimini güçlendiriyoruz.',
       },
       {
-        title: 'Teknik Danismanlik',
+        title: 'Teknik Danışmanlık',
         description:
-          'Mimari kararlar, kod kalitesi ve urun yol haritasinda ekibinize stratejik destek veriyoruz.',
+          'Mimari kararlar, kod kalitesi ve ürün yol haritasında ekibinize stratejik destek veriyoruz.',
       },
     ],
   },
   process: {
-    label: 'Surec',
-    title: 'Nasil calisiyoruz?',
+    label: 'Süreç',
+    title: 'Nasıl çalışıyoruz?',
     steps: [
       {
-        title: 'Kesif ve Planlama',
+        title: 'Keşif ve Planlama',
         description:
-          'Ihtiyaclari netlestirir, hedefleri olculebilir adimlara donustururuz.',
+          'İhtiyaçları netleştirir, hedefleri ölçülebilir adımlara dönüştürürüz.',
       },
       {
-        title: 'Tasarim ve Prototipleme',
+        title: 'Tasarım ve Prototipleme',
         description:
-          'Kullanici akislarini tasarlar, fikirleri hizli prototiplerle gorunur hale getiririz.',
+          'Kullanıcı akışlarını tasarlar, fikirleri hızlı prototiplerle görünür hale getiririz.',
       },
       {
-        title: 'Gelistirme ve Test',
+        title: 'Geliştirme ve Test',
         description:
-          'Temiz kod, duzenli test ve iteratif teslimatlarla guvenli bir surec yuruturuz.',
+          'Temiz kod, düzenli test ve iteratif teslimatlarla güvenli bir süreç yürütürüz.',
       },
       {
-        title: 'Yayin ve Buyume',
+        title: 'Yayın ve Büyüme',
         description:
-          'Urunu yayina alir, metriklerle izler ve surekli iyilestirme uygulariz.',
+          'Ürünü yayına alır, metriklerle izler ve sürekli iyileştirme uygularız.',
       },
     ],
   },
   impact: {
     label: 'Trivexa Etkisi',
-    title: 'Urununuzu daha hizli ve daha dogru buyutun',
-    ctaLabel: 'Projeni Konusalim',
+    title: 'Ürününüzü daha hızlı ve daha doğru büyütün',
+    ctaLabel: 'Projeni Konuşalım',
     ctaLink: '/iletisim',
     backgroundColor: '#7D98AA',
     stats: [
       { value: '50+', label: 'Tamamlanan Proje' },
-      { value: '12', label: 'Farkli Sektor' },
-      { value: '%98', label: 'Zamaninda Teslimat' },
+      { value: '12', label: 'Farklı Sektör' },
+      { value: '%98', label: 'Zamanında Teslimat' },
       { value: '24/7', label: 'Teknik Destek' },
     ],
   },
   contact: {
-    label: 'ILETISIM',
-    title: 'Projenizi birlikte planlayalim.',
+    label: 'İLETİŞİM',
+    title: 'Projenizi birlikte planlayalım.',
     description:
-      'Kisa bir formla ihtiyacinizi aktarip ekibimizin size donus yapmasini saglayin.',
+      'Kısa bir formla ihtiyacınızı aktarıp ekibimizin size dönüş yapmasını sağlayın.',
     image: '/contact.png',
+  },
+  privacyPolicy: {
+    label: 'Gizlilik',
+    title: 'Gizlilik Politikası',
+    content: `TRIVEXA olarak, kullanıcılarımızın kişisel verilerinin korunmasına ve güvenliğine en yüksek önemi veriyoruz. Bu Gizlilik Politikası, web sitemizi ziyaret ettiğinizde veya hizmetlerimizi kullandığınızda bilgilerinizin nasıl toplandığını, kullanıldığını ve paylaşıldığını açıklamaktadır.
+
+1. Toplanan Bilgiler
+İletişim formları veya müşteri paneli aracılığıyla adınız, e-posta adresiniz, telefon numaranız ve şirket bilgileriniz gibi kişisel verileri toplayabiliriz. Sistem performansını artırmak amacıyla çerezler (cookies) ve benzeri teknolojiler kullanılarak anonim kullanım istatistikleri elde edilebilir.
+
+2. Bilgilerin Kullanımı
+Topladığımız bilgiler; size daha iyi hizmet sunmak, taleplerinizi yanıtlamak, projelerinizi yönetmek, müşteri portalı erişimi sağlamak ve yasal yükümlülüklerimizi yerine getirmek amacıyla kullanılır.
+
+3. Bilgilerin Paylaşımı
+Kişisel verileriniz, izniniz olmadan üçüncü şahıslarla paylaşılmaz. Sadece yasal zorunluluklar doğrultusunda resmi makamlarla veya hizmet sağlayıcı iş ortaklarımızla gizlilik sözleşmeleri çerçevesinde paylaşılabilir.
+
+4. Veri Güvenliği
+TRIVEXA, kişisel verilerinizi yetkisiz erişim, kayıp veya kötüye kullanıma karşı korumak için geçerli güvenlik önlemleri almaktadır.
+
+5. Haklarınız
+Kişisel verilerinizle ilgili bilgi alma, düzeltme veya silme talebinde bulunma hakkına sahipsiniz. Bizimle iletişim sayfamızdan irtibata geçebilirsiniz.`,
+  },
+  userPolicy: {
+    label: 'Kullanıcı',
+    title: 'Kullanıcı Politikası (Kullanım Şartları)',
+    content: `TRIVEXA platformlarına hoş geldiniz. Web sitemizi veya müşteri portalımızı kullanarak aşağıdaki kullanım şartlarını kabul etmiş olursunuz:
+
+1. Hizmet Kapsamı ve Fikri Mülkiyet
+TRIVEXA, yazılım çözümleri ve danışmanlık hizmetleri sunar. Platformda yer alan içerik, logo, tasarım ve yazılım kodları TRIVEXA'nın mülkiyetindedir. Sözleşme ile aksi belirtilmedikçe kopyalanamaz veya izinsiz kullanılamaz.
+
+2. Kullanıcı Yükümlülükleri
+Müşteri paneline erişim bilgilerinizin güvenliğinden tamamen siz sorumlusunuz. Platformumuzu kullanırken yasalara uygun hareket etmeli, sisteme zarar verecek her türlü işlemden kaçınmalısınız.
+
+3. Sunulan Bilgilerin Doğruluğu
+Proje talepleri ve formlar aracılığıyla bize ilettiğiniz tüm bilgilerin doğru olduğunu beyan edersiniz. TRIVEXA, yanıltıcı bilgi sunulması halinde hizmet vermeyi reddedebilir.
+
+4. Güncellemeler ve Değişiklikler
+TRIVEXA, işbu Kullanıcı Politikası şartlarını ve sağlanan hizmetin detaylarını, önceden haber vermeksizin dilediği zaman değiştirme hakkını saklı tutar.
+
+5. Sorumluluk Reddi
+Web sitemiz veya hizmetlerimiz kesintisiz veya tamamen hatasız olma garantisi vermez. TRIVEXA, teknik veya idari kesintilerden doğabilecek doğrudan veya dolaylı zararlardan sorumlu tutulamaz.`,
   },
 };
 
@@ -217,6 +265,8 @@ export function normalizeLandingContent(raw: unknown): LandingContent {
     stats: impactStats,
   };
   const contact = { ...DEFAULT_LANDING_CONTENT.contact, ...(payload.contact ?? {}) };
+  const privacyPolicy = { ...DEFAULT_LANDING_CONTENT.privacyPolicy, ...(payload.privacyPolicy ?? {}) };
+  const userPolicy = { ...DEFAULT_LANDING_CONTENT.userPolicy, ...(payload.userPolicy ?? {}) };
 
   return {
     hero,
@@ -225,6 +275,8 @@ export function normalizeLandingContent(raw: unknown): LandingContent {
     process,
     impact,
     contact,
+    privacyPolicy,
+    userPolicy,
     meta: payload.meta ?? undefined,
   };
 }
