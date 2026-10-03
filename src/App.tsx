@@ -1,9 +1,11 @@
-﻿
+
 import './App.css';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoginForm } from './features/auth/components/LoginForm';
+import { DemoLogin } from './features/auth/components/DemoLogin';
 import { FirstLoginPage } from './features/auth/components/FirstLoginPage';
 import { AppLayout } from './shared/components/AppLayout';
+import { FeatureFlagService } from './shared/services/feature-flag.service';
 import { PersonnelPage } from './features/personnel/components/PersonnelPage';
 import { TimeTrackerPage } from './features/time-tracker/components/TimeTrackerPage';
 import { AuditLogPage } from './features/audit/components/AuditLogPage';
@@ -53,13 +55,22 @@ import { UserSettingsPage } from './features/profile/components/UserSettingsPage
 import { NotFoundPage } from './shared/components/NotFoundPage';
 
 function App() {
+  const isDemo = FeatureFlagService.isEnabled('DEMO_MODE');
+
   return (
     <Routes>
       {/* Tanıtım / public alan ileride eklenecek */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<Navigate to={isDemo ? "/demo-login" : "/login"} replace />} />
 
       {/* Auth */}
-      <Route path="/login" element={<LoginForm />} />
+      <Route 
+        path="/login" 
+        element={isDemo ? <Navigate to="/demo-login" replace /> : <LoginForm />} 
+      />
+      <Route 
+        path="/demo-login" 
+        element={isDemo ? <DemoLogin /> : <Navigate to="/login" replace />} 
+      />
       <Route path="/app/first-login" element={<FirstLoginPage />} />
 
       <Route path="/customer-panel" element={<CustomerPanelLayout />}>
