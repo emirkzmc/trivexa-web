@@ -32,7 +32,7 @@ const DEMO_USERS = [
   },
   {
     roleName: 'Müşteri (Customer)',
-    email: 'customer@demo',
+    email: 'customer@demo.com',
     description: 'Projeleri, görevleri ve faturaları izleme.',
     color: 'bg-teal-600',
   },
@@ -45,8 +45,8 @@ export const DemoLogin: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const handleDemoLogin = async (email: string) => {
-    if (email === 'customer@demo') {
-      window.location.href = 'http://localhost:3001/customer-login';
+    if (email === 'customer@demo.com') {
+      window.location.href = 'http://localhost:3001/customer-login?email=customer@demo.com&autologin=true';
       return;
     }
 
