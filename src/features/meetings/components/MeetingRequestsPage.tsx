@@ -111,7 +111,7 @@ export function MeetingRequestsPage() {
         },
     });
 
-    const rows = requestsQuery.data?.data ?? [];
+    const rows = useMemo(() => requestsQuery.data?.data || [], [requestsQuery.data?.data]);
     const meetingRows = rows.filter((item) => isMeetingRequest(item.subject, item.type));
     const total = requestsQuery.data?.total ?? meetingRows.length;
     const totalPages = requestsQuery.data?.totalPages ?? 1;

@@ -127,7 +127,7 @@ export function InvoicesPage() {
         enabled: canReadInvoices,
     });
 
-    const rows = invoicesQuery.data ?? [];
+    const rows = useMemo(() => invoicesQuery.data || [], [invoicesQuery.data]);
     const clientMap = useMemo(
         () => new Map((clientsQuery.data?.data ?? []).map((client) => [client.id, client.companyName])),
         [clientsQuery.data?.data],

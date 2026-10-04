@@ -122,13 +122,13 @@ function extractRows(payload: unknown): { rows: unknown[]; meta: MetaPayload } {
             : null;
 
     if (directRows) {
-        const meta = asRecord(topLevelRecord.meta) ?? {};
+        const meta = asRecord(topLevelRecord.meta) || {};
         return { rows: directRows, meta: meta as MetaPayload };
     }
 
     const nestedData = asRecord(topLevelRecord.data);
     if (!nestedData) {
-        const meta = asRecord(topLevelRecord.meta) ?? {};
+        const meta = asRecord(topLevelRecord.meta) || {};
         return { rows: [], meta: meta as MetaPayload };
     }
 
@@ -137,7 +137,7 @@ function extractRows(payload: unknown): { rows: unknown[]; meta: MetaPayload } {
         : Array.isArray(nestedData.items)
             ? nestedData.items
             : [];
-    const nestedMeta = asRecord(nestedData.meta) ?? asRecord(topLevelRecord.meta) ?? {};
+    const nestedMeta = (asRecord(nestedData.meta) ?? asRecord(topLevelRecord.meta)) || {};
     return { rows: nestedRows, meta: nestedMeta as MetaPayload };
 }
 

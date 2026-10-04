@@ -210,9 +210,9 @@ export function ProjectDetailPage() {
     });
 
     const project = projectQuery.data;
-    const members = membersQuery.data ?? [];
-    const tasks = tasksQuery.data?.data ?? [];
-    const activities = activityQuery.data?.data ?? [];
+    const members = useMemo(() => membersQuery.data || [], [membersQuery.data]);
+    const tasks = useMemo(() => tasksQuery.data?.data || [], [tasksQuery.data?.data]);
+    const activities = useMemo(() => activityQuery.data?.data || [], [activityQuery.data?.data]);
     const statusMeta = toProjectStatusMeta(project?.status);
 
     const memberById = useMemo(

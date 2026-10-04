@@ -163,7 +163,7 @@ export function LeaveManagementPage() {
         [requests],
     );
 
-    const personnelRows = personnelQuery.data?.data ?? [];
+    const personnelRows = useMemo(() => personnelQuery.data?.data || [], [personnelQuery.data?.data]);
     const personnelOptions = useMemo(() => {
         return personnelRows
             .map((item) => ({

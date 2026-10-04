@@ -86,7 +86,7 @@ export function LandingContactRequestsPage() {
         },
     });
 
-    const rows = requestsQuery.data?.data ?? [];
+    const rows = useMemo(() => requestsQuery.data?.data || [], [requestsQuery.data?.data]);
     const total = requestsQuery.data?.total ?? rows.length;
     const totalPages = Math.max(1, Math.ceil(total / limit));
     const isPendingAction = approveMutation.isPending || rejectMutation.isPending;

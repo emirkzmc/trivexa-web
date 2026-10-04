@@ -46,7 +46,7 @@ export function PersonnelPage() {
     const [editItem, setEditItem] = useState<PersonnelItem | null>(null);
     const [exportFormat, setExportFormat] = useState<PersonnelExportFormat>('pdf');
 
-    const departments = departmentsQuery.data ?? [];
+    const departments = departmentsQuery.data || [];
     const personnel = Array.isArray(data?.data) ? data.data : [];
     const total = data?.meta?.total ?? 0;
     const currentPage = filters.page ?? 1;
@@ -60,7 +60,7 @@ export function PersonnelPage() {
         };
     });
 
-    const departmentOptions = departments.map((department) => {
+    const departmentOptions = departments.map((department: any) => {
         const normalizedName = department.name.trim().toUpperCase();
         return {
             value: department.name,
@@ -69,9 +69,9 @@ export function PersonnelPage() {
     });
 
     const departmentModulesByDepartment = Object.fromEntries(
-        departments.map((department) => [
+        departments.map((department: any) => [
             department.name,
-            (department.modules ?? []).map((module) => ({
+            (department.modules ?? []).map((module: any) => ({
                 value: module.id,
                 label: module.name,
             })),

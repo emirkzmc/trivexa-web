@@ -572,7 +572,7 @@ export async function getLandingContactRequests(
     const rows = Array.isArray(payload?.data)
         ? payload.data.map(normalizeLandingContactRequest)
         : [];
-    const meta = payload?.meta ?? {};
+    const meta = payload?.meta || {};
 
     return {
         data: rows,

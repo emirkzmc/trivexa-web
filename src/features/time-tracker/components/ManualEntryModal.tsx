@@ -32,10 +32,10 @@ export function ManualEntryModal({ isOpen, onClose }: ManualEntryModalProps) {
         enabled: isOpen && !!projectId,
     });
 
-    if (!isOpen) return null;
+    const projects = projectQuery.data?.data || [];
+    const tasks = taskQuery.data?.data || [];
 
-    const projects = projectQuery.data?.data ?? [];
-    const tasks = taskQuery.data?.data ?? [];
+    if (!isOpen) return null;
 
     const isSubmitting = createMutation.isPending;
     const startDateTime = new Date(`${date}T${startTime}:00`);

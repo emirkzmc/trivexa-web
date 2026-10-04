@@ -770,7 +770,7 @@ export function ClientDetailPage() {
                             ) : (
                                 <div className="space-y-3">
                                     {workspace.finance.invoices.map((invoice) => {
-                                        const payments = paymentMap.get(invoice.id) ?? [];
+                                        const payments = paymentMap.get(invoice.id) || [];
                                         const paidAmount = payments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
                                         const remaining = (invoice.total || 0) - paidAmount;
 

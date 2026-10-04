@@ -212,7 +212,7 @@ export function CodeProcessesPage() {
         staleTime: 60_000,
     });
 
-    const projects = projectsQuery.data?.data ?? [];
+    const projects = useMemo(() => projectsQuery.data?.data || [], [projectsQuery.data?.data]);
     const resolvedProjectId = selectedProjectId || projects[0]?.id || '';
 
     const selectedProject = useMemo<ProjectItem | null>(
@@ -236,12 +236,12 @@ export function CodeProcessesPage() {
 
     const codeProcess = codeProcessQuery.data;
     const overview = codeProcess?.github.overview;
-    const branches = overview?.branches ?? [];
+    const branches = useMemo(() => overview?.branches || [], [overview?.branches]);
     const defaultBranch = overview?.repository?.defaultBranch ?? branches[0]?.name ?? '';
     const resolvedBranch = selectedBranch || defaultBranch;
-    const commits = codeProcess?.github.commits.commits ?? [];
+    const commits = useMemo(() => codeProcess?.github.commits.commits || [], [codeProcess?.github.commits.commits]);
     const tasksSnapshot = codeProcess?.tasks;
-    const recentTasks = tasksSnapshot?.recentTasks ?? [];
+    const recentTasks = useMemo(() => tasksSnapshot?.recentTasks || [], [tasksSnapshot?.recentTasks]);
     const summary = tasksSnapshot?.summary;
     const githubErrors = codeProcess?.github.errors;
 

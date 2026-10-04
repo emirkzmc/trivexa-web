@@ -81,7 +81,8 @@ export const DemoLogin: React.FC = () => {
         || "/app/dashboard";
       
       navigate(targetRoute, { replace: true });
-    } catch (err: any) {
+    } catch (err) {
+      console.error(err);
       setError('Giriş başarısız oldu. Lütfen veritabanı Seed işleminin yapıldığından emin olun.');
     } finally {
       setLoadingEmail(null);
@@ -142,7 +143,7 @@ export const DemoLogin: React.FC = () => {
 
           <div className="mt-8 border-t border-gray-200 pt-6">
             <a
-              href="/"
+              href="http://localhost:3001/"
               className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
             >
               &larr; Demo Bilgi Sayfasına Dön

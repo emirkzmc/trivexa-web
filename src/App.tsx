@@ -5,6 +5,7 @@ import { LoginForm } from './features/auth/components/LoginForm';
 import { DemoLogin } from './features/auth/components/DemoLogin';
 import { FirstLoginPage } from './features/auth/components/FirstLoginPage';
 import { AppLayout } from './shared/components/AppLayout';
+import { LandingPage } from './features/landing/components/LandingPage';
 import { FeatureFlagService } from './shared/services/feature-flag.service';
 import { PersonnelPage } from './features/personnel/components/PersonnelPage';
 import { TimeTrackerPage } from './features/time-tracker/components/TimeTrackerPage';
@@ -59,8 +60,8 @@ function App() {
 
   return (
     <Routes>
-      {/* Tanıtım / public alan ileride eklenecek */}
-      <Route path="/" element={<Navigate to={isDemo ? "/demo-login" : "/login"} replace />} />
+      {/* Tanıtım / public alan */}
+      <Route path="/" element={<LandingPage />} />
 
       {/* Auth */}
       <Route 

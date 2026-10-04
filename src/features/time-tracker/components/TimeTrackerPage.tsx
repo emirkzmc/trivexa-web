@@ -108,12 +108,12 @@ export function TimeTrackerPage() {
         enabled: !!formData.projectId,
     });
 
-    const projects = projectQuery.data?.data ?? [];
-    const tasks = taskQuery.data?.data ?? [];
-    const historyRows = historyQuery.data?.data ?? [];
-    const teamRows = teamHistoryQuery.data?.data ?? [];
-    const dashboardRows = dashboardHistoryQuery.data?.data ?? [];
-    const teamPersonnelRows = teamPersonnelQuery.data?.data ?? [];
+    const projects = useMemo(() => projectQuery.data?.data || [], [projectQuery.data?.data]);
+    const tasks = useMemo(() => taskQuery.data?.data || [], [taskQuery.data?.data]);
+    const historyRows = useMemo(() => historyQuery.data?.data || [], [historyQuery.data?.data]);
+    const teamRows = useMemo(() => teamHistoryQuery.data?.data || [], [teamHistoryQuery.data?.data]);
+    const dashboardRows = useMemo(() => dashboardHistoryQuery.data?.data || [], [dashboardHistoryQuery.data?.data]);
+    const teamPersonnelRows = useMemo(() => teamPersonnelQuery.data?.data || [], [teamPersonnelQuery.data?.data]);
     const personnelMapById = useMemo(
         () => new Map(teamPersonnelRows.map((row) => [row.id, row])),
         [teamPersonnelRows],

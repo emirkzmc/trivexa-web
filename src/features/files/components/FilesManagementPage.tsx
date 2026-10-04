@@ -258,7 +258,7 @@ export function FilesManagementPage() {
         staleTime: 300_000,
     });
 
-    const entityOptions = entityOptionsQuery.data ?? [];
+    const entityOptions = useMemo(() => entityOptionsQuery.data || [], [entityOptionsQuery.data]);
     const departmentOptions = useMemo(
         () => (departmentsQuery.data ?? [])
             .map((department) => department.name)

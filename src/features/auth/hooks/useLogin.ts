@@ -22,7 +22,7 @@ function extractInvalidCredentialsMessage(error: unknown): string | null {
     | { status?: number; data?: Record<string, unknown> }
     | undefined;
   const status = response?.status;
-  const data = response?.data ?? {};
+  const data = response?.data || {};
   const code = data.errorCode ?? data.code;
   const message = typeof data.message === "string" ? data.message.trim() : "";
 

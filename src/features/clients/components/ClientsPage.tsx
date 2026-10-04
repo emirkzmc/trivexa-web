@@ -68,7 +68,7 @@ export function ClientsPage() {
     const currentPage = filters.page ?? 1;
     const limit = filters.limit ?? 20;
     const hasFilters = !!(filters.search || filters.isActive);
-    const pendingRequests = pendingRequestsQuery.data?.data ?? [];
+    const pendingRequests = useMemo(() => pendingRequestsQuery.data?.data || [], [pendingRequestsQuery.data?.data]);
 
     const stats = useMemo(() => {
         const activeCount = rows.filter((item) => item.isActive).length;

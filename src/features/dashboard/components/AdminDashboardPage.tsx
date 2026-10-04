@@ -330,20 +330,20 @@ export function AdminDashboardPage() {
   const summary = summaryQuery.data;
   const cashflow = cashflowQuery.data;
 
-  const supportRows = supportQuery.data?.data ?? [];
-  const contractRows = contractQuery.data?.data ?? [];
-  const invoiceRows = invoiceQuery.data ?? [];
-  const myProjects = myProjectsQuery.data?.data ?? [];
+  const supportRows = useMemo(() => supportQuery.data?.data || [], [supportQuery.data?.data]);
+  const contractRows = useMemo(() => contractQuery.data?.data || [], [contractQuery.data?.data]);
+  const invoiceRows = useMemo(() => invoiceQuery.data || [], [invoiceQuery.data]);
+  const myProjects = useMemo(() => myProjectsQuery.data?.data || [], [myProjectsQuery.data?.data]);
   const myProjectCount = myProjects.length;
   const myActiveProjects = myProjects.filter((project) => isActiveProject(project.status)).length;
-  const timeRows = myTimeQuery.data?.data ?? [];
+  const timeRows = useMemo(() => myTimeQuery.data?.data || [], [myTimeQuery.data?.data]);
   const weeklySeconds = timeRows.reduce((sum, entry) => sum + (entry.duration ?? 0), 0);
   const todaySeconds = timeRows.reduce((sum, entry) => {
     const started = parseDateValue(entry.startedAt);
     if (!started) return sum;
     return isSameDay(started, today) ? sum + (entry.duration ?? 0) : sum;
   }, 0);
-  const meetings = meetingsQuery.data ?? [];
+  const meetings = useMemo(() => meetingsQuery.data || [], [meetingsQuery.data]);
   const upcomingMeetings = meetings.filter((meeting) => {
     const date = parseDateValue(meeting.date);
     if (!date) return false;
@@ -397,7 +397,7 @@ export function AdminDashboardPage() {
     [cashflow?.chart],
   );
 
-  const overdueInvoices = cashflow?.overdueInvoices ?? [];
+  const overdueInvoices = useMemo(() => cashflow?.overdueInvoices || [], [cashflow?.overdueInvoices]);
   const recentSupportRequests = useMemo(
     () => [...supportRows].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 6),
     [supportRows],

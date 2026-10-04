@@ -61,8 +61,8 @@ export function DepartmentAssignmentsPage() {
         },
     });
 
-    const departments = departmentsQuery.data ?? [];
-    const personnel = personnelQuery.data?.data ?? [];
+    const departments = useMemo(() => departmentsQuery.data || [], [departmentsQuery.data]);
+    const personnel = useMemo(() => personnelQuery.data?.data || [], [personnelQuery.data?.data]);
     const total = personnelQuery.data?.meta?.total ?? 0;
     const totalPages = personnelQuery.data?.meta?.totalPages ?? 1;
 
@@ -97,7 +97,7 @@ export function DepartmentAssignmentsPage() {
         return departments.find((department) => department.name === form.department) ?? null;
     }, [departments, form.department]);
 
-    const selectedDepartmentModules = selectedDepartment?.modules ?? [];
+    const selectedDepartmentModules = useMemo(() => selectedDepartment?.modules || [], [selectedDepartment?.modules]);
 
     function handleFilterReset() {
         setSearch('');

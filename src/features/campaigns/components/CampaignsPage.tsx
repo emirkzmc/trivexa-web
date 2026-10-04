@@ -89,7 +89,7 @@ export function CampaignsPage() {
         staleTime: 60_000,
     });
 
-    const rows = campaignsQuery.data?.data ?? [];
+    const rows = useMemo(() => campaignsQuery.data?.data || [], [campaignsQuery.data?.data]);
 
     const filteredRows = useMemo(() => {
         const searchValue = search.trim().toLowerCase();

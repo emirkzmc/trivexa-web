@@ -114,7 +114,7 @@ export function RolesPermissionsPage() {
         },
     });
 
-    const permissionPool = permissionsQuery.data ?? [];
+    const permissionPool = useMemo(() => permissionsQuery.data || [], [permissionsQuery.data]);
     const filteredPermissions = useMemo(() => {
         const term = search.trim().toLowerCase();
         if (!term) return permissionPool;

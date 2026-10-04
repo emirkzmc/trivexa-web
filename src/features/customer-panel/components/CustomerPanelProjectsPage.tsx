@@ -44,7 +44,7 @@ export function CustomerPanelProjectsPage() {
         staleTime: 60_000,
     });
 
-    const projects = dashboardQuery.data?.projects ?? [];
+    const projects = useMemo(() => dashboardQuery.data?.projects || [], [dashboardQuery.data?.projects]);
     const total = projects.length;
     const activeCount = dashboardQuery.data?.activeProjects ?? projects.length;
 

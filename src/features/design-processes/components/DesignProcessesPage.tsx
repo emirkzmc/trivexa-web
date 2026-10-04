@@ -91,7 +91,7 @@ function normalizeStatus(status?: string): TaskStatus {
 }
 
 function taskAssigneesLabel(task: TaskItem): string {
-    const assignees = task.assignees ?? [];
+    const assignees = task.assignees || [];
     if (assignees.length > 0) {
         const labels = assignees.map((assignee) => {
             const fullName = `${assignee.firstName ?? ''} ${assignee.lastName ?? ''}`.trim();
@@ -135,7 +135,7 @@ export function DesignProcessesPage() {
         staleTime: 60_000,
     });
 
-    const projects = projectsQuery.data?.data ?? [];
+    const projects = useMemo(() => projectsQuery.data?.data || [], [projectsQuery.data?.data]);
 
     useEffect(() => {
         if (!selectedProjectId && projects.length > 0) {
@@ -163,8 +163,8 @@ export function DesignProcessesPage() {
         staleTime: 30_000,
     });
 
-    const tasks = tasksQuery.data?.data ?? [];
-    const files = filesQuery.data ?? [];
+    const tasks = useMemo(() => tasksQuery.data?.data || [], [tasksQuery.data?.data]);
+    const files = useMemo(() => filesQuery.data || [], [filesQuery.data]);
 
     const stageCards = useMemo(() => (
         STAGE_DEFINITIONS.map((stage) => {

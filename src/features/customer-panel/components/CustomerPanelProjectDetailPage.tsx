@@ -48,7 +48,7 @@ export function CustomerPanelProjectDetailPage() {
 
     const project = useMemo(() => {
         if (stateProject) return stateProject;
-        const list = projectQuery.data?.projects ?? [];
+        const list = projectQuery.data?.projects || [];
         return list.find((item) => item.id === projectId);
     }, [projectId, projectQuery.data?.projects, stateProject]);
 

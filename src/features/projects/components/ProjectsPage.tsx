@@ -91,7 +91,7 @@ export function ProjectsPage() {
         enabled: canReadProjects,
     });
 
-    const rows = projectsQuery.data?.data ?? [];
+    const rows = useMemo(() => projectsQuery.data?.data || [], [projectsQuery.data?.data]);
     const total = projectsQuery.data?.total ?? 0;
     const totalPages = Math.max(1, Math.ceil(total / limit));
 

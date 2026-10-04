@@ -116,7 +116,7 @@ export function AuditLogPage() {
         queryFn: () => getAuditLogs({ page, limit, ...filters }),
     });
 
-    const logs = query.data?.data ?? [];
+    const logs = query.data?.data || [];
     const total = query.data?.total ?? 0;
     const totalPages = Math.ceil(total / limit);
 

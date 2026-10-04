@@ -146,7 +146,7 @@ export function PayrollAttendancePage() {
     const rows = useMemo(() => {
         const personnel = personnelQuery.data?.data ?? [];
         return personnel.map((person) => {
-            const entries = timeEntriesByUser.get(person.id) ?? [];
+            const entries = timeEntriesByUser.get(person.id) || [];
             const totalSeconds = entries.reduce((acc, entry) => acc + (entry.duration ?? 0), 0);
             const totalHours = totalSeconds / 3600;
             const workedDays = totalHours / 8;

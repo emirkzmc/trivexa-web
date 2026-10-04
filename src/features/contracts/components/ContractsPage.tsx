@@ -104,7 +104,7 @@ export function ContractsPage() {
         enabled: canReadContracts,
     });
 
-    const rows = contractsQuery.data?.data ?? [];
+    const rows = useMemo(() => contractsQuery.data?.data || [], [contractsQuery.data?.data]);
     const clientMap = useMemo(
         () => new Map((clientsQuery.data?.data ?? []).map((client) => [client.id, client.companyName])),
         [clientsQuery.data?.data],

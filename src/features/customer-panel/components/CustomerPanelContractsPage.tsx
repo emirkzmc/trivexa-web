@@ -62,7 +62,7 @@ export function CustomerPanelContractsPage() {
         staleTime: 60_000,
     });
 
-    const contracts = contractsQuery.data ?? [];
+    const contracts = useMemo(() => contractsQuery.data || [], [contractsQuery.data]);
 
     const filteredContracts = useMemo(() => {
         const term = search.trim().toLocaleLowerCase('tr');

@@ -72,7 +72,7 @@ export function NotificationsPage() {
     const [search, setSearch] = useState('');
     const [selectedId, setSelectedId] = useState('');
 
-    const rows = data?.data ?? [];
+    const rows = useMemo(() => data?.data || [], [data?.data]);
     const total = data?.total ?? 0;
     const limit = filters.limit ?? 20;
     const totalPages = Math.max(1, Math.ceil(total / limit));

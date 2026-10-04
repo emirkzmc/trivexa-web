@@ -132,9 +132,9 @@ export function CashflowDashboardPage() {
   const isLoading = overviewQuery.isLoading;
   const isError = overviewQuery.isError;
 
-  const overdueInvoices = overviewQuery.data?.overdueInvoices ?? [];
-  const upcomingReceivables = overviewQuery.data?.upcomingReceivables ?? [];
-  const upcomingExpensePayments = overviewQuery.data?.upcomingExpensePayments ?? [];
+  const overdueInvoices = useMemo(() => overviewQuery.data?.overdueInvoices || [], [overviewQuery.data?.overdueInvoices]);
+  const upcomingReceivables = useMemo(() => overviewQuery.data?.upcomingReceivables || [], [overviewQuery.data?.upcomingReceivables]);
+  const upcomingExpensePayments = useMemo(() => overviewQuery.data?.upcomingExpensePayments || [], [overviewQuery.data?.upcomingExpensePayments]);
   const normalizedClientFilter = clientFilter.trim().toLocaleLowerCase('tr-TR');
 
   const clientOptions = useMemo(() => {

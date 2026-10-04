@@ -160,7 +160,7 @@ export function SupportRequestsPage({
         },
     });
 
-    const allRows = requestsQuery.data?.data ?? [];
+    const allRows = useMemo(() => requestsQuery.data?.data || [], [requestsQuery.data?.data]);
     const rows = allRows.filter((item) => !isMeetingRequest(item.subject, item.type));
     const total = rows.length;
     const totalPages = requestsQuery.data?.totalPages ?? 1;

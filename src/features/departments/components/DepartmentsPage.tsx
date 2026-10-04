@@ -111,7 +111,7 @@ export function DepartmentsPage() {
         },
     });
 
-    const departments = departmentsQuery.data ?? [];
+    const departments = useMemo(() => departmentsQuery.data || [], [departmentsQuery.data]);
     const filteredDepartments = useMemo(() => {
         const term = search.trim().toLowerCase();
         if (!term) return departments;
@@ -131,7 +131,7 @@ export function DepartmentsPage() {
         [departments],
     );
 
-    const teamLeaders = teamLeadersQuery.data?.data ?? [];
+    const teamLeaders = useMemo(() => teamLeadersQuery.data?.data || [], [teamLeadersQuery.data?.data]);
     const teamLeaderLabelById = useMemo(
         () => Object.fromEntries(teamLeaders.map((person) => [person.id, `${person.firstName} ${person.lastName}`])),
         [teamLeaders],

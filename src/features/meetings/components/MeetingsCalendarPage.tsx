@@ -160,7 +160,7 @@ export function MeetingsCalendarPage() {
         enabled: canManageMeetings,
     });
 
-    const visibleMeetings = meetingsQuery.data ?? [];
+    const visibleMeetings = useMemo(() => meetingsQuery.data || [], [meetingsQuery.data]);
 
     const meetingsByDay = useMemo(() => {
         const map = new Map<string, MeetingItem[]>();
@@ -180,7 +180,7 @@ export function MeetingsCalendarPage() {
     }, [visibleMeetings]);
 
     const monthDays = useMemo(() => getMonthMatrix(monthCursor), [monthCursor]);
-    const selectedDayMeetings = meetingsByDay.get(selectedDay) ?? [];
+    const selectedDayMeetings = meetingsByDay.get(selectedDay) || [];
 
     const createMeetingMutation = useMutation({
         mutationFn: async () => {
@@ -453,7 +453,7 @@ export function MeetingsCalendarPage() {
                             const dayKey = toDayKey(date);
                             const isCurrentMonth = date.getMonth() === monthCursor.getMonth();
                             const isSelected = dayKey === selectedDay;
-                            const dayMeetings = meetingsByDay.get(dayKey) ?? [];
+                            const dayMeetings = meetingsByDay.get(dayKey) || [];
                             return (
                                 <button
                                     key={dayKey}

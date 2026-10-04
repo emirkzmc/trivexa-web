@@ -406,7 +406,7 @@ export function InvoiceDetailPage() {
         enabled: canReadInvoices && !!invoiceId,
     });
     const lines = useMemo(() => (invoice ? toLineRows(invoice) : []), [invoice]);
-    const payments = paymentsQuery.data ?? [];
+    const payments = useMemo(() => paymentsQuery.data || [], [paymentsQuery.data]);
     const sortedPayments = useMemo(
         () => [...payments].sort((a, b) => {
             const aTime = (toDateValue(a.paymentDate) ?? toDateValue(a.createdAt))?.getTime() ?? 0;
@@ -492,7 +492,7 @@ export function InvoiceDetailPage() {
             return acc;
         }, []).reverse();
     }, [sortedPayments]);
-    const paymentAuditRows = paymentAuditQuery.data?.data ?? [];
+    const paymentAuditRows = useMemo(() => paymentAuditQuery.data?.data || [], [paymentAuditQuery.data?.data]);
     const paymentAuditTotal = paymentAuditQuery.data?.total ?? 0;
     const paymentAuditPageCount = Math.max(1, Math.ceil(paymentAuditTotal / auditLimit));
     const filteredPaymentAuditRows = useMemo(

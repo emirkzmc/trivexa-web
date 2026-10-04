@@ -241,7 +241,7 @@ export function MeetingsPage() {
         },
     });
 
-    const rows = meetingsQuery.data ?? [];
+    const rows = useMemo(() => meetingsQuery.data || [], [meetingsQuery.data]);
     const meetingRequestRows = useMemo(() => {
         const requestRows = pendingMeetingRequestsQuery.data?.data ?? [];
         return requestRows.filter((item: SupportRequestItem) => isMeetingRequest(item.subject, item.type));

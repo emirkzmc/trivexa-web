@@ -130,7 +130,7 @@ export function TasksPage() {
         enabled: canReadTasks,
     });
 
-    const projects = projectsQuery.data?.data ?? [];
+    const projects = useMemo(() => projectsQuery.data?.data || [], [projectsQuery.data?.data]);
     const selectedProject = useMemo(
         () => projects.find((project) => project.id === selectedProjectId) ?? null,
         [projects, selectedProjectId],
@@ -153,7 +153,7 @@ export function TasksPage() {
         enabled: canReadTasks && !!selectedProjectId,
     });
 
-    const members = membersQuery.data ?? [];
+    const members = useMemo(() => membersQuery.data || [], [membersQuery.data]);
     const sortedMembers = useMemo(
         () => [...members].sort((a, b) => memberName(a).localeCompare(memberName(b), 'tr')),
         [members],
@@ -172,7 +172,7 @@ export function TasksPage() {
         enabled: canReadTasks && !!selectedProjectId && (!forceMyTasksOnly || !!currentUserId),
     });
 
-    const rows = tasksQuery.data?.data ?? [];
+    const rows = useMemo(() => tasksQuery.data?.data || [], [tasksQuery.data?.data]);
     const searchedRows = useMemo(() => {
         const searchValue = search.trim().toLowerCase();
         if (!searchValue) {

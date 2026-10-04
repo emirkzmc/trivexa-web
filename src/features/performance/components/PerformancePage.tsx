@@ -168,7 +168,7 @@ export function PerformancePage() {
             .sort((a, b) => a.label.localeCompare(b.label, 'tr'));
     }, [personnelQuery.data?.data]);
 
-    const rawRows = historyQuery.data?.data ?? [];
+    const rawRows = useMemo(() => historyQuery.data?.data || [], [historyQuery.data?.data]);
     const filteredRows = useMemo(() => {
         const needle = search.trim().toLowerCase();
         if (!needle) return rawRows;
