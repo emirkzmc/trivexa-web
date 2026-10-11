@@ -1,5 +1,6 @@
 import './App.css';
-import { Routes, Route, Navigate, Suspense, lazy } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { FeatureFlagService } from './shared/services/feature-flag.service';
 import { LoadingFallback } from './shared/components/LoadingFallback';
 import { RouteErrorBoundary } from './shared/components/RouteErrorBoundary';
