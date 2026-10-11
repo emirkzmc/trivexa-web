@@ -45,7 +45,7 @@ export default defineConfig({
     target: 'es2020', // Better browser support than esnext
     cssCodeSplit: true,
     sourcemap: process.env.NODE_ENV !== 'production', // Source maps only in dev
-    minify: 'esbuild', // Faster than terser
+    minify: 'oxc', // Vite 8 default; 'esbuild' requires a separate esbuild install
     chunkSizeWarningLimit: 500, // Warn for chunks > 500KB
     rollupOptions: {
       output: {
