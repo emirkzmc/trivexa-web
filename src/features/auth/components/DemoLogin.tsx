@@ -38,6 +38,10 @@ const DEMO_USERS = [
   },
 ];
 
+const LANDING_URL = (
+  (import.meta.env.VITE_LANDING_URL as string | undefined)?.trim() || 'http://localhost:3001'
+).replace(/\/+$/, '');
+
 export const DemoLogin: React.FC = () => {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -46,7 +50,7 @@ export const DemoLogin: React.FC = () => {
 
   const handleDemoLogin = async (email: string) => {
     if (email === 'customer@demo.com') {
-      window.location.href = 'http://localhost:3001/customer-login?email=customer@demo.com&autologin=true';
+      window.location.href = `${LANDING_URL}/customer-login?email=customer@demo.com&autologin=true`;
       return;
     }
 
@@ -143,7 +147,7 @@ export const DemoLogin: React.FC = () => {
 
           <div className="mt-8 border-t border-gray-200 pt-6">
             <a
-              href="http://localhost:3001/"
+              href={`${LANDING_URL}/`}
               className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
             >
               &larr; Demo Bilgi Sayfasına Dön
