@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -9,6 +10,9 @@ import { Input } from './ui/Input';
 import { Button } from './ui/Button';
 import { Icon } from './ui/Icon';
 import Loading from './ui/Loading.tsx';
+import { Modal } from '../../../shared/components/Modal';
+import { useAuthStore } from '../store/authStore';
+import { FirstLoginForm } from './FirstLoginForm';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Geçerli bir e-posta girin' }),
@@ -18,9 +22,16 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
+  const user = useAuthStore((s) => s.user);
+  const isFirstLogin = useAuthStore((s) => s.isFirstLogin);
+  const logout = useAuthStore((s) => s.logout);
+  const [showFirstLoginModal, setShowFirstLoginModal] = useState(false);
+
   const {
     register,
     handleSubmit,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -30,11 +41,24 @@ export function LoginForm() {
     },
   });
 
-  const { mutate, isPending } = useLogin();
+  const { mutate, isPending } = useLogin({
+    onFirstLogin: () => setShowFirstLoginModal(true),
+    onInvalidCredentials: (message) => {
+      setError('root', { type: 'manual', message });
+    },
+  });
+
+  const isFirstLoginModalOpen = showFirstLoginModal || (!!user && isFirstLogin);
 
   const onSubmit: SubmitHandler<LoginFormValues> = (values) => {
+    clearErrors();
     mutate(values);
   };
+
+  function handleFirstLoginCancel() {
+    logout();
+    setShowFirstLoginModal(false);
+  }
 
   return (
     <AuthLayout>
@@ -85,6 +109,12 @@ export function LoginForm() {
               </div>
             </div>
 
+            {errors.root?.message && (
+              <p className="rounded-md border border-[#fecaca] bg-[#fef2f2] px-3 py-2 text-left text-xs text-[#b91c1c]">
+                {errors.root.message}
+              </p>
+            )}
+
             <div className="mt-4">
               <Button type="submit" disabled={isPending}>
                 GİRİŞ
@@ -92,6 +122,11 @@ export function LoginForm() {
             </div>
           </form>
         </AuthCard>
+      )}
+      {isFirstLoginModalOpen && (
+        <Modal title="Sifre Yenileme" onClose={handleFirstLoginCancel} width={520}>
+          <FirstLoginForm onCancel={handleFirstLoginCancel} showHeader={false} />
+        </Modal>
       )}
     </AuthLayout>
   );

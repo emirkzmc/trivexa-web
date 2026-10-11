@@ -2,34 +2,28 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { getClients } from '../api/clients.api';
 import type { ClientListParams } from '../api/clients.api';
-import { useAuthStore } from '../../auth/store/authStore';
 
 const DEFAULT_LIMIT = 20;
 
-/**
- * Müşteri listesi hook'u.
- * ACCOUNT_MANAGER rolü sadece kendi müşterilerini görür.
- */
-export function useClients() {
+interface UseClientsOptions {
+    enabled?: boolean;
+}
+
+export function useClients(options: UseClientsOptions = {}) {
     const [searchParams, setSearchParams] = useSearchParams();
-    const user = useAuthStore((s) => s.user);
+    const enabled = options.enabled ?? true;
 
     const filters: ClientListParams = {
         page: Number(searchParams.get('page')) || 1,
         limit: Number(searchParams.get('limit')) || DEFAULT_LIMIT,
-        status: searchParams.get('status') || undefined,
+        isActive: searchParams.get('isActive') || undefined,
         search: searchParams.get('search') || undefined,
-        accountManagerId: undefined,
     };
-
-    // ACCOUNT_MANAGER sadece kendi müşterilerini görür
-    if (user?.role === 'ACCOUNT_MANAGER') {
-        filters.accountManagerId = user.id;
-    }
 
     const query = useQuery({
         queryKey: ['clients', filters],
         queryFn: () => getClients(filters),
+        enabled,
     });
 
     function setFilter(key: string, value: string | undefined) {
@@ -39,7 +33,11 @@ export function useClients() {
         } else {
             next.delete(key);
         }
-        if (key !== 'page') next.set('page', '1');
+
+        if (key !== 'page') {
+            next.set('page', '1');
+        }
+
         setSearchParams(next, { replace: true });
     }
 

@@ -17,6 +17,10 @@ export interface LoginResponseData {
         lastName: string;
         role: string;
         department: string;
+        forcePasswordChange: boolean;
+        avatarUrl?: string | null;
+        avatarFit?: string | null;
+        avatarPosition?: string | null;
     };
 }
 
@@ -34,9 +38,8 @@ export interface RefreshResponse {
 }
 
 export interface ChangePasswordPayload {
-    currentPassword: string;
+    oldPassword: string;
     newPassword: string;
-    confirmPassword: string;
 }
 
 export interface MeResponse {
@@ -48,13 +51,21 @@ export interface MeResponse {
         lastName: string;
         role: string;
         department: string;
+        avatarUrl?: string | null;
+        avatarFit?: string | null;
+        avatarPosition?: string | null;
     };
 }
 
 // ─── API Functions ───────────────────────────────────────────────────────────
 
 export async function login(credentials: LoginCredentials): Promise<LoginResponse> {
-    const { data } = await api.post<LoginResponse>('/auth/login', credentials);
+    const { data } = await api.post<LoginResponse>('/auth/login', credentials, {
+        headers: {
+            'x-skip-auth-refresh': '1',
+            'x-skip-error-toast': '1',
+        },
+    });
     return data;
 }
 
@@ -74,6 +85,6 @@ export async function changePassword(payload: ChangePasswordPayload): Promise<vo
 }
 
 export async function getMe(): Promise<MeResponse> {
-    const { data } = await api.get<MeResponse>('/auth/me');
+    const { data } = await api.get<MeResponse>('/users/me');
     return data;
 }

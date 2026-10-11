@@ -23,7 +23,7 @@ export function LogoutButton({ onLogout }: LogoutButtonProps) {
                 transition: 'color 0.15s',
             }}
             onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.color = '#EF4444';
+                (e.currentTarget as HTMLButtonElement).style.color = 'var(--role-accent-500)';
             }}
             onMouseLeave={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.color = '#CBD5E1';

@@ -7,7 +7,7 @@ import { resolveErrorMessage } from '../constants/errorMessages';
 // ─── Instance ────────────────────────────────────────────────────────────────
 
 const api: AxiosInstance = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3500/api',
+    baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
     timeout: 15_000,
 });
 
@@ -42,9 +42,10 @@ api.interceptors.response.use(
     async (error: AxiosError) => {
         const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
         const status = error.response?.status;
+        const skipAuthRefresh = Boolean(originalRequest?.headers?.['x-skip-auth-refresh']);
 
         // ── 401 — Token refresh ──────────────────────────────────
-        if (status === 401 && !originalRequest._retry) {
+        if (status === 401 && !originalRequest._retry && !skipAuthRefresh) {
             originalRequest._retry = true;
 
             if (isRefreshing) {
@@ -95,7 +96,8 @@ api.interceptors.response.use(
 
         // ── 403 — Yetkisiz erişim → 404 sayfasına yönlendir ─────
         if (status === 403) {
-            window.location.href = '/404';
+            const message = resolveErrorMessage(error) || 'Erisim engellendi';
+            toast.error(message, { duration: 3_000 });
             return Promise.reject(error);
         }
 
@@ -111,8 +113,11 @@ api.interceptors.response.use(
         }
 
         // ── Diğer hatalar → Sonner toast ─────────────────────────
-        const message = resolveErrorMessage(error);
-        toast.error(message, { duration: 3_000 });
+        const shouldSkipToast = Boolean(originalRequest?.headers?.['x-skip-error-toast']);
+        if (!shouldSkipToast) {
+            const message = resolveErrorMessage(error);
+            toast.error(message, { duration: 3_000 });
+        }
 
         return Promise.reject(error);
     },

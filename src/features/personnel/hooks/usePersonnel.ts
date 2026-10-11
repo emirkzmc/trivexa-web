@@ -18,15 +18,16 @@ export function usePersonnel() {
     const filters: PersonnelListParams = {
         page: Number(searchParams.get('page')) || 1,
         limit: Number(searchParams.get('limit')) || DEFAULT_LIMIT,
-        dept: searchParams.get('dept') || undefined,
+        department: searchParams.get('department') || undefined,
+        subDepartmentId: searchParams.get('subDepartmentId') || undefined,
         role: searchParams.get('role') || undefined,
-        status: searchParams.get('status') || undefined,
+        isActive: searchParams.get('isActive') || undefined,
         search: searchParams.get('search') || undefined,
     };
 
     // MANAGER sadece kendi departmanını görebilir
     if (user?.role === 'MANAGER') {
-        filters.dept = user.department;
+        filters.department = user.department;
     }
 
     const query = useQuery({
@@ -46,9 +47,24 @@ export function usePersonnel() {
         setSearchParams(next, { replace: true });
     }
 
+    function setFilters(values: Record<string, string | undefined>) {
+        const next = new URLSearchParams(searchParams);
+
+        Object.entries(values).forEach(([key, value]) => {
+            if (value) {
+                next.set(key, value);
+            } else {
+                next.delete(key);
+            }
+        });
+
+        next.set('page', '1');
+        setSearchParams(next, { replace: true });
+    }
+
     function setPage(page: number) {
         setFilter('page', String(page));
     }
 
-    return { ...query, filters, setFilter, setPage };
+    return { ...query, filters, setFilter, setFilters, setPage };
 }

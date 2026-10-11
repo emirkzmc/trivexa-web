@@ -7,9 +7,13 @@ export interface PersonnelItem {
     firstName: string;
     lastName: string;
     email: string;
+    phone?: string;
     role: string;
     department: string;
+    subDepartmentId?: string | null;
+    subDepartmentName?: string | null;
     status: string;
+    isActive: boolean;
     salary?: number;
     createdAt: string;
     updatedAt: string;
@@ -18,51 +22,58 @@ export interface PersonnelItem {
 export interface PersonnelListParams {
     page?: number;
     limit?: number;
-    dept?: string;
+    department?: string;
+    subDepartmentId?: string;
     role?: string;
-    status?: string;
+    isActive?: string;
     search?: string;
 }
 
 export interface PaginatedResponse<T> {
     data: T[];
-    total: number;
-    page: number;
-    limit: number;
+    meta: {
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }
 }
 
 export interface PersonnelCreatePayload {
     firstName: string;
     lastName: string;
     email: string;
+    password?: string;
     role: string;
-    department: string;
-    salary?: number;
+    department?: string;
+    subDepartmentId?: string;
 }
 
-export interface PersonnelUpdatePayload extends Partial<PersonnelCreatePayload> { }
+export type PersonnelUpdatePayload =
+    Omit<Partial<PersonnelCreatePayload>, 'subDepartmentId'>
+    & { subDepartmentId?: string | null };
 
 // ─── API Functions ───────────────────────────────────────────────────────────
 
 export async function getPersonnel(
     params: PersonnelListParams,
 ): Promise<PaginatedResponse<PersonnelItem>> {
-    const { data } = await api.get<PaginatedResponse<PersonnelItem>>(
-        '/personnel',
+    const { data } = await api.get<{ data: PaginatedResponse<PersonnelItem> }>(
+        '/users',
         { params },
     );
-    return data;
+    return data.data;
 }
 
 export async function getPersonnelById(id: string): Promise<PersonnelItem> {
-    const { data } = await api.get<{ data: PersonnelItem }>(`/personnel/${id}`);
+    const { data } = await api.get<{ data: PersonnelItem }>(`/users/${id}`);
     return data.data;
 }
 
 export async function createPersonnel(
     payload: PersonnelCreatePayload,
 ): Promise<PersonnelItem> {
-    const { data } = await api.post<{ data: PersonnelItem }>('/personnel', payload);
+    const { data } = await api.post<{ data: PersonnelItem }>('/users', payload);
     return data.data;
 }
 
@@ -70,21 +81,25 @@ export async function updatePersonnel(
     id: string,
     payload: PersonnelUpdatePayload,
 ): Promise<PersonnelItem> {
-    const { data } = await api.patch<{ data: PersonnelItem }>(
-        `/personnel/${id}`,
+    const { data } = await api.put<{ data: PersonnelItem }>(
+        `/users/${id}`,
         payload,
     );
     return data.data;
 }
 
-export async function deletePersonnel(id: string): Promise<void> {
-    await api.delete(`/personnel/${id}`);
+export async function deactivatePersonnel(id: string): Promise<void> {
+    await api.patch(`/users/${id}/deactivate`);
+}
+
+export async function activatePersonnel(id: string): Promise<void> {
+    await api.patch(`/users/${id}/activate`);
 }
 
 export async function exportPersonnel(
     params: PersonnelListParams,
 ): Promise<Blob> {
-    const { data } = await api.get('/personnel/export', {
+    const { data } = await api.get('/users/export/csv', {
         params,
         responseType: 'blob',
     });
