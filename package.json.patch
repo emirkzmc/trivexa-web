@@ -1,0 +1,27 @@
+# Add these dependencies to package.json for Vite optimization
+
+## devDependencies to add:
+```json
+{
+  "devDependencies": {
+    "rollup-plugin-visualizer": "^5.12.0",
+    "vite-plugin-compression": "^0.5.1"
+  }
+}
+```
+
+## scripts to add:
+```json
+{
+  "scripts": {
+    "build:analyze": "ANALYZE=true npm run build",
+    "build:prod": "NODE_ENV=production vite build",
+    "preview": "vite preview"
+  }
+}
+```
+
+## Installation command:
+```bash
+npm install -D rollup-plugin-visualizer vite-plugin-compression
+```
